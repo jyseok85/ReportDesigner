@@ -1,0 +1,28 @@
+﻿@using System.Reflection;
+
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies=@lazyLoadedAssemblies>
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code{
+    private List<Assembly> lazyLoadedAssemblies = new();
+    protected override async Task OnInitializedAsync()
+    {
+        // lazyLoadedAssemblies.Add(typeof(ReportDesigner.Blazor.Common.Shared.NavMenu).Assembly);
+        // lazyLoadedAssemblies.Add(typeof(ReportDesigner.Blazor.Common.Shared.SurveyPrompt).Assembly);
+        // lazyLoadedAssemblies.Add(typeof(ReportDesigner.Blazor.Common.Pages.Index).Assembly);
+        // lazyLoadedAssemblies.Add(typeof(ReportDesigner.Blazor.Common.Pages.Counter).Assembly);
+        // lazyLoadedAssemblies.Add(typeof(ReportDesigner.Blazor.Common.Pages.FetchData).Assembly);
+
+        await Task.Yield();
+    }
+}
