@@ -31,13 +31,17 @@
             <div style="width:1rem;height:1rem;margin:1rem;"></div>
         </RadzenStack>      
     </RadzenHeader>
-    <RadzenSidebar Style="width:auto">
+    @* 스크롤 생기던것 수정 *@
+    <RadzenSidebar Style="width:auto;overflow:hidden"> 
         <RadzenPanelMenu DisplayStyle="@(sidebar1Expanded?MenuItemDisplayStyle.IconAndText:MenuItemDisplayStyle.Icon)" ShowArrow=false>
             <RadzenPanelMenuItem Text="Label" Icon="text_fields" />
             <RadzenPanelMenuItem Text="Table" Icon="grid_on" />
             <RadzenPanelMenuItem Text="Picture Box" Icon="image" />
-            <RadzenPanelMenuItem Text="Shapes" Icon="interests">
-                <RadzenPanelMenuItem Text="Square" Icon="square" />
+            @* 기본적으로 펼치기 버튼이 포함되어있는데 그걸 사용안함으로 할경우 사이즈가 틀어진다.. 제작자가 수정해야 할듯한데.. *@
+            <RadzenPanelMenuItem Text="Shapes" Icon="interests" Style="--rz-panel-menu-icon-2nd-level-margin:0;
+                                                                       --rz-panel-menu-item-2nd-level-padding:0.5rem 0.5rem 0.5rem 0.5rem;
+                                                                      --rz-panel-menu-item-2nd-level-offset:0.7rem;">
+                <RadzenPanelMenuItem Text="Square" Icon="square"/>
                 <RadzenPanelMenuItem Text="Circle" Icon="circle" />
                 <RadzenPanelMenuItem Text="Star" Icon="star" />
                 <RadzenPanelMenuItem Text="Heart" Icon="favorite" />
@@ -54,11 +58,9 @@
     
     <RadzenSidebar @bind-Expanded="@showSidePanel" Style="width:auto; grid-area: rz-right-sidebar; height:inherit">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:inherit;gap:0">
-            <RadzenStack Orientation="Orientation.Vertical" Style="flex-direction:inherit !important; background-color:red; height:inherit;">
-                <RadzenStack Orientation="Orientation.Vertical">      
-                    @if (this.showRightSidePanel)
-                    {
-                        <RadzenPanelMenu Click="OnParentClicked" Style="width:300px" Multiple="@multiple">
+            <RadzenStack Orientation="Orientation.Vertical" Style="flex-direction:inherit !important; background-color:red; height:inherit;transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
+                <RadzenStack Orientation="Orientation.Vertical" Style="transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
+                        <RadzenPanelMenu Click="OnParentClicked" Style=@((this.showRightSidePanel ?"width:300px;":"width:0px;") +"transition: var(--rz-transition-all);") Multiple="@multiple">
                         @if (this.currentRightPanel == RightPanelType.Property)
                         {
                             <RadzenPanelMenuItem Text="General" Icon="home">
@@ -102,7 +104,6 @@
                             </RadzenPanelMenuItem>
                         }
                         </RadzenPanelMenu>
-                    }
                 </RadzenStack>
             </RadzenStack>
             <RadzenStack Orientation="Orientation.Vertical" Style="border-left: 1px solid lightgray;">
