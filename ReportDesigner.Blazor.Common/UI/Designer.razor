@@ -1,0 +1,21 @@
+﻿<RadzenLayout Style="grid-template-columns: auto 1fr auto; grid-template-areas: 'rz-header rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+    <CascadingValue Value="this">
+        <Header></Header>
+        <LeftSideBar></LeftSideBar>
+        <Body></Body>
+        <RightSideBar></RightSideBar>
+    </CascadingValue>
+</RadzenLayout>
+
+@code {
+    public bool SidebarExpanded
+    {
+        get{ return sidebarExpanded; }
+        set
+        { 
+            sidebarExpanded = value;
+            StateHasChanged();
+        }
+    }
+    bool sidebarExpanded = true;
+}

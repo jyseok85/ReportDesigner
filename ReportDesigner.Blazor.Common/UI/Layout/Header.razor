@@ -1,0 +1,37 @@
+﻿<RadzenHeader Style="background-color:white;box-shadow:none;border-bottom:var(--rz-border-base-200);">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+        <RadzenSidebarToggle Click="@(() => designer.SidebarExpanded = !designer.SidebarExpanded)"
+                             Style="color:black;
+                       --rz-sidebar-toggle-hover-background-color:#6da6e3;
+                       --rz-sidebar-toggle-margin:0.2rem;
+                       --rz-sidebar-toggle-icon-width:1rem;
+                       --rz-sidebar-toggle-icon-height:1rem;" />
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap"
+                     Style="margin:auto;--rz-button-border-radius:5rem;--rz-panel-border-radius:5rem;--rz-panel-padding:0.2rem;">
+            <RadzenPanel>
+                <RadzenButton Icon="content_cut" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Icon="content_copy" ButtonStyle="ButtonStyle.Secondary" />
+                <RadzenButton Icon="content_paste" ButtonStyle="ButtonStyle.Light" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Dark" />
+            </RadzenPanel>
+            <RadzenPanel>
+                <RadzenButton Icon="undo" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Icon="redo" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenPanel>
+            <RadzenPanel>
+                <RadzenButton Icon="zoom_in" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Icon="zoom_out" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenPanel>
+            <RadzenPanel>
+                <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenPanel>
+        </RadzenStack>
+        <div style="width:1rem;height:1rem;margin:1rem;"></div>
+    </RadzenStack>
+</RadzenHeader>
+@code {
+    [CascadingParameter]
+    private Designer designer { get; set; }
+
+}

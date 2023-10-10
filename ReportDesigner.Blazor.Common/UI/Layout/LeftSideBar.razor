@@ -1,0 +1,22 @@
+﻿<RadzenSidebar Style="width:auto;overflow:hidden">
+    <RadzenPanelMenu DisplayStyle="@(designer.SidebarExpanded?MenuItemDisplayStyle.IconAndText:MenuItemDisplayStyle.Icon)" ShowArrow=false>
+        <RadzenPanelMenuItem Text="Label" Icon="text_fields" />
+        <RadzenPanelMenuItem Text="Table" Icon="grid_on" />
+        <RadzenPanelMenuItem Text="Picture Box" Icon="image" />
+        @* 기본적으로 펼치기 버튼이 포함되어있는데 그걸 사용안함으로 할경우 사이즈가 틀어진다.. 제작자가 수정해야 할듯한데.. *@
+        <RadzenPanelMenuItem Text="Shapes" Icon="interests" Style="--rz-panel-menu-icon-2nd-level-margin:0;
+                                                                       --rz-panel-menu-item-2nd-level-padding:0.5rem 0.5rem 0.5rem 0.5rem;
+                                                                      --rz-panel-menu-item-2nd-level-offset:0.7rem;">
+            <RadzenPanelMenuItem Text="Square" Icon="square" />
+            <RadzenPanelMenuItem Text="Circle" Icon="circle" />
+            <RadzenPanelMenuItem Text="Star" Icon="star" />
+            <RadzenPanelMenuItem Text="Heart" Icon="favorite" />
+        </RadzenPanelMenuItem>
+        <RadzenPanelMenuItem Text="QR code" Icon="qr_code_2" />
+    </RadzenPanelMenu>
+</RadzenSidebar>
+@code {
+    [CascadingParameter]
+    private Designer designer { get; set; }
+
+}
