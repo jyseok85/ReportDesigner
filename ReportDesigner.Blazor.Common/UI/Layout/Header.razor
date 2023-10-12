@@ -20,8 +20,8 @@
                 <RadzenButton Icon="redo" ButtonStyle="ButtonStyle.Primary" />
             </RadzenPanel>
             <RadzenPanel>
-                <RadzenButton Icon="zoom_in" ButtonStyle="ButtonStyle.Primary" />
-                <RadzenButton Icon="zoom_out" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Icon="zoom_in" ButtonStyle="ButtonStyle.Primary" Click=@(args=>OnButtonClicked("+"))/>
+                <RadzenButton Icon="zoom_out" ButtonStyle="ButtonStyle.Primary" Click=@(args=>OnButtonClicked("-")) />
             </RadzenPanel>
             <RadzenPanel>
                 <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" />
@@ -34,4 +34,17 @@
     [CascadingParameter]
     private Designer designer { get; set; }
 
+
+    void OnButtonClicked(string name)
+    {
+        switch(name)
+        {
+            case "+":
+                designer.Zoom = designer.Zoom + 10;
+                break;
+            case "-":
+                designer.Zoom = designer.Zoom - 10;
+                break;
+        }
+    }
 }

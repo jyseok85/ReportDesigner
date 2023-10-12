@@ -6,6 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="UI\RulerX.razor.css" />
+    <None Remove="UI\RulerY.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="UI\RulerY.razor.css" />
+    <Content Include="UI\RulerX.razor.css" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -20,7 +30,8 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Pages\" />
-    <Folder Include="UI\Controls\" />
+    <Folder Include="UI\Report Controls\Bands\" />
+    <Folder Include="UI\Report Controls\Controls\" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,26 @@
-﻿<RadzenLayout Style="grid-template-columns: auto 1fr auto; grid-template-areas: 'rz-header rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+﻿<RadzenLayout Style="
+grid-template-columns: auto 1fr auto; 
+grid-template-areas: 
+'rz-header rz-header rz-header' 
+'rz-sidebar rz-body rz-right-sidebar'
+'rz-footer rz-footer rz-footer'
+">
     <CascadingValue Value="this">
         <Header></Header>
         <LeftSideBar></LeftSideBar>
         <Body></Body>
         <RightSideBar></RightSideBar>
+        <RadzenFooter Style="background-color:gray"></RadzenFooter>
     </CascadingValue>
 </RadzenLayout>
 
+ <style>
+    .rz-right-sidebar {
+        grid-area: rz-right-sidebar !important;
+        position: static !important;
+        width:auto;
+    }
+</style>
 @code {
     public bool SidebarExpanded
     {
@@ -18,4 +32,20 @@
         }
     }
     bool sidebarExpanded = true;
+
+    public void SetZoom(int value)
+    {
+
+    }
+
+    int zoom = 100;
+    public int Zoom
+    {
+        get { return zoom; }
+        set
+        {
+            zoom = value;
+            StateHasChanged();
+        }
+    }
 }

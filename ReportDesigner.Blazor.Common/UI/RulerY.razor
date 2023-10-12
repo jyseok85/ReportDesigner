@@ -1,0 +1,24 @@
+﻿<ul class="ruler-y" style=@("height:" + Size + "px;")>
+    @for (int i = 0; i < Count; i++)
+    {
+        <li name="@(i + 1)"></li>
+    }    
+</ul>
+@code {
+    [Parameter]
+    public int Count { get; set; } = 31;
+
+    [Parameter]
+    public double Size { get; set; } = 1120;
+
+    
+    // //바꿀값
+    // --ruler-unit: 1mm;
+    // --ruler1-space: 1;
+    // --ruler2-space: 10;
+
+    // //px
+    // --ruler-unit: 1px;
+    // --ruler1-space: 5;
+    // --ruler2-space: 50;
+}

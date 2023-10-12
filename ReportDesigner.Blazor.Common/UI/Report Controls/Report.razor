@@ -1,0 +1,15 @@
+﻿<div class=@("report " + Class)>
+
+</div>
+
+<style>
+    .report {
+        background-color: ghostwhite;
+        border: solid lightgray 1px;
+        grid-area: report;
+    }
+</style>
+@code {
+    [Parameter]
+    public string Class { get; set; }
+}

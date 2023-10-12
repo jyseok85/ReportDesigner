@@ -1,0 +1,14 @@
+﻿<ul class="ruler-x" style=@("width:" + Size + "px;")>
+
+    @for (int i = 0; i < Count; i++)
+    {
+        <li name = "@(i + 1)"></li>
+    }
+</ul>
+@code{
+    [Parameter]
+    public int Count { get; set; } = 21;
+
+    [Parameter]
+    public double Size { get; set; } = 793.7;
+}

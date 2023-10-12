@@ -1,0 +1,55 @@
+﻿.ruler-y {
+    color: var(--ruler-num-c);
+    counter-reset: d -10;
+    display: flex;
+    font-size: var(--ruler-num-fz);
+    line-height: 0;
+    list-style: none;
+    margin: 0;
+    overflow: hidden;
+    padding: 1px;
+    position: fixed;
+    --ruler-num-c: #888;
+    --ruler-num-fz: 10px;
+    --ruler-num-pi: 0.5ch;
+    --ruler-unit: 1mm;
+    --ruler-x: 0; /* 표시여부 */
+    --ruler-y: 1;
+    --ruler1-bdw: 1px; /* 작은 눈금 두께 */
+    --ruler1-c: #BBB;
+    --ruler1-h: 8px;
+    --ruler1-space: 1;
+    --ruler2-bdw: 1px; /* 큰 눈금 두께 */
+    --ruler2-c: #BBB;
+    --ruler2-h: 25px;
+    --ruler2-space: 10;
+    background-attachment: fixed;
+    background-image: linear-gradient(0deg, var(--ruler1-c) 0 var(--ruler1-bdw), transparent 0), linear-gradient(0deg, var(--ruler2-c) 0 var(--ruler2-bdw), transparent 0);
+    background-position: 0 0;
+    background-repeat: repeat-y, repeat-y;
+    background-size: var(--ruler1-h) calc(var(--ruler-unit) * var(--ruler1-space) * var(--ruler-y)), var(--ruler2-h) calc(var(--ruler-unit) * var(--ruler2-space) * var(--ruler-y));
+    background-position-x: right;
+}
+
+.ruler-y {
+    width: var(--ruler2-h);
+    inset-inline-start: 0;
+    opacity: var(--ruler-y);
+    flex-direction: column;
+    border-top: solid 1px lightgray;
+}
+
+    .ruler-y li {
+        counter-increment: d var(--ruler2-space);
+        flex: 0 0 calc(var(--ruler-unit) * var(--ruler2-space));
+    }
+
+        .ruler-y li::after {
+            content: counter(d)"";
+            display: block;
+            padding-inline-end: var(--ruler-num-pi);
+            transform: rotate(-90deg) translateY(-13px);
+            transform-origin: 100% 0%;
+            text-align: end;
+            width: 100%;
+        }
