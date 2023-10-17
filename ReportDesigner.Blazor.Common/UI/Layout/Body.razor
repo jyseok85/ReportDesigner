@@ -1,97 +1,82 @@
 ﻿@page "/body"
+@using Microsoft.JSInterop;
+@inject DesignerOptionService Options
+@inject IJSRuntime JsRuntime
 
-<RadzenBody>
-    <div class="report-background" style=@("transform:scale(" + designer.Zoom * 0.01f + ")")>
-        <RulerX></RulerX>
-        <RulerY></RulerY>
-        <Report Class=" portriat A4" />
+<RadzenBody id="MainBody">
+    <div class="report-background"
+         style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
+        <RulerX Size="@Options.PaperSize.Width"></RulerX>
+        <RulerY Size="@Options.PaperSize.Height"></RulerY>
+        <Report Width="@Options.PaperSize.Width" Height="@Options.PaperSize.Height" />
     </div>
 </RadzenBody>
+<script>
+    window.getBodyWidth = function () {
+        return document.getElementById('MainBody').offsetWidth;
+    };
+</script>
 <style>
-
-
     .report-background{
         transform-origin:top;
         position:absolute;
         top:0%;
         left:50%;
         /* report-background 가로사이즈의 절반 = 용지사이즈 + 좌측눈금자의 반 */
-        margin: 16px 0 0 -410px; 
         transform: scale(1);
         padding:25px;
-    }
-    
-
-    .report.portriat.A3 {
-        width: 1129px;
-        height: 1596px;
-    }
-
-    .report.portriat.A4 {
-        width: 793.7008873954px;
-        height: 1120px;
-    }
-
-    .report.portriat.A5 {
-        width: 562px;
-        height: 798px;
-    }
-
-    .report.portriat.B4 {
-        width: 977px;
-        height: 1383px;
-    }
-
-    .report.portriat.B5 {
-        width: 692px;
-        height: 977px;
-    }
-
-    .report.portriat.Letter {
-        width: 821px;
-        height: 1060px;
-    }
-
-    .report.landscape.A3 {
-        height: 1129px;
-        width: 1596px;
-    }
-
-    .report.landscape.A4 {
-        width: 1128.6px;
-        height: 797px;
-    }
-
-    .report.landscape.A5 {
-        height: 562px;
-        width: 798px;
-    }
-
-    .report.landscape.B4 {
-        height: 977px;
-        width: 1383px;
-    }
-
-    .report.landscape.B5 {
-        height: 692px;
-        width: 977px;
-    }
-
+    }  
 </style>
-
 @code {
+
     [CascadingParameter]
     private Designer designer { get; set; }
 
-    public float reportWidth = 210;
-    public float reportHeight = 297;
+    private int leftOffset = 0;
 
-    enum PaperSize
+
+
+    protected override async Task OnInitializedAsync()
     {
-        
+        base.OnInitialized();
+        Options.PaperSizeChanged += this.PaperSizeChanged;
+
+        //todo 용지 사이즈를 초반에 셋팅해주는 부분이지만 이런코드를 넣는 위치를 바꿀 필요가 있다. 
+        PaperSizeChanged(Options.PaperSize.Width, 0);
     }
-    public void SetReport()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        
+        //자바스크립트에서 .Net을 호출하기 위한 객체 전달
+        var lDotNetReference = DotNetObjectReference.Create(this);
+        await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
+
+        //브라우저 사이즈시 콜백 추가
+        await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
+    }
+    [JSInvokable]
+    public void OnBrowserResize()
+    {
+        PaperSizeChanged(Options.PaperSize.Width);
+    }
+
+
+    private void PaperSizeChanged(object? sender, int delay = 0)
+    {
+        Task.Factory.StartNew(async () =>
+        {
+            await Task.Delay(delay);
+
+            int paperWidth = (int)sender;
+            int bodyWidth = await JsRuntime.InvokeAsync<int>("getBodyWidth");        
+            //todo 제대로된 계산할 필요가 있음.
+
+            if (bodyWidth  > paperWidth)
+                leftOffset = - (25 + paperWidth) / 2;
+            else
+                leftOffset = -(bodyWidth / 2) + 16;
+
+            await this.InvokeAsync(StateHasChanged);
+        });        
     }
 }

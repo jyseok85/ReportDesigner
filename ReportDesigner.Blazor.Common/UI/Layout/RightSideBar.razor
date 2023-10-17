@@ -1,5 +1,6 @@
-﻿<RadzenSidebar class="rz-right-sidebar" @bind-Expanded="@showSidePanel">
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:inherit;gap:0">
+﻿@inject DesignerOptionService Options
+<RadzenSidebar class="rz-right-sidebar" @bind-Expanded="@showSidePanel" Style="border-left:solid 1px lightgray;">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:inherit;gap:0;">
         <RadzenStack Orientation="Orientation.Vertical" Style="flex-direction:inherit !important; background-color:red; height:inherit;transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
             <RadzenStack Orientation="Orientation.Vertical" Style="transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
                 <RadzenPanelMenu Click="OnParentClicked" Style=@((this.showRightSidePanel ?"width:300px;":"width:0px;") +"transition: var(--rz-transition-all);") Multiple="@multiple">
@@ -45,6 +46,13 @@
                             </RadzenPanelMenuItem>
                         </RadzenPanelMenuItem>
                     }
+                    else if (this.currentRightPanel == RightPanelType.Settings)
+                    {
+                        <RadzenPanelMenuItem Text="Paper" Icon="description">
+                            <PaperSetting></PaperSetting>
+                        </RadzenPanelMenuItem>
+                    }
+
                 </RadzenPanelMenu>
             </RadzenStack>
         </RadzenStack>
@@ -53,6 +61,7 @@
                 <RadzenPanelMenuItem Text="Property" Icon="edit_attributes" Click="ShowRightPanel" />
                 <RadzenPanelMenuItem Text="FieldList" Icon="storage" Click="ShowRightPanel" />
                 <RadzenPanelMenuItem Text="ObjectBrowser" Icon="account_tree" Click="ShowRightPanel" />
+                <RadzenPanelMenuItem Text="Settings" Icon="settings" Click="ShowRightPanel" />
             </RadzenPanelMenu>
         </RadzenStack>
     </RadzenStack>
@@ -65,7 +74,8 @@
     {
         Property,
         FieldList,
-        ObjectBrowser
+        ObjectBrowser,
+        Settings
     }
     bool multiple = true;
 
@@ -73,43 +83,63 @@
     private bool showRightSidePanel = false;
     void ShowRightPanel(MenuItemEventArgs args)
     {
+        bool isFold = false;
         switch (args.Text.ToUpper())
         {
             case "PROPERTY":
                 if (currentRightPanel == RightPanelType.Property && showRightSidePanel == true)
                 {
-                    this.showRightSidePanel = false;
+                    isFold = false;
                 }
                 else
                 {
-                    this.showRightSidePanel = true;
+                    isFold = true;
                     this.currentRightPanel = RightPanelType.Property;
                 }
                 break;
             case "FIELDLIST":
                 if (currentRightPanel == RightPanelType.FieldList && showRightSidePanel == true)
                 {
-                    this.showRightSidePanel = false;
+                    isFold = false;
                 }
                 else
                 {
-                    this.showRightSidePanel = true;
+                    isFold = true;
                     this.currentRightPanel = RightPanelType.FieldList;
                 }
                 break;
             case "OBJECTBROWSER":
                 if (currentRightPanel == RightPanelType.ObjectBrowser && showRightSidePanel == true)
                 {
-                    this.showRightSidePanel = false;
+                    isFold = false;
                 }
                 else
                 {
-                    this.showRightSidePanel = true;
+                    isFold = true;
                     this.currentRightPanel = RightPanelType.ObjectBrowser;
                 }
                 break;
+            case "SETTINGS":
+                if (currentRightPanel == RightPanelType.Settings && showRightSidePanel == true)
+                {
+                    isFold = false;
+                }
+                else
+                {
+                    isFold = true;
+                    this.currentRightPanel = RightPanelType.Settings;
+                }
+                break;
         }
+
+        if (this.showRightSidePanel != isFold)
+        {
+            this.showRightSidePanel = isFold;
+            Options.FirePaperSizeChangedEvent(100);
+        }
+
         StateHasChanged();
+
     }
     void OnChildClicked(MenuItemEventArgs args)
     {

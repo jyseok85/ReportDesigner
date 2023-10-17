@@ -1,4 +1,4 @@
-﻿<div class=@("report " + Class)>
+﻿<div class=@("report " + Class) style=@("width:" + Width + "px;Height:" + Height + "px;")>
 
 </div>
 
@@ -12,4 +12,11 @@
 @code {
     [Parameter]
     public string Class { get; set; }
+
+    [Parameter]
+    public int Width { get; set; } = 798;
+
+    [Parameter]
+
+    public int Height { get; set; } = 1123;
 }
