@@ -1,0 +1,76 @@
+﻿@inherits ControlBase
+@inject SelectedControlService SelectService
+
+<div class="component"
+     tabindex="@Model.TabIndex"
+     @onpointerdown=OnPointerDown
+     @onpointerdown:stopPropagation="true"
+     @ondragstart="@((e) => OnDragStart(e))"
+     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border"))>
+     <CascadingValue Value="this">
+         <ModificationArea ></ModificationArea>
+     </CascadingValue>
+    @* <_05_ResizeArea Model=BaseControlModel.ResizeModel></_05_ResizeArea> *@
+</div>
+
+<style>
+    .component{
+        box-sizing: border-box;
+    }
+</style>
+@code {
+    public int Height => Model.Height;
+    public int Width => Model.Width;
+    public bool Selected => Model.Selected;
+    [Parameter]
+    public ControlBase Base
+    {
+        set
+        {
+            this.Model = value.Model;
+            // foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
+            // {
+            //     object? obj = propertyInfo.GetValue(value, null);
+            //     if (null != obj) propertyInfo.SetValue(this, obj, null);
+            // }
+        }
+
+    }
+    void OnPointerDown(PointerEventArgs e)
+    {
+        SelectService.OnPointerDown(e, this.Model);
+    }
+    void OnDragStart(DragEventArgs e)
+    {
+        // Console.WriteLine($"BaseControl - OnDragStart " + BaseControlModel.Uid);
+        // DragService.StartDrag(BaseControlModel.Uid, (int)e.ClientX, (int)e.ClientY);
+    }
+    public string GetStyle(string type)
+    {
+        switch (type.ToLower())
+        {
+            case "translate":
+                return "translate(" + this.Model.X + "px, " + this.Model.Y + "px);";
+            case "width":
+                return "width:" + (this.Model.Width) + "px;";
+            case "height":
+                return "height:" + (this.Model.Height) + "px;";
+            case "border":
+                if (this.Model.DrawBorder)
+                    return "border: 1px solid grey;";
+                else
+                    return "border: 1px solid transparent;";
+            // case "outline":
+            //     if (thisControl.Border)
+            //         return "outline: 1px solid lightgray;";
+            //     else
+            //         return string.Empty;
+            // case "box-shadow":
+            //     return MakeBoxShoadow(0.6f, "black");
+            default:
+                return string.Empty;
+        }
+    }
+
+  
+}

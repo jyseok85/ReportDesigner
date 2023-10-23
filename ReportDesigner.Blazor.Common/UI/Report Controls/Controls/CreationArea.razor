@@ -1,0 +1,42 @@
+﻿@inject DesignerOptionService Options
+
+<div class="creation-area"
+@onpointerup:preventDefault
+@onpointermove:preventDefault
+     style=@("width:" + GetWidth() + "px;height:" + GetHeight() + "px;" +
+     "transform:translate(" + CreationService.X + "px," + CreationService.Y + "px);" ) hidden=@CreationService.Hidden>
+</div>
+
+<style>
+    .creation-area{
+        position: fixed;
+        border: 1px dotted gray;
+    }
+</style>
+@code {
+    [CascadingParameter]
+    private BandBase Parent{ get; set; }
+
+    [Parameter]
+    public ControlCreationService CreationService { get; set; }
+
+
+    int bandBorderThickness = 1;
+    private int GetWidth()
+    {
+        //용지 사이즈에서 여백제거
+        int maxSize = Options.PaperSize.Width - Options.PaperMargin.Right - Options.PaperMargin.Left - CreationService.X - bandBorderThickness;
+        if (CreationService.Width > maxSize)
+            CreationService.Width = maxSize;
+        return CreationService.Width;
+    }
+
+    private int GetHeight()
+    {
+        int maxSize = Parent.Model.Height - CreationService.Y - bandBorderThickness;
+        if (CreationService.Height > maxSize)
+            CreationService.Height = maxSize;
+        
+        return CreationService.Height;
+    }
+}

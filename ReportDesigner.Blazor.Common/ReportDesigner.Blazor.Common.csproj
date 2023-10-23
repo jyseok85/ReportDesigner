@@ -28,10 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="Pages\" />
-    <Folder Include="UI\Report Controls\Bands\" />
-    <Folder Include="UI\Report Controls\Controls\" />
   </ItemGroup>
 
 </Project>

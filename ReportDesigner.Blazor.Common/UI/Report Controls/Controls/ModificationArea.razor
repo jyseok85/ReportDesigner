@@ -1,0 +1,112 @@
+﻿@inherits ControlBase
+
+
+<div class="resize-area"
+     style=@("width:" + (parent.Width) + "px;height:" + (parent.Height) + "px;" +
+     GetTransform() + "border:1px solid #337ab7") hidden=@(parent.Selected == true ? false : true )>
+
+
+    <div class="ui-resize-handle ui-resizable-w" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
+    <div class="ui-resize-handle ui-resizable-e" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"e")' />
+    <div class="ui-resize-handle ui-resizable-s" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"s")' />
+    <div class="ui-resize-handle ui-resizable-n" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"n")' />
+    <div class="ui-resize-handle ui-resizable-se" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"se")' />
+    <div class="ui-resize-handle ui-resizable-sw" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"sw")' />
+    <div class="ui-resize-handle ui-resizable-ne" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"ne")' />
+    <div class="ui-resize-handle ui-resizable-nw" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"nw")' />
+</div>
+<style>
+    .ui-resizable-w {
+        top: 50%;
+        margin-top: -3px;
+        left: -8px;
+        cursor: w-resize;
+    }
+
+    .ui-resizable-e {
+        top: 50%;
+        margin-top: -3px;
+        right: -8px;
+        cursor: e-resize;
+    }
+
+    .ui-resizable-s {
+        left: 50%;
+        margin-left: -3px;
+        bottom: -8px;
+        cursor: s-resize;
+    }
+
+    .ui-resizable-n {
+        left: 50%;
+        margin-left: -3px;
+        top: -8px;
+        cursor: n-resize;
+    }
+
+    .ui-resizable-se {
+        bottom: -8px;
+        right: -8px;
+        cursor: se-resize;
+    }
+
+    .ui-resizable-sw {
+        bottom: -8px;
+        left: -8px;
+        cursor: sw-resize;
+    }
+
+    .ui-resizable-ne {
+        top: -8px;
+        right: -8px;
+        cursor: ne-resize;
+    }
+
+    .ui-resizable-nw {
+        top: -8px;
+        left: -8px;
+        cursor: nw-resize;
+    }
+
+    .ui-resize-handle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        font-size: 1px;
+        border: 1px solid #333;
+        background-color: transparent;
+        visibility: inherit;
+    }
+</style>
+
+@code {
+    [CascadingParameter]
+    public Control parent { get; set; }
+    [Parameter]
+    public ControlBase Base
+    {
+        set
+        {
+            this.Model = value.Model;
+            // foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
+            // {
+            //     object? obj = propertyInfo.GetValue(value, null);
+            //     if (null != obj) propertyInfo.SetValue(this, obj, null);
+            // }
+        }
+
+
+    }
+
+    void OnResizePointerDown(PointerEventArgs e, string type)
+    {
+        Console.WriteLine($"ResizeArea - OnResizePointerDown : {type}");
+        //Model.ActionStart(e, type);
+    }
+
+    string GetTransform()
+    {
+        //부모컨트롤의 border에 따라서 위치를 변경시켜준다.
+        return "transform:translate(" + (Model.X- Model.Border.Left) + "px, " + (Model.Y - Model.Border.Top) + "px);";
+    }
+}

@@ -1,6 +1,8 @@
-﻿<RadzenSidebar Style="width:auto;overflow:hidden">
+﻿@inject ControlCreationService CreationService
+
+<RadzenSidebar Style="width:auto;overflow:hidden">
     <RadzenPanelMenu DisplayStyle="@(designer.SidebarExpanded?MenuItemDisplayStyle.IconAndText:MenuItemDisplayStyle.Icon)" ShowArrow=false>
-        <RadzenPanelMenuItem Text="Label" Icon="text_fields" />
+        <RadzenPanelMenuItem Text="Label" Icon="text_fields" Click=@(args=>OnButtonClicked("")) />
         <RadzenPanelMenuItem Text="Table" Icon="grid_on" />
         <RadzenPanelMenuItem Text="Picture Box" Icon="image" />
         @* 기본적으로 펼치기 버튼이 포함되어있는데 그걸 사용안함으로 할경우 사이즈가 틀어진다.. 제작자가 수정해야 할듯한데.. *@
@@ -19,4 +21,8 @@
     [CascadingParameter]
     private Designer designer { get; set; }
 
+    void OnButtonClicked(string name)
+    {
+        CreationService.State = ControlCreationService.ActionState.Create;
+    }
 }

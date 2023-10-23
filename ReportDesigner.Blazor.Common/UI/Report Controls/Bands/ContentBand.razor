@@ -1,0 +1,44 @@
+﻿@using System.Reflection;
+@inherits BandBase 
+@inject ControlCreationService CreationService
+
+<div class="content-band"
+@onpointerup=OnPointerUp
+@onpointerdown=OnPointerDown
+@onpointermove=OnPointerMove
+     ondrag="event.preventDefault()"
+     ondragover="event.preventDefault()" 
+     style=@("height:" + Model.Height + "px;" + (CreationService.State == ControlCreationService.ActionState.Create ? "cursor:crosshair;" : "") +
+     (Model.Selected == true ? "border: solid #0dcaf0 1px;" : "border: solid transparent 1px;"))>
+
+    <CascadingValue Value="this">
+        @foreach (ControlBase control in controlBases)
+        {
+            <Control Base="control"></Control>
+        }
+
+        <CreationArea CreationService=CreationService />
+    </CascadingValue>
+
+  </div>
+<style>
+    .content-band {
+        background-color: lightcyan;
+        border: solid #0dcaf0 1px;
+        /* grid-area: report; */
+    }
+    .band{
+
+    }    
+</style>
+@code {
+
+    [Parameter]
+    public BandBase Base
+    {
+        set {
+            this.Model = value.Model;
+        }
+    }
+    
+}

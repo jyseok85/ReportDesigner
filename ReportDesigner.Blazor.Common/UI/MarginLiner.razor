@@ -1,0 +1,47 @@
+﻿@inject DesignerOptionService Options
+<div class="margin-liner" style=@("position:absolute;width:" + Width+"px;height:" + Height + "px;pointer-events:none;")>
+    <div class="line-vertical" style=@(GetTransform("left"))></div>
+    <div class="line-horizontal" style=@(GetTransform("top"))></div>
+    <div class="line-vertical" style=@(GetTransform("right"))></div>
+    <div class="line-horizontal" style=@(GetTransform("bottom"))></div>
+</div>
+<style>
+
+    .line-vertical {
+        height: 100%;
+        width: 0px;
+        border-left: dashed 1px #8f8c8c;
+        position: absolute;
+    }
+
+    .line-horizontal {
+        width: 100%;
+        height: 0px;
+        border-top: dashed 1px #8f8c8c;
+        position: absolute;
+    }
+
+</style>
+@code {
+    [Parameter]
+    public int Height { get; set; } = 0;
+    [Parameter]
+    public int Width { get; set; } = 0;
+
+    public string GetTransform(string direction)
+    {
+        string rValue = string.Empty;
+        switch (direction)
+        {
+            case "left":
+                rValue = "transform:translate(" + (Options.PaperMargin.Left) + "px,0px);"; break;
+            case "top":
+                rValue = "transform:translate(0px," + (Options.PaperMargin.Top) + "px);"; break;
+            case "right":
+                rValue = "transform:translate(" + (Width - Options.PaperMargin.Right) + "px,0px);"; break;
+            case "bottom":
+                rValue = "transform:translate(0px," + (Height - Options.PaperMargin.Bottom) + "px); "; break;
+        }
+        return rValue;
+    }
+}

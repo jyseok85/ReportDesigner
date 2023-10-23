@@ -1,19 +1,22 @@
 ﻿@page "/body"
 @using Microsoft.JSInterop;
 @inject DesignerOptionService Options
+@inject ControlCreationService CreationService
 @inject IJSRuntime JsRuntime
 
-<RadzenBody id="MainBody">
+<RadzenBody id="mainbody"
+@onpointerup=OnPointerUp
+@onpointermove=OnPointerMove>
     <div class="report-background"
          style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
-        <RulerX Size="@Options.PaperSize.Width"></RulerX>
-        <RulerY Size="@Options.PaperSize.Height"></RulerY>
-        <Report Width="@Options.PaperSize.Width" Height="@Options.PaperSize.Height" />
+        <RulerX Size="@report.Model.Width"></RulerX>
+        <RulerY Size="@report.Model.Height"></RulerY>
+        <Report Base="@report" />
     </div>
 </RadzenBody>
 <script>
     window.getBodyWidth = function () {
-        return document.getElementById('MainBody').offsetWidth;
+        return document.getElementById('mainbody').offsetWidth;
     };
 </script>
 <style>
@@ -28,6 +31,8 @@
     }  
 </style>
 @code {
+    private ReportBase report = new ReportBase();
+
 
     [CascadingParameter]
     private Designer designer { get; set; }
@@ -35,8 +40,7 @@
     private int leftOffset = 0;
 
 
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         base.OnInitialized();
         Options.PaperSizeChanged += this.PaperSizeChanged;
@@ -65,18 +69,85 @@
     {
         Task.Factory.StartNew(async () =>
         {
-            await Task.Delay(delay);
+            if(sender is not null)
+            {
+                await Task.Delay(delay);
 
-            int paperWidth = (int)sender;
-            int bodyWidth = await JsRuntime.InvokeAsync<int>("getBodyWidth");        
-            //todo 제대로된 계산할 필요가 있음.
 
-            if (bodyWidth  > paperWidth)
-                leftOffset = - (25 + paperWidth) / 2;
+                int paperWidth = (int)sender;
+                int bodyWidth = await JsRuntime.InvokeAsync<int>("getBodyWidth");        
+                //todo 제대로된 계산할 필요가 있음.
+
+                if (bodyWidth  > paperWidth)
+                    leftOffset = - (25 + paperWidth) / 2;
+                else
+                    leftOffset = -(bodyWidth / 2) + 16;
+
+                await ResizedControl();
+            }
             else
-                leftOffset = -(bodyWidth / 2) + 16;
-
-            await this.InvokeAsync(StateHasChanged);
+            {
+                Console.WriteLine("[PaperSizeChanged] - Sender is Null");
+            }
         });        
+    }
+
+    private async Task ResizedControl()
+    {
+        report.Model.Width = Options.PaperSize.Width;
+        report.Model.Height = Options.PaperSize.Height;
+        report.Model.Margin = Options.PaperMargin;
+        await this.InvokeAsync(StateHasChanged);
+    }
+
+    public void AddReport()
+    {
+
+    }
+    public void OnPointerMove(PointerEventArgs e)
+    {
+        CreationService.ActionMove(e);
+    }
+    // public void OnPointerDown(PointerEventArgs e)
+    // {
+    //     //현재 리포트의 모든 선택된 항목을 해제한다.
+
+    //     //현재 마우스 위치의 밴드를 가져온다.
+
+    //     //자식 컴포넌트가 선택되지 않았다면 선택된 모든 컴포넌트를 해제해준다.
+    //     //DeselectAllControls();
+
+    //     //2. 생성 모드일 경우(임시로 항상 생성모드로 한다.)
+
+    //     CreationService.ActionStart(e);
+    //     //text1 = $"Start Point : {(int)e.OffsetX} {(int)e.OffsetY}";
+    //     //text2 = text3 = "";
+    // }
+    public void OnPointerUp(PointerEventArgs e)
+    {
+
+        // var control = controlBases.Find(x => x.Selected == true);
+        if (CreationService.State == ControlCreationService.ActionState.Create)
+        {
+            //드래그는 우측 하단으로만 진행하도록 한다.
+            CreationService.ActionEnd();
+        }
+        // //else if (State == ActionState.Resize)
+        // //{
+
+        // //    if (control != null)
+        // //    {
+        // //        //control.ApplyResize();
+        // //    }
+        // //}
+
+        // if (control is not null)
+        // {
+        //     SortControls();
+        //     //control.IsDragAble = false;
+        // }
+
+        CreationService.State = ControlCreationService.ActionState.None;
+        Console.WriteLine("Band - OnPointerUp");
     }
 }

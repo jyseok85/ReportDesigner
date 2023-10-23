@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using System.Drawing;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
     public class DesignerOptionService
     {
-        public Margin PaperMargin { get; set; } = new Margin();
+        public Margin PaperMargin { get; set; } = new Margin(38,38,38,38);
 
         public bool IsLandscape { get; set; } = false;
 
@@ -26,12 +27,6 @@ namespace ReportDesigner.Blazor.Common.Services
 
     }
 
-    public class Margin
-    {
-        public int Left { get; set; } = 10;
-        public int Top { get; set; } = 10;
-        public int Right { get; set; } = 10;
-        public int Bottom { get; set; } = 10;
-    }
+    
 
 }

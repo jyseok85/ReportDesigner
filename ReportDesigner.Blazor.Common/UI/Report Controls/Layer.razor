@@ -1,5 +1,45 @@
-﻿<h3>Layer</h3>
-
+﻿
+<div class="layer" style=@(Padding)>
+    @for(int i = 0; i < bands.Count; i++)
+    {
+        BandBase band = bands[i];
+        if (band.Model.Type == Data.Model.BandModel.Band.Content)
+        {
+            <ContentBand Base=band></ContentBand>
+        }
+    }
+</div>
 @code {
+    private LayerBase thisComponent = new LayerBase();
+    [Parameter]
+    public LayerBase Base
+    {
+        set
+        {
+            thisComponent = value;
+            // this = value;
+            // foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
+            // {
+            //     object? obj = propertyInfo.GetValue(value, null);
+            //     if (null != obj) propertyInfo.SetValue(this, obj, null);
+            // }
+        }
+    }
 
+    [Parameter]
+    public string Padding { get; set; }
+
+    List<BandBase> bands = new List<BandBase>();
+    protected override void OnInitialized()
+    {
+        var defaultBand = new BandBase();
+        defaultBand.Model.Height = 300;
+        defaultBand.Model.Type = Data.Model.BandModel.Band.Content;
+        bands.Add(defaultBand);
+    }
+
+    public void AddBand()
+    {
+        
+    }
 }

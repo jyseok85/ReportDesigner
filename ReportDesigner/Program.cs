@@ -8,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DesignerOptionService>();
+builder.Services.AddScoped<ControlCreationService>();
+builder.Services.AddScoped<SelectedControlService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
