@@ -1,8 +1,10 @@
 ﻿@inherits ControlBase
 @inject SelectedControlService SelectService
+@inject DragAndDropService DragService
 
 <div class="component"
      tabindex="@Model.TabIndex"
+     draggable="@isDragAble.ToString()"
      @onpointerdown=OnPointerDown
      @onpointerdown:stopPropagation="true"
      @ondragstart="@((e) => OnDragStart(e))"
@@ -22,6 +24,9 @@
     public int Height => Model.Height;
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
+
+    private bool isDragAble = false;
+    public bool IsDragAble { get { return this.isDragAble; } set { this.isDragAble = value; } }
     [Parameter]
     public ControlBase Base
     {
@@ -39,11 +44,12 @@
     void OnPointerDown(PointerEventArgs e)
     {
         SelectService.OnPointerDown(e, this.Model);
+        isDragAble = true;
     }
     void OnDragStart(DragEventArgs e)
     {
-        // Console.WriteLine($"BaseControl - OnDragStart " + BaseControlModel.Uid);
-        // DragService.StartDrag(BaseControlModel.Uid, (int)e.ClientX, (int)e.ClientY);
+        //드래그 중 로직의 경우 브라우저에서 처리되므로 OnDrop 부분만 구현한다. 
+        DragService.StartDrag(Model.Uid, (int)e.ClientX, (int)e.ClientY);
     }
     public string GetStyle(string type)
     {
@@ -60,17 +66,10 @@
                     return "border: 1px solid grey;";
                 else
                     return "border: 1px solid transparent;";
-            // case "outline":
-            //     if (thisControl.Border)
-            //         return "outline: 1px solid lightgray;";
-            //     else
-            //         return string.Empty;
-            // case "box-shadow":
-            //     return MakeBoxShoadow(0.6f, "black");
             default:
                 return string.Empty;
         }
     }
-
+   
   
 }

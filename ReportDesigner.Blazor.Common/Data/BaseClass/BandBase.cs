@@ -15,6 +15,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         [Inject]
         SelectedControlService Selectedservice { get; set; }
 
+        [Inject]
+        DragAndDropService DragService { get; set; }
+
+        [Inject]
+        DesignerOptionService Options { get; set; }
+
         //public enum ActionState
         //{
         //    Create,
@@ -86,6 +92,40 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
              CreationService.ActionMove(e);
         }
 
+        public void OnDrop(DragEventArgs e)
+        {
+
+            int mouseMoveDictanceX = (int)e.ClientX - DragService.PosX;
+            int mouseMoveDictanceY = (int)e.ClientY - DragService.PosY;
+
+            ControlBase control = controlBases.Find(x => x.Model.Uid == DragService.Uid);
+            Console.WriteLine("Band - OnDrop" + DragService.Uid);
+
+            if (control is not null)
+            {
+                int targetX = control.Model.X + mouseMoveDictanceX;
+                int targetY = control.Model.Y + mouseMoveDictanceY;
+                if(targetX < 0)
+                { targetX = 0; }
+                if(targetY < 0)
+                { targetY = 0; }
+
+                //컨트롤이 밴드의 우측을 벗어난경우(페이퍼용지 사이즈에서 좌우 여백을 뺀다)
+                int bandWidth = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
+                int bandHeight = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
+
+                if (targetX + control.Model.Width > bandWidth) 
+                { targetX = bandWidth - control.Model.Width; }
+
+                if(targetY + control.Model.Height > Model.Bottom)
+                {
+                    targetY = Model.Height - control.Model.Height;
+                }
+
+                control.Model.X = targetX;
+                control.Model.Y = targetY;
+            }
+        }
         //private bool CreateControl(PointerEventArgs e) //int x, int y, int width, int height)
         //{
         //    int x = CreationService.X;

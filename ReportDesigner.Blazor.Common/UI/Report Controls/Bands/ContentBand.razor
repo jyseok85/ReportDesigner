@@ -1,11 +1,15 @@
 ﻿@using System.Reflection;
 @inherits BandBase 
 @inject ControlCreationService CreationService
+@inject DragAndDropService DragService
+@inject DesignerOptionService Options
+
 
 <div class="content-band"
 @onpointerup=OnPointerUp
 @onpointerdown=OnPointerDown
 @onpointermove=OnPointerMove
+@ondrop="e=>OnDrop(e)"
      ondrag="event.preventDefault()"
      ondragover="event.preventDefault()" 
      style=@("height:" + Model.Height + "px;" + (CreationService.State == ControlCreationService.ActionState.Create ? "cursor:crosshair;" : "") +

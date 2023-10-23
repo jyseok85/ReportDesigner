@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
-    internal class DragAndDropService
+    public class DragAndDropService
     {
         public string Uid { get; set; } = string.Empty;
         public int PosX { get; set; }

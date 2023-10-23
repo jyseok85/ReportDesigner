@@ -1,4 +1,5 @@
-﻿using ReportDesigner.Blazor.Common.Data.EtcComponents;
+﻿using Microsoft.AspNetCore.Components.Web.Virtualization;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +14,10 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public string Name { get; set; } = string.Empty;
         public int Height { get; set; } = 0;
         public int Width { get; set; } = 0;
-        public int X { get; set; } = 0;
-        public int Y { get; set; } = 0;
-        public int Right { get { return X + Width; } set { } }
-        public int Bottom { get { return Y + Height; } set { } }
+        public virtual int X { get; set; } = 0;
+        public virtual int Y { get; set; } = 0;
+        public virtual int Right { get { return X + Width; } set { } }
+        public virtual int Bottom { get { return Y + Height; } set { } }
         public bool DrawBorder { get; set; } = true;
         private bool selected = false;
         public bool Selected

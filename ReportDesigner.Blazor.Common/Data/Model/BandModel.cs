@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Components;
+using ReportDesigner.Blazor.Common.Services;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;

@@ -10,6 +10,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DesignerOptionService>();
 builder.Services.AddScoped<ControlCreationService>();
 builder.Services.AddScoped<SelectedControlService>();
+builder.Services.AddScoped<DragAndDropService>();
 
 var app = builder.Build();
 
