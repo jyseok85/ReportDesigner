@@ -1,6 +1,7 @@
 ﻿@inherits ControlBase
 @inject SelectedControlService SelectService
 @inject DragAndDropService DragService
+@inject DesignerOptionService Options
 
 <div class="component"
      tabindex="@Model.TabIndex"
@@ -10,7 +11,7 @@
      @ondragstart="@((e) => OnDragStart(e))"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border"))>
      <CascadingValue Value="this">
-         <ModificationArea ></ModificationArea>
+        <ModificationArea @ref =modificationArea></ModificationArea>
      </CascadingValue>
     @* <_05_ResizeArea Model=BaseControlModel.ResizeModel></_05_ResizeArea> *@
 </div>
@@ -27,24 +28,30 @@
 
     private bool isDragAble = false;
     public bool IsDragAble { get { return this.isDragAble; } set { this.isDragAble = value; } }
+    ModificationArea modificationArea;
     [Parameter]
     public ControlBase Base
     {
         set
         {
             this.Model = value.Model;
-            // foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
-            // {
-            //     object? obj = propertyInfo.GetValue(value, null);
-            //     if (null != obj) propertyInfo.SetValue(this, obj, null);
-            // }
         }
-
     }
+
     void OnPointerDown(PointerEventArgs e)
     {
-        SelectService.OnPointerDown(e, this.Model);
-        isDragAble = true;
+        Console.WriteLine("Control.razor - OnPointerDown");
+
+        if (Options.State == DesignerOptionService.ActionState.Resize)
+        {
+            isDragAble = false;
+        }
+        else
+        {
+            SelectService.OnPointerDown(e, this.Model);
+            modificationArea.UpdateElementSize();
+            isDragAble = true;
+        }
     }
     void OnDragStart(DragEventArgs e)
     {

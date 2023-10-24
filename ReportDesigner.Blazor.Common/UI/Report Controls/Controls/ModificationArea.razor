@@ -1,19 +1,20 @@
-﻿@inherits ControlBase
+﻿@inject DesignerOptionService Options
+@inject ControlModificationServcie ModificationService
 
-
+@* stopPropagation: 상위 Element로 이벤트전달을 막는다. *@
 <div class="resize-area"
-     style=@("width:" + (parent.Width) + "px;height:" + (parent.Height) + "px;" +
+     style=@("width:" + (ModificationService.Width) + "px;height:" + (ModificationService.Height) + "px;" +
      GetTransform() + "border:1px solid #337ab7") hidden=@(parent.Selected == true ? false : true )>
 
 
-    <div class="ui-resize-handle ui-resizable-w" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
-    <div class="ui-resize-handle ui-resizable-e" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"e")' />
-    <div class="ui-resize-handle ui-resizable-s" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"s")' />
-    <div class="ui-resize-handle ui-resizable-n" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"n")' />
-    <div class="ui-resize-handle ui-resizable-se" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"se")' />
-    <div class="ui-resize-handle ui-resizable-sw" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"sw")' />
-    <div class="ui-resize-handle ui-resizable-ne" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"ne")' />
-    <div class="ui-resize-handle ui-resizable-nw" style="z-index:95;display:block;" @onpointerdown='e=>OnResizePointerDown(e,"nw")' />
+    <div class="ui-resize-handle ui-resizable-w" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
+    <div class="ui-resize-handle ui-resizable-e" @onpointerdown='e=>OnResizePointerDown(e,"e")' />
+    <div class="ui-resize-handle ui-resizable-s" @onpointerdown='e=>OnResizePointerDown(e,"s")' />
+    <div class="ui-resize-handle ui-resizable-n" @onpointerdown='e=>OnResizePointerDown(e,"n")' />
+    <div class="ui-resize-handle ui-resizable-se" @onpointerdown='e=>OnResizePointerDown(e,"se")' />
+    <div class="ui-resize-handle ui-resizable-sw" @onpointerdown='e=>OnResizePointerDown(e,"sw")' />
+    <div class="ui-resize-handle ui-resizable-ne" @onpointerdown='e=>OnResizePointerDown(e,"ne")' />
+    <div class="ui-resize-handle ui-resizable-nw" @onpointerdown='e=>OnResizePointerDown(e,"nw")' />
 </div>
 <style>
     .ui-resizable-w {
@@ -76,37 +77,33 @@
         border: 1px solid #333;
         background-color: transparent;
         visibility: inherit;
+        z-index:95;
+        display:block;
     }
 </style>
 
 @code {
     [CascadingParameter]
     public Control parent { get; set; }
-    [Parameter]
-    public ControlBase Base
-    {
-        set
-        {
-            this.Model = value.Model;
-            // foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
-            // {
-            //     object? obj = propertyInfo.GetValue(value, null);
-            //     if (null != obj) propertyInfo.SetValue(this, obj, null);
-            // }
-        }
 
-
-    }
 
     void OnResizePointerDown(PointerEventArgs e, string type)
     {
-        Console.WriteLine($"ResizeArea - OnResizePointerDown : {type}");
-        //Model.ActionStart(e, type);
+        Console.WriteLine($"ModificationArea - OnResizePointerDown : {type}");
+        ModificationService.ActionStart(e, type, parent.Model.Uid);
+        Options.State = DesignerOptionService.ActionState.Resize;
     }
 
     string GetTransform()
     {
         //부모컨트롤의 border에 따라서 위치를 변경시켜준다.
-        return "transform:translate(" + (Model.X- Model.Border.Left) + "px, " + (Model.Y - Model.Border.Top) + "px);";
+        return "transform:translate(" + (ModificationService.X - parent.Model.Border.Left) + "px, " + (ModificationService.Y- parent.Model.Border.Top) + "px);";
+    }
+
+    public void UpdateElementSize()
+    {
+        ModificationService.Width = parent.Model.Width;
+        ModificationService.Height = parent.Model.Height;
+        StateHasChanged();
     }
 }

@@ -2,6 +2,8 @@
 @using Microsoft.JSInterop;
 @inject DesignerOptionService Options
 @inject ControlCreationService CreationService
+@inject SelectedControlService SelectedControlService
+@inject ControlModificationServcie ModificationService
 @inject IJSRuntime JsRuntime
 
 <RadzenBody id="mainbody"
@@ -125,21 +127,20 @@
     // }
     public void OnPointerUp(PointerEventArgs e)
     {
-
         // var control = controlBases.Find(x => x.Selected == true);
-        if (CreationService.State == ControlCreationService.ActionState.Create)
+        if (Options.State == DesignerOptionService.ActionState.Create)
         {
             //드래그는 우측 하단으로만 진행하도록 한다.
             CreationService.ActionEnd();
         }
-        // //else if (State == ActionState.Resize)
-        // //{
-
-        // //    if (control != null)
-        // //    {
-        // //        //control.ApplyResize();
-        // //    }
-        // //}
+        else if (Options.State == DesignerOptionService.ActionState.Resize)
+        {            
+            if (ModificationService.IsChanged)
+            {
+                SelectedControlService.ApplyResize(ModificationService.X, ModificationService.Y, ModificationService.Width, ModificationService.Height);
+                ModificationService.ActionEnd();
+            }
+        }
 
         // if (control is not null)
         // {
@@ -147,7 +148,7 @@
         //     //control.IsDragAble = false;
         // }
 
-        CreationService.State = ControlCreationService.ActionState.None;
+        Options.State = DesignerOptionService.ActionState.None;
         Console.WriteLine("Band - OnPointerUp");
     }
 }

@@ -25,8 +25,16 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public event EventHandler<int>? PaperSizeChanged;
 
+        public enum ActionState
+        {
+            Create,
+            Resize,
+            None
+        }
+        public ActionState State { get; set; } = ActionState.None;
+
     }
 
-    
+
 
 }

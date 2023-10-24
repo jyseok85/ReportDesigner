@@ -1,4 +1,4 @@
-﻿@inject ControlCreationService CreationService
+﻿@inject DesignerOptionService Options
 
 <RadzenSidebar Style="width:auto;overflow:hidden">
     <RadzenPanelMenu DisplayStyle="@(designer.SidebarExpanded?MenuItemDisplayStyle.IconAndText:MenuItemDisplayStyle.Icon)" ShowArrow=false>
@@ -23,6 +23,6 @@
 
     void OnButtonClicked(string name)
     {
-        CreationService.State = ControlCreationService.ActionState.Create;
+        Options.State = DesignerOptionService.ActionState.Create;
     }
 }

@@ -26,18 +26,11 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public int ClientX { get; set; }
         public int ClientY { get; set; }
-        public ActionState State { get; set; } = ActionState.None;
 
         public BandBase? CurrentBand { get; set; }
-        public enum ActionState
-        {
-            Create,
-            Resize,
-            None
-        }
+       
         public void ActionStart(PointerEventArgs e)
         {
-            State = ActionState.Create;
             ActionStart(e.OffsetX, e.OffsetY, e.ClientX, e.ClientY);
         }
 
@@ -57,8 +50,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public void ActionMove(PointerEventArgs e)
         {
-            if(State == ActionState.Create)
-                ActionMove(e.ClientX, e.ClientY);
+            ActionMove(e.ClientX, e.ClientY);
         }
         public void ActionMove(double clientX, double clinetY)
         {
@@ -78,16 +70,11 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void ActionEnd()
         {
-            if(State == ActionState.Create)
-            {
-                CreateControl();
-                Width = 0;
-                Height = 0;
-                Hidden = true;
-                CurrentBand = null;
-                State = ActionState.None;
-            }
-           
+            CreateControl();
+            Width = 0;
+            Height = 0;
+            Hidden = true;
+            CurrentBand = null;           
         }
 
         public void CreateControl()

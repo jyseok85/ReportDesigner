@@ -13,6 +13,8 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         ControlCreationService CreationService { get; set; }
 
         [Inject]
+        ControlModificationServcie ModificationServcie { get; set; }
+        [Inject]
         SelectedControlService Selectedservice { get; set; }
 
         [Inject]
@@ -21,12 +23,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         [Inject]
         DesignerOptionService Options { get; set; }
 
-        //public enum ActionState
-        //{
-        //    Create,
-        //    Resize,
-        //    None
-        //}
+       
         //public ActionState State { get; set; } = ActionState.None;
 
         public List<ControlBase> controlBases = new List<ControlBase>();
@@ -36,6 +33,9 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         //public CreationModel creationModel = new CreationModel();
         public void OnPointerUp(PointerEventArgs e)
         {
+            //포인트 업은 바디에서 사용.
+            //포인트 다운은 밴드 내에서 시작.
+
             return;
             //if (CreationService.State == ControlCreationService.ActionState.Create)
             //{
@@ -69,27 +69,31 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public void OnPointerDown(PointerEventArgs e)
         {
+            
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
-            if (CreationService.State == ControlCreationService.ActionState.Create)
+            if (Options.State == DesignerOptionService.ActionState.Create)
             {
                 CreationService.CurrentBand = this;
                 //자식 컴포넌트가 선택되지 않았다면 선택된 모든 컴포넌트를 해제해준다.
                 DeselectAllControls();
 
                 //2. 생성 모드일 경우(임시로 항상 생성모드로 한다.)
-
                 CreationService.ActionStart(e);
             }
             else
                 Selectedservice.OnPointerDown(e, this.Model);
 
-            //text1 = $"Start Point : {(int)e.OffsetX} {(int)e.OffsetY}";
-            //text2 = text3 = "";
         }
 
         public void OnPointerMove(PointerEventArgs e)
         {
-             CreationService.ActionMove(e);
+            if (Options.State == DesignerOptionService.ActionState.Create)
+                CreationService.ActionMove(e);
+            else if (Options.State == DesignerOptionService.ActionState.Resize)
+            {
+                ModificationServcie.ActionMove(e);
+                StateHasChanged();
+            }
         }
 
         public void OnDrop(DragEventArgs e)

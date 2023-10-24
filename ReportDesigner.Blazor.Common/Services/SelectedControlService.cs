@@ -33,7 +33,8 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
-        public List<ReportComponentModel> models = new List<ReportComponentModel>();
+        private List<ReportComponentModel> models = new List<ReportComponentModel>();
+        public List<ReportComponentModel> Models => models;
         public void OnPointerDown(PointerEventArgs e, ReportComponentModel model)
         {
             if(e.CtrlKey == false)
@@ -43,6 +44,27 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             models.Add(model);
             model.Selected = true;
+        }
+
+        public ReportComponentModel LastSelectModel => models[models.Count - 1];
+
+        public void ApplyResize(int x, int y, int width, int height)
+        {
+            LastSelectModel.X += x;
+            LastSelectModel.Y += y;
+
+            if (LastSelectModel.X < 0)
+            {
+                width += LastSelectModel.X;
+                LastSelectModel.X = 0;
+            }
+            if (LastSelectModel.Y < 0)
+            {
+                height += LastSelectModel.Y;
+                LastSelectModel.Y = 0;
+            }
+            LastSelectModel.Width = width;
+            LastSelectModel.Height = height;
         }
     }
 }

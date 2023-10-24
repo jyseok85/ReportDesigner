@@ -9,6 +9,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DesignerOptionService>();
 builder.Services.AddScoped<ControlCreationService>();
+builder.Services.AddScoped<ControlModificationServcie>();
 builder.Services.AddScoped<SelectedControlService>();
 builder.Services.AddScoped<DragAndDropService>();
 

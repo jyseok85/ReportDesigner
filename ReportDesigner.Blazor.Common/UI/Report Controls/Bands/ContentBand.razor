@@ -12,7 +12,7 @@
 @ondrop="e=>OnDrop(e)"
      ondrag="event.preventDefault()"
      ondragover="event.preventDefault()" 
-     style=@("height:" + Model.Height + "px;" + (CreationService.State == ControlCreationService.ActionState.Create ? "cursor:crosshair;" : "") +
+     style=@("height:" + Model.Height + "px;" + (Options.State == DesignerOptionService.ActionState.Create ? "cursor:crosshair;" : "") +
      (Model.Selected == true ? "border: solid #0dcaf0 1px;" : "border: solid transparent 1px;"))>
 
     <CascadingValue Value="this">
