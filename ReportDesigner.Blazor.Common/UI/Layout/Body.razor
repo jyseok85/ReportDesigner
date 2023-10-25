@@ -33,7 +33,7 @@
     }  
 </style>
 @code {
-    private ReportBase report = new ReportBase();
+    private ReportBase report = null;
 
 
     [CascadingParameter]
@@ -46,7 +46,7 @@
     {
         base.OnInitialized();
         Options.PaperSizeChanged += this.PaperSizeChanged;
-
+        AddReport();
         //todo 용지 사이즈를 초반에 셋팅해주는 부분이지만 이런코드를 넣는 위치를 바꿀 필요가 있다. 
         PaperSizeChanged(Options.PaperSize.Width, 0);
     }
@@ -96,19 +96,25 @@
 
     private async Task ResizedControl()
     {
-        report.Model.Width = Options.PaperSize.Width;
-        report.Model.Height = Options.PaperSize.Height;
-        report.Model.Margin = Options.PaperMargin;
+
+        Options.UpdateAllControlOffset();
         await this.InvokeAsync(StateHasChanged);
     }
 
     public void AddReport()
     {
-
+        report = new ReportBase();
+        Options.AddControl(report.Model.Uid, report.Model);
     }
     public void OnPointerMove(PointerEventArgs e)
     {
-        CreationService.ActionMove(e);
+        if (Options.State == DesignerOptionService.ActionState.Create)
+            CreationService.ActionMove(e);
+        else if (Options.State == DesignerOptionService.ActionState.Resize)
+        {
+            ModificationService.ActionMove(e);
+            StateHasChanged();
+        }
     }
     // public void OnPointerDown(PointerEventArgs e)
     // {
@@ -137,9 +143,27 @@
         {            
             if (ModificationService.IsChanged)
             {
-                SelectedControlService.ApplyResize(ModificationService.X, ModificationService.Y, ModificationService.Width, ModificationService.Height);
-                ModificationService.ActionEnd();
+                if (ModificationService.Id == SelectedControlService.LastSelectModel.Uid)
+                {
+                    string uid = SelectedControlService.LastSelectModel.ParentUid;
+                    var bandModel = Options.ControlDictionary[uid];
+
+                    SelectedControlService.ApplyResize(ModificationService.X, ModificationService.Y, ModificationService.Width, ModificationService.Height, bandModel);
+
+                    //선택된 컨트롤이 부모밴드보다 커질경우 부모밴드 또한 늘려준다.
+
+                    ModificationService.X = SelectedControlService.LastSelectModel.X;
+                    ModificationService.Y = SelectedControlService.LastSelectModel.Y;
+                    ModificationService.Width = SelectedControlService.LastSelectModel.Width;
+                    ModificationService.Height = SelectedControlService.LastSelectModel.Height;
+
+                    if (SelectedControlService.LastSelectModel.Bottom > bandModel.Height)
+                        bandModel.Height = SelectedControlService.LastSelectModel.Bottom;
+
+                    StateHasChanged();
+                }
             }
+            ModificationService.ActionEnd();
         }
 
         // if (control is not null)

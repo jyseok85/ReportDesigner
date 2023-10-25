@@ -1,9 +1,10 @@
-﻿
+﻿@inject DesignerOptionService Options
+
 <div class="layer" style=@(Padding)>
     @for(int i = 0; i < bands.Count; i++)
     {
         BandBase band = bands[i];
-        if (band.Model.Type == Data.Model.BandModel.Band.Content)
+        if (band.Model.BandType == Data.Model.BandModel.Band.Content)
         {
             <ContentBand Base=band></ContentBand>
         }
@@ -32,10 +33,10 @@
     List<BandBase> bands = new List<BandBase>();
     protected override void OnInitialized()
     {
-        var defaultBand = new BandBase();
-        defaultBand.Model.Height = 300;
-        defaultBand.Model.Type = Data.Model.BandModel.Band.Content;
-        bands.Add(defaultBand);
+        var band = new BandBase();
+        band.Model.Height = 300;        
+        Options.AddControl(band.Model.Uid, band.Model);
+        bands.Add(band);
     }
 
     public void AddBand()

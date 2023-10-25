@@ -23,6 +23,6 @@ namespace ReportDesigner.Blazor.Common.Data.Model
             PageFooter,
             ReportFooter
         }
-        public Band Type { get; set; } = Band.Content;
+        public Band BandType { get; set; } = Band.Content;
     }
 }

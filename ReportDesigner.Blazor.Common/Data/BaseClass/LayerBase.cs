@@ -11,6 +11,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public LayerBase()
         {
+            this.Model.Type = ReportComponentModel.Control.Layer;
 
         }
     }

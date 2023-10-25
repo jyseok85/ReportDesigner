@@ -44,13 +44,17 @@
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
+            Console.WriteLine("isDragAble - false");
             isDragAble = false;
+            StateHasChanged();
         }
         else
         {
+            isDragAble = true;
+            StateHasChanged();
             SelectService.OnPointerDown(e, this.Model);
             modificationArea.UpdateElementSize();
-            isDragAble = true;
+            Console.WriteLine("isDragAble = true;");
         }
     }
     void OnDragStart(DragEventArgs e)

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
-    public class SelectedControlService : ControlBase
+    public class SelectedControlService
     {
         enum Type
         { 
@@ -19,19 +19,7 @@ namespace ReportDesigner.Blazor.Common.Services
             band,
             control
         }
-
-        public ControlBase Base
-        {
-            set
-            {
-                foreach (PropertyInfo propertyInfo in value.GetType().GetProperties())
-                {
-                    object? obj = propertyInfo.GetValue(value, null);
-                    if (null != obj) propertyInfo.SetValue(this, obj, null);
-                }
-            }
-
-        }
+     
 
         private List<ReportComponentModel> models = new List<ReportComponentModel>();
         public List<ReportComponentModel> Models => models;
@@ -48,7 +36,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public ReportComponentModel LastSelectModel => models[models.Count - 1];
 
-        public void ApplyResize(int x, int y, int width, int height)
+        public void ApplyResize(int x, int y, int width, int height, ReportComponentModel parent)
         {
             LastSelectModel.X += x;
             LastSelectModel.Y += y;
@@ -63,8 +51,20 @@ namespace ReportDesigner.Blazor.Common.Services
                 height += LastSelectModel.Y;
                 LastSelectModel.Y = 0;
             }
+
+            //todo AbsoluteOffsetX 이게 잘못들어가있네?? 340은 넘어야 하는데. 100대임. 
+            if (width + LastSelectModel.AbsoluteOffsetX > parent.Right + parent.AbsoluteOffsetX)
+            {
+                int diff = (width + LastSelectModel.AbsoluteOffsetX) - (parent.Right + parent.AbsoluteOffsetX);
+                width -= diff;
+            }
+
+            string msg = $"X:{LastSelectModel.X}, Width:{width}";
+            Console.WriteLine(msg);
             LastSelectModel.Width = width;
             LastSelectModel.Height = height;
+
         }
+
     }
 }

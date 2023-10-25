@@ -138,6 +138,8 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
+        
+
         public void ActionEnd()
         {
             grapedResizeControl = false;

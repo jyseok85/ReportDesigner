@@ -6,6 +6,9 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
     public class ReportBase : ComponentBase
     {
         public ReportModel Model { get; set; } = new ReportModel();
+        public ReportBase() {
+            this.Model.Type = ReportComponentModel.Control.Report;
+        } 
         public string GetPaddingForCss()
         {
             return $" padding:{Model.Margin.Top}px {Model.Margin.Right}px {Model.Margin.Bottom}px {Model.Margin.Left}px; ";

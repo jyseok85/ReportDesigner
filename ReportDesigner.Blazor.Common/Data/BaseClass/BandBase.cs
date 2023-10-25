@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
-using ReportDesigner.Blazor.Common.UI.Report_Controls.Controls;
-using System.ComponentModel;
 
 namespace ReportDesigner.Blazor.Common.Data.BaseClass
 {
@@ -23,13 +21,19 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         [Inject]
         DesignerOptionService Options { get; set; }
 
-       
+
         //public ActionState State { get; set; } = ActionState.None;
 
         public List<ControlBase> controlBases = new List<ControlBase>();
 
         public BandModel Model { get; set; } = new BandModel();
 
+
+        public BandBase()
+        {
+            this.Model.Type = ReportComponentModel.Control.Band;
+            this.Model.BandType = BandModel.Band.Content;
+        }
         //public CreationModel creationModel = new CreationModel();
         public void OnPointerUp(PointerEventArgs e)
         {
@@ -55,7 +59,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             //    //        //control.ApplyResize();
             //    //    }
             //    //}
-            
+
             //    if (control is not null)
             //    {
             //        SortControls();
@@ -69,7 +73,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public void OnPointerDown(PointerEventArgs e)
         {
-            
+
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
             if (Options.State == DesignerOptionService.ActionState.Create)
             {
@@ -85,16 +89,6 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         }
 
-        public void OnPointerMove(PointerEventArgs e)
-        {
-            if (Options.State == DesignerOptionService.ActionState.Create)
-                CreationService.ActionMove(e);
-            else if (Options.State == DesignerOptionService.ActionState.Resize)
-            {
-                ModificationServcie.ActionMove(e);
-                StateHasChanged();
-            }
-        }
 
         public void OnDrop(DragEventArgs e)
         {
@@ -109,60 +103,36 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             {
                 int targetX = control.Model.X + mouseMoveDictanceX;
                 int targetY = control.Model.Y + mouseMoveDictanceY;
-                if(targetX < 0)
+                if (targetX < 0)
                 { targetX = 0; }
-                if(targetY < 0)
+                if (targetY < 0)
                 { targetY = 0; }
 
                 //컨트롤이 밴드의 우측을 벗어난경우(페이퍼용지 사이즈에서 좌우 여백을 뺀다)
                 int bandWidth = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
                 int bandHeight = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
 
-                if (targetX + control.Model.Width > bandWidth) 
+                if (targetX + control.Model.Width > bandWidth)
                 { targetX = bandWidth - control.Model.Width; }
 
-                if(targetY + control.Model.Height > Model.Bottom)
+                if (targetY + control.Model.Height > Model.Bottom)
                 {
                     targetY = Model.Height - control.Model.Height;
                 }
 
                 control.Model.X = targetX;
                 control.Model.Y = targetY;
+
+
+                //부모 밴드를 가져온다.
+                string uid = control.Model.ParentUid;
+                var bandModel = Options.ControlDictionary[uid];
+                
+                //Update Absolute Offset
+                control.Model.AbsoluteOffsetX = bandModel.AbsoluteOffsetX + targetX;
+                control.Model.AbsoluteOffsetY = bandModel.AbsoluteOffsetY + targetY;
             }
         }
-        //private bool CreateControl(PointerEventArgs e) //int x, int y, int width, int height)
-        //{
-        //    int x = CreationService.X;
-        //    int y = CreationService.Y;
-        //    int width = CreationService.Width;
-        //    int height = CreationService.Height;
-
-        //    //최소 사이즈 이상 드래그 된 경우만 진행한다. ?? 아니면 작게 그리면 최소사이즈만큼 그려준다?
-        //    int controlMinimumSize = 10;
-        //    if (width < controlMinimumSize || height < controlMinimumSize)
-        //        return false;
-
-        //    //새로 생성하는 컨트롤에 TabIndex를 할상해서 키보드 이벤트를 받도록 한다. 
-        //    int tabIndex = 0;
-        //    if (controlBases.Count > 0)
-        //        tabIndex = controlBases.Max(x => x.TabIndex) + 1;
-
-        //    var control = new ControlBase()
-        //    {
-        //        Model.Uid = Guid.NewGuid().ToString(),
-        //        Model.X = x,
-        //        Y = y,
-        //        Width = width,
-        //        Height = height,
-        //        TabIndex = tabIndex
-        //    };
-
-        //    //컴포넌트 목록에 추가한다.
-        //    this.controlBases.Add(control);
-
-        //    return true;
-        //}
-
         private void DeselectAllControls()
         {
             controlBases.ForEach(x => x.Model.Selected = false);
@@ -202,22 +172,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             if (controlBases.Count > 0)
                 tabIndex = controlBases.Max(x => x.TabIndex) + 1;
 
-            //var control = new ControlBase()
-            //{
-            //    Uid = Guid.NewGuid().ToString(),
-            //    X = x,
-            //    Y = y,
-            //    Width = width,
-            //    Height = height,
-            //    TabIndex = tabIndex
-            //};
-
             var control = new ControlBase(x, y, width, height, tabIndex);
+            control.Model.ParentUid = this.Model.Uid;
 
             //컴포넌트 목록에 추가한다.
             this.controlBases.Add(control);
-
-
+            Options.AddControl(control.Model.Uid, control.Model);
         }
     }
 }

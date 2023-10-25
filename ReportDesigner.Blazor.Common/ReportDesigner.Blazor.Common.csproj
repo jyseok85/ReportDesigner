@@ -11,11 +11,6 @@
     <None Remove="UI\RulerY.razor.css" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="UI\RulerY.razor.css" />
-    <Content Include="UI\RulerX.razor.css" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />

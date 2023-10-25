@@ -8,6 +8,6 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 {
     public class ReportModel : ReportComponentModel
     {
-
+     
     }
 }

@@ -1,4 +1,5 @@
-﻿@inherits ReportBase
+﻿@inject DesignerOptionService Options
+@inherits ReportBase
 
 <div class=@("report") style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>
     <MarginLiner Width="Model.Width" Height="Model.Height"></MarginLiner>
@@ -37,7 +38,10 @@
     {
         base.OnInitialized();
         //리포트는 기본적으로 1개의 레이어를 갖는다.
-        layers.Add(new LayerBase());
+        LayerBase layer = new LayerBase();
+        layers.Add(layer);
+        Options.AddControl(layer.Model.Uid, layer.Model);
+
         await Task.Yield();
     }
 
