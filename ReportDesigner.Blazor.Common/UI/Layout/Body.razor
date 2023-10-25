@@ -8,7 +8,8 @@
 
 <RadzenBody id="mainbody"
 @onpointerup=OnPointerUp
-@onpointermove=OnPointerMove>
+@onpointermove=OnPointerMove
+Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background"
          style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
         <RulerX Size="@report.Model.Width"></RulerX>
