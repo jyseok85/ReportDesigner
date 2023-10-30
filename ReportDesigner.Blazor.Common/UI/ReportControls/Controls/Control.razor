@@ -5,10 +5,8 @@
 
 <div class="component"
      tabindex="@Model.TabIndex"
-     draggable="@isDragAble.ToString()"
      @onpointerdown=OnPointerDown
      @onpointerdown:stopPropagation="true"
-     @ondragstart="@((e) => OnDragStart(e))"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border"))>
      <CascadingValue Value="this">
         <ModificationArea @ref =modificationArea></ModificationArea>
@@ -26,8 +24,6 @@
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
 
-    private bool isDragAble = false;
-    public bool IsDragAble { get { return this.isDragAble; } set { this.isDragAble = value; } }
     ModificationArea modificationArea;
     [Parameter]
     public ControlBase Base
@@ -45,23 +41,24 @@
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
             Console.WriteLine("isDragAble - false");
-            isDragAble = false;
             StateHasChanged();
         }
         else
         {
-            isDragAble = true;
             StateHasChanged();
             SelectService.OnPointerDown(e, this.Model);
             modificationArea.UpdateElementSize();
+
+            //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
+            //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
+
+            DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
+            //DragService.Hidden = false;
+            Options.State = DesignerOptionService.ActionState.Drag;
             Console.WriteLine("isDragAble = true;");
         }
     }
-    void OnDragStart(DragEventArgs e)
-    {
-        //드래그 중 로직의 경우 브라우저에서 처리되므로 OnDrop 부분만 구현한다. 
-        DragService.StartDrag(Model.Uid, (int)e.ClientX, (int)e.ClientY);
-    }
+
     public string GetStyle(string type)
     {
         switch (type.ToLower())

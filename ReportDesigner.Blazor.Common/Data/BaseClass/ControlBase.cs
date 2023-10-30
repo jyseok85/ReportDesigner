@@ -11,6 +11,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public ControlModel Model { get; set; } = new ControlModel();
 
+
         public ControlBase() {
         }
 

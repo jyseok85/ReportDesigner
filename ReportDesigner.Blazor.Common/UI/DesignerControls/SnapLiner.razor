@@ -1,5 +1,53 @@
-﻿<h3>SnapLiner</h3>
+﻿@inject DesignerOptionService Options
+
+
+<div style=@("position:absolute;width:inherit;height:inherit;pointer-events:none;")>
+    <div class="snap-vertical" style=@(GetTransform("left")) hidden=@Model.LeftHidden></div>
+    <div class="snap-horizontal" style=@(GetTransform("top")) hidden=@Model.TopHidden></div>
+    <div class="snap-vertical" style=@(GetTransform("right")) hidden=@Model.RightHidden></div>
+    <div class="snap-horizontal" style=@(GetTransform("bottom")) hidden=@Model.BottomHidden></div>
+</div>
+<style>
+
+    .snap-vertical {
+        height: 100%;
+        width: 0px;
+        border-left: solid 1px red;
+        position: absolute;
+    }
+
+    .snap-horizontal {
+        width: 100%;
+        height: 0px;
+        border-top: solid 1px red;
+        position: absolute;
+    }
+
+</style>
 
 @code {
+    [Parameter]
+    public SnapLinerModel Model { get; set; } = new SnapLinerModel();
+    public string GetTransform(string direction)
+    {
+        string rValue = string.Empty;
+        switch (direction)
+        {
+            //절대값 수치로 판단한다.
+            case "left":
+                 rValue = "transform:translate(" + (Model.LeftPos)+ "px,0px);"; break;
+            case "top":
+                rValue = "transform:translate(0px," + (Model.TopPos) + "px);"; break;
+            case "right":
+                rValue = "transform:translate(" + (Model.RightPos ) + "px,0px);"; break;
+            case "bottom":
+                rValue = "transform:translate(0px," + (Model.BottomPos ) + "px); "; break;
+        }
+        return rValue;
+    }
 
+    private string GetPadding()
+    {
+        return $" padding:{Options.PaperMargin.Top}px {Options.PaperMargin.Right}px {Options.PaperMargin.Bottom}px {Options.PaperMargin.Left}px; ";
+    }
 }

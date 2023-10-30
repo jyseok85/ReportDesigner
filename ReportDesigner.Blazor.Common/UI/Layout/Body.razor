@@ -4,16 +4,19 @@
 @inject ControlCreationService CreationService
 @inject SelectedControlService SelectedControlService
 @inject ControlModificationServcie ModificationService
+@inject DragAndDropService DragService
 @inject IJSRuntime JsRuntime
 
 <RadzenBody id="mainbody"
 @onpointerup=OnPointerUp
 @onpointermove=OnPointerMove
+@onpointerleave=OnPointerLeave
+ondragover="event.preventDefault()"
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background"
          style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
-        <RulerX Size="@report.Model.Width"></RulerX>
         <RulerY Size="@report.Model.Height"></RulerY>
+        <RulerX Size="@report.Model.Width"></RulerX>
         <Report Base="@report" />
     </div>
 </RadzenBody>
@@ -116,22 +119,23 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             ModificationService.ActionMove(e);
             StateHasChanged();
         }
+        else
+        {
+            if (SelectedControlService.CurrentSelectedModel is not null)
+            {
+
+                //todo 이동가능한 컨트롤일때로 변경해야함.
+                if (SelectedControlService.CurrentSelectedModel.Type != ReportComponentModel.Control.Band)
+                { 
+                    DragService.Hidden = false;
+                    DragService.Move(e.ClientX, e.ClientY);
+                    DoSnap();
+                    // Console.WriteLine($"{e.ClientX} {e.ClientY}");
+                }
+            }
+        }
     }
-    // public void OnPointerDown(PointerEventArgs e)
-    // {
-    //     //현재 리포트의 모든 선택된 항목을 해제한다.
 
-    //     //현재 마우스 위치의 밴드를 가져온다.
-
-    //     //자식 컴포넌트가 선택되지 않았다면 선택된 모든 컴포넌트를 해제해준다.
-    //     //DeselectAllControls();
-
-    //     //2. 생성 모드일 경우(임시로 항상 생성모드로 한다.)
-
-    //     CreationService.ActionStart(e);
-    //     //text1 = $"Start Point : {(int)e.OffsetX} {(int)e.OffsetY}";
-    //     //text2 = text3 = "";
-    // }
     public void OnPointerUp(PointerEventArgs e)
     {
         // var control = controlBases.Find(x => x.Selected == true);
@@ -174,6 +178,48 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         // }
 
         Options.State = DesignerOptionService.ActionState.None;
-        Console.WriteLine("Band - OnPointerUp");
+        Console.WriteLine("Body - OnPointerUp");
+
+        Options.UpdateAllControlOffset();
+        Options.UpdateSnapControl();
+        Options.HideSnap();
+
+        DragService.End();
+        SelectedControlService.CurrentSelectedModel = null;
+    }
+
+    private void OnPointerLeave()
+    {
+        Options.State = DesignerOptionService.ActionState.None;
+        Console.WriteLine("Body - OnPointerLeave");
+
+        Options.UpdateAllControlOffset();
+        Options.UpdateSnapControl();
+        Options.HideSnap();
+
+        DragService.End();
+        SelectedControlService.CurrentSelectedModel = null;
+    }
+
+
+
+    private void DoSnap()
+    {
+        Dictionary<string, int> dragObjectSnapPoint = new Dictionary<string, int>();
+        dragObjectSnapPoint.Add("left", (int)DragService.PosX + Options.PaperMargin.Left);
+        dragObjectSnapPoint.Add("top", (int)DragService.PosY + Options.PaperMargin.Top);
+        dragObjectSnapPoint.Add("right", (int)DragService.Right + Options.PaperMargin.Left);
+        dragObjectSnapPoint.Add("bottom", (int)DragService.Bottom + Options.PaperMargin.Top);
+        //절대값 수치로 계산한다.
+
+        Console.WriteLine($"Do  Sanp : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
+        var snapPoint = Options.DoSnap(dragObjectSnapPoint, (int)DragService.Width, (int)DragService.Height);
+        Console.WriteLine($"snapPoint: {snapPoint.X} {snapPoint.Y}");
+
+        if (snapPoint.X is not -999)
+             DragService.PosX = snapPoint.X - Options.PaperMargin.Left;
+        if (snapPoint.Y is not -999)
+             DragService.PosY = snapPoint.Y - Options.PaperMargin.Top;
+
     }
 }

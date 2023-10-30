@@ -39,6 +39,71 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         {
             //포인트 업은 바디에서 사용.
             //포인트 다운은 밴드 내에서 시작.
+            if (Options.State == DesignerOptionService.ActionState.Drag)
+            {
+                
+
+                int mouseMoveDictanceX = (int)(e.ClientX - DragService.MouseX);
+                int mouseMoveDictanceY = (int)(e.ClientY - DragService.MouseY);
+
+                ControlBase control = controlBases.Find(x => x.Model.Uid == DragService.Uid);
+                Console.WriteLine("Band - OnPointerUp : " + DragService.Uid);
+                //bool reset = false;
+                //if (control is not null)
+                //{
+                //    control.Model.X = (int)DragService.PosX;
+                //    control.Model.Y = (int)DragService.PosY;
+
+                //    if (DragService.PosX < 0 || DragService.PosY < 0)
+                //        reset = true;
+
+
+                //}
+
+
+                if (control is not null)
+                {
+                    int targetX = (int)DragService.PosX;
+                    int targetY = (int)DragService.PosY;
+
+                    //여백으로 이동했는지 체크
+                    if (targetX < 0)
+                    { targetX = 0; }
+                    if (targetY < 0)
+                    { targetY = 0; }
+
+                    //컨트롤이 밴드의 우측을 벗어난경우(페이퍼용지 사이즈에서 좌우 여백을 뺀다)
+                    int bandWidth = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
+                    int bandHeight = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
+
+                    if (targetX + control.Model.Width > bandWidth)
+                    { 
+                        targetX = bandWidth - control.Model.Width; 
+                    }
+
+                    if (targetY + control.Model.Height > Model.Bottom)
+                    {
+                        targetY = Model.Height - control.Model.Height;
+                    }
+
+                    control.Model.X = targetX;
+                    control.Model.Y = targetY;
+
+
+                    //부모 밴드를 가져온다.
+                    string uid = control.Model.ParentUid;
+                    var bandModel = Options.ControlDictionary[uid];
+
+                    //Update Absolute Offset
+                    control.Model.AbsoluteOffsetX = bandModel.AbsoluteOffsetX + targetX;
+                    control.Model.AbsoluteOffsetY = bandModel.AbsoluteOffsetY + targetY;
+
+                   
+                }
+
+                
+
+            }
 
             return;
             //if (CreationService.State == ControlCreationService.ActionState.Create)
@@ -73,7 +138,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public void OnPointerDown(PointerEventArgs e)
         {
-
+            Console.WriteLine("Bandbase.cs - OnPointerDown");
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
             if (Options.State == DesignerOptionService.ActionState.Create)
             {
@@ -84,55 +149,18 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                 //2. 생성 모드일 경우(임시로 항상 생성모드로 한다.)
                 CreationService.ActionStart(e);
             }
+            else if (Options.State == DesignerOptionService.ActionState.Drag)
+            {
+                //todo 여기 안들어오는데??
+                if (Selectedservice.CurrentSelectedModel is not null)
+                    DragService.StartDrag(Selectedservice.CurrentSelectedModel, e.ClientX, e.ClientY);
+            }
             else
                 Selectedservice.OnPointerDown(e, this.Model);
-
         }
 
 
-        public void OnDrop(DragEventArgs e)
-        {
 
-            int mouseMoveDictanceX = (int)e.ClientX - DragService.PosX;
-            int mouseMoveDictanceY = (int)e.ClientY - DragService.PosY;
-
-            ControlBase control = controlBases.Find(x => x.Model.Uid == DragService.Uid);
-            Console.WriteLine("Band - OnDrop" + DragService.Uid);
-
-            if (control is not null)
-            {
-                int targetX = control.Model.X + mouseMoveDictanceX;
-                int targetY = control.Model.Y + mouseMoveDictanceY;
-                if (targetX < 0)
-                { targetX = 0; }
-                if (targetY < 0)
-                { targetY = 0; }
-
-                //컨트롤이 밴드의 우측을 벗어난경우(페이퍼용지 사이즈에서 좌우 여백을 뺀다)
-                int bandWidth = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
-                int bandHeight = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
-
-                if (targetX + control.Model.Width > bandWidth)
-                { targetX = bandWidth - control.Model.Width; }
-
-                if (targetY + control.Model.Height > Model.Bottom)
-                {
-                    targetY = Model.Height - control.Model.Height;
-                }
-
-                control.Model.X = targetX;
-                control.Model.Y = targetY;
-
-
-                //부모 밴드를 가져온다.
-                string uid = control.Model.ParentUid;
-                var bandModel = Options.ControlDictionary[uid];
-                
-                //Update Absolute Offset
-                control.Model.AbsoluteOffsetX = bandModel.AbsoluteOffsetX + targetX;
-                control.Model.AbsoluteOffsetY = bandModel.AbsoluteOffsetY + targetY;
-            }
-        }
         private void DeselectAllControls()
         {
             controlBases.ForEach(x => x.Model.Selected = false);

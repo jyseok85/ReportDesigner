@@ -32,6 +32,7 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             models.Add(model);
             model.Selected = true;
+            CurrentSelectedModel = model;
         }
 
         public ReportComponentModel LastSelectModel => models[models.Count - 1];
@@ -52,11 +53,15 @@ namespace ReportDesigner.Blazor.Common.Services
                 LastSelectModel.Y = 0;
             }
 
-            //todo AbsoluteOffsetX 이게 잘못들어가있네?? 340은 넘어야 하는데. 100대임. 
-            if (width + LastSelectModel.AbsoluteOffsetX > parent.Right + parent.AbsoluteOffsetX)
+
+            //오른쪽 밴드 이후 영역으로 나가는지 체크
+            if(x >= 0)
             {
-                int diff = (width + LastSelectModel.AbsoluteOffsetX) - (parent.Right + parent.AbsoluteOffsetX);
-                width -= diff;
+                if (width + LastSelectModel.AbsoluteOffsetX > parent.Right + parent.AbsoluteOffsetX)
+                {
+                    int diff = (width + LastSelectModel.AbsoluteOffsetX) - (parent.Right + parent.AbsoluteOffsetX);
+                    width -= diff;
+                }
             }
 
             string msg = $"X:{LastSelectModel.X}, Width:{width}";
@@ -66,5 +71,6 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
+        public ReportComponentModel? CurrentSelectedModel { get; set; } = null;
     }
 }

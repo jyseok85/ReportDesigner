@@ -1,7 +1,10 @@
 ﻿@inject DesignerOptionService Options
 @inherits ReportBase
 
-<div class=@("report") style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>
+<div class=@("report")
+     ondragover="event.preventDefault()" 
+     style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>
+    <SnapLiner Model="@Options.SnapLinerModel"></SnapLiner>
     <MarginLiner Width="Model.Width" Height="Model.Height"></MarginLiner>
     @for(int i = 0; i < layers.Count; i++)
     {

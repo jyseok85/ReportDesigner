@@ -100,11 +100,13 @@ namespace ReportDesigner.Blazor.Common.Services
                     //X = moveDitanceX;
 
                     //Width = beforeRight - (beforeX + moveDitanceX);
+                Console.WriteLine($"MoveTopControl 1");
                 }
                 else
                 {
                     X = moveDitanceX;
                     Width = beforeWidth - X;
+                Console.WriteLine($"MoveTopControl 2 {Width}");
                 }
             }
             void MoveTopControl()

@@ -8,7 +8,6 @@
 <div class="content-band"
 @onpointerup=OnPointerUp
 @onpointerdown=OnPointerDown
-@ondrop="e=>OnDrop(e)"
      ondrag="event.preventDefault()"
      ondragover="event.preventDefault()" 
      style=@("height:" + Model.Height + "px;" + (Options.State == DesignerOptionService.ActionState.Create ? "cursor:crosshair;" : "") +
@@ -21,6 +20,7 @@
         }
 
         <CreationArea CreationService=CreationService />
+        <DragObject DragService="DragService"></DragObject>
     </CascadingValue>
 
   </div>
@@ -45,3 +45,4 @@
     }
     
 }
+ 
