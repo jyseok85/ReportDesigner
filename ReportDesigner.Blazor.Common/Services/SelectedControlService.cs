@@ -71,6 +71,6 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
-        public ReportComponentModel? CurrentSelectedModel { get; set; } = null;
+        public required ReportComponentModel CurrentSelectedModel { get; set; }
     }
 }

@@ -5,13 +5,29 @@
 
 <div class="component"
      tabindex="@Model.TabIndex"
-     @onpointerdown=OnPointerDown
+     @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @onpointerdown:stopPropagation="true"
+     @ondblclick="@( (x) => OnDbClick(x))"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border"))>
      <CascadingValue Value="this">
-        <ModificationArea @ref =modificationArea></ModificationArea>
+        @if(DragService.Hidden)
+        {
+            <ModificationArea @ref=modificationArea></ModificationArea>
+        }
      </CascadingValue>
-    @* <_05_ResizeArea Model=BaseControlModel.ResizeModel></_05_ResizeArea> *@
+    <div style=@("top:0;height:inherit;width:inherit;position:absolute;pointer-events: none; " + GetStyle("padding") +GetStyle("word-break"))>
+        @value
+     </div>
+     <RadzenTextArea @ref=textArea
+        @ondrag:stopPropagation="true"
+        @onpointerdown:stopPropagation="true"
+        @onpointerup:stopPropagation="true"
+        @onkeydown:stopPropagation="true"
+        @bind-Value=@value
+        Change=@(args => OnChange(args, "TextArea")) class="w-100" 
+        Style="top:0;height:100%;width:100%;position:absolute;
+        --rz-text-area-padding:10px;border-radius:0px;"
+                    hidden=@HiddenEditMode />
 </div>
 
 <style>
@@ -20,11 +36,14 @@
     }
 </style>
 @code {
+    string value;
     public int Height => Model.Height;
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
-
+    private bool isDbClicked = false;
     ModificationArea modificationArea;
+
+    RadzenTextArea textArea;
     [Parameter]
     public ControlBase Base
     {
@@ -34,9 +53,24 @@
         }
     }
 
-    void OnPointerDown(PointerEventArgs e)
+    public bool HiddenEditMode
+    {
+        get
+        {
+            if (this.Model.IsEditMode)
+                return false;
+            else
+                return true;
+
+        }
+    }
+    void OnPointerDown(PointerEventArgs e, string value)
     {
         Console.WriteLine("Control.razor - OnPointerDown");
+        if(value == "EditArea")
+        {
+            return; 
+        }
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
@@ -74,10 +108,33 @@
                     return "border: 1px solid grey;";
                 else
                     return "border: 1px solid transparent;";
+            case "padding":
+                return "padding:10px;";
+            case "word-break":
+                return "word-break:break-all;";
             default:
                 return string.Empty;
         }
     }
-   
-  
+
+
+    async Task OnDbClick(MouseEventArgs args)
+    {
+        Console.WriteLine("OnDoubleClick");
+        this.Model.IsEditMode = true;
+        Options.State = DesignerOptionService.ActionState.Edit;
+        DragService.Hidden = false;
+        while (this.textArea == null)
+            await Task.Delay(10);
+
+        await this.textArea.Element.FocusAsync();
+        await this.textArea.Element.FocusAsync();
+    }
+
+    void OnChange(string value, string name)
+    {
+        this.value = value;
+        //console.Log($"{name} value changed to {value}");
+    }
+
 }

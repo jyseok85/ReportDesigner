@@ -32,6 +32,10 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         /// <summary>
         /// 일반 X, Y 값은 Div에 그려질 상대값이 설정되며
         /// Absolute는 Report 기준으로 생성되는 절대값을 표현한다. 
+        /// 업데이트 시점 : 
+        /// 1. 처음 추가될때
+        /// 2. 리사이즈 될때
+        /// 3. 마우스 업 이벤트 발생할때
         /// </summary>
         public int AbsoluteOffsetX { get; set; } = 0;
         public int AbsoluteOffsetY { get; set; } = 0;
@@ -59,7 +63,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
             }
         }
 
-
+        public bool IsEditMode { get; set; } = false;
 
         public bool Hidden { get; set; } = false;
         public Margin Margin { get; set; } = new Margin();

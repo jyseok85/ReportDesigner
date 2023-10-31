@@ -40,26 +40,13 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             //포인트 업은 바디에서 사용.
             //포인트 다운은 밴드 내에서 시작.
             if (Options.State == DesignerOptionService.ActionState.Drag)
-            {
-                
+            {               
 
                 int mouseMoveDictanceX = (int)(e.ClientX - DragService.MouseX);
                 int mouseMoveDictanceY = (int)(e.ClientY - DragService.MouseY);
 
                 ControlBase control = controlBases.Find(x => x.Model.Uid == DragService.Uid);
                 Console.WriteLine("Band - OnPointerUp : " + DragService.Uid);
-                //bool reset = false;
-                //if (control is not null)
-                //{
-                //    control.Model.X = (int)DragService.PosX;
-                //    control.Model.Y = (int)DragService.PosY;
-
-                //    if (DragService.PosX < 0 || DragService.PosY < 0)
-                //        reset = true;
-
-
-                //}
-
 
                 if (control is not null)
                 {
@@ -91,49 +78,11 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
 
                     //부모 밴드를 가져온다.
-                    string uid = control.Model.ParentUid;
-                    var bandModel = Options.ControlDictionary[uid];
-
-                    //Update Absolute Offset
-                    control.Model.AbsoluteOffsetX = bandModel.AbsoluteOffsetX + targetX;
-                    control.Model.AbsoluteOffsetY = bandModel.AbsoluteOffsetY + targetY;
-
-                   
-                }
-
-                
-
+                    
+                }   
             }
 
             return;
-            //if (CreationService.State == ControlCreationService.ActionState.Create)
-            //{
-            //    var control = controlBases.Find(x => x.Selected == true);
-            //    //if (CreationService.State == ActionState.Create)
-            //    {
-            //        //드래그는 우측 하단으로만 진행하도록 한다.
-            //        //if (e.ClientX > CreationService.ClientX && e.ClientY > CreationService.ClientY)
-            //        //    CreateControl(e);
-            //        CreationService.ActionEnd();
-            //    }
-            //    //else if (State == ActionState.Resize)
-            //    //{
-
-            //    //    if (control != null)
-            //    //    {
-            //    //        //control.ApplyResize();
-            //    //    }
-            //    //}
-
-            //    if (control is not null)
-            //    {
-            //        SortControls();
-            //        //control.IsDragAble = false;
-            //    }
-
-            //}
-            //CreationService.State = ControlCreationService.ActionState.None;
-            //Console.WriteLine("Band - OnPointerUp");
         }
 
         public void OnPointerDown(PointerEventArgs e)

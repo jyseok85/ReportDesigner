@@ -11,6 +11,8 @@
 @onpointerup=OnPointerUp
 @onpointermove=OnPointerMove
 @onpointerleave=OnPointerLeave
+@onkeydown=OnKeyDown
+@onkeyup=OnKeyUp
 ondragover="event.preventDefault()"
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background"
@@ -53,6 +55,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         AddReport();
         //todo 용지 사이즈를 초반에 셋팅해주는 부분이지만 이런코드를 넣는 위치를 바꿀 필요가 있다. 
         PaperSizeChanged(Options.PaperSize.Width, 0);
+        Options.SelectedControl = SelectedControlService;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -79,7 +82,6 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             {
                 await Task.Delay(delay);
 
-
                 int paperWidth = (int)sender;
                 int bodyWidth = await JsRuntime.InvokeAsync<int>("getBodyWidth");        
                 //todo 제대로된 계산할 필요가 있음.
@@ -100,7 +102,6 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private async Task ResizedControl()
     {
-
         Options.UpdateAllControlOffset();
         await this.InvokeAsync(StateHasChanged);
     }
@@ -121,16 +122,14 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         }
         else
         {
-            if (SelectedControlService.CurrentSelectedModel is not null)
+            if (SelectedControlService.CurrentSelectedModel is not null && Options.State == DesignerOptionService.ActionState.Drag)
             {
-
                 //todo 이동가능한 컨트롤일때로 변경해야함.
                 if (SelectedControlService.CurrentSelectedModel.Type != ReportComponentModel.Control.Band)
                 { 
                     DragService.Hidden = false;
                     DragService.Move(e.ClientX, e.ClientY);
                     DoSnap();
-                    // Console.WriteLine($"{e.ClientX} {e.ClientY}");
                 }
             }
         }
@@ -177,30 +176,33 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //     //control.IsDragAble = false;
         // }
 
-        Options.State = DesignerOptionService.ActionState.None;
         Console.WriteLine("Body - OnPointerUp");
 
-        Options.UpdateAllControlOffset();
-        Options.UpdateSnapControl();
-        Options.HideSnap();
 
-        DragService.End();
-        SelectedControlService.CurrentSelectedModel = null;
+        ReleaseState();
     }
 
     private void OnPointerLeave()
     {
-        Options.State = DesignerOptionService.ActionState.None;
         Console.WriteLine("Body - OnPointerLeave");
-
-        Options.UpdateAllControlOffset();
-        Options.UpdateSnapControl();
-        Options.HideSnap();
-
-        DragService.End();
-        SelectedControlService.CurrentSelectedModel = null;
+        ReleaseState();
     }
 
+    private void ReleaseState()
+    {
+        Options.State = DesignerOptionService.ActionState.None;
+        Console.WriteLine("Body - ReleaseState");
+
+        Options.UpdateAllControlOffset();
+        Options.HideSnap();
+
+
+        DragService.End();
+        //SelectedControlService.CurrentSelectedModel = null;
+
+        //todo 모든컨트롤 편집모드 해제
+        Options.TurnOffEditModeForAllControls();
+    }
 
 
     private void DoSnap()
@@ -210,16 +212,54 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         dragObjectSnapPoint.Add("top", (int)DragService.PosY + Options.PaperMargin.Top);
         dragObjectSnapPoint.Add("right", (int)DragService.Right + Options.PaperMargin.Left);
         dragObjectSnapPoint.Add("bottom", (int)DragService.Bottom + Options.PaperMargin.Top);
-        //절대값 수치로 계산한다.
 
+        //절대값 수치로 계산한다.
         Console.WriteLine($"Do  Sanp : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
         var snapPoint = Options.DoSnap(dragObjectSnapPoint, (int)DragService.Width, (int)DragService.Height);
         Console.WriteLine($"snapPoint: {snapPoint.X} {snapPoint.Y}");
 
         if (snapPoint.X is not -999)
-             DragService.PosX = snapPoint.X - Options.PaperMargin.Left;
+            DragService.PosX = snapPoint.X - Options.PaperMargin.Left;
         if (snapPoint.Y is not -999)
-             DragService.PosY = snapPoint.Y - Options.PaperMargin.Top;
+            DragService.PosY = snapPoint.Y - Options.PaperMargin.Top;
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (SelectedControlService.CurrentSelectedModel is not null)
+        {
+            //컨트롤 키와 같이 누른경우
+            if (e.CtrlKey)
+            {
+                if(e.Key != "Control")
+                    Options.SetSnapPoint(e.Key);
+            }
+            else
+            {
+                switch (e.Key)
+                {
+                    case "ArrowRight":
+                        SelectedControlService.CurrentSelectedModel.X += 1;
+                        break;
+                    case "ArrowDown":
+                        SelectedControlService.CurrentSelectedModel.Y += 1;
+                        break;
+                    case "ArrowLeft":
+                        SelectedControlService.CurrentSelectedModel.X -= 1;
+                        break;
+                    case "ArrowUp":
+                        SelectedControlService.CurrentSelectedModel.Y -= 1;
+                        break;
+                }
+            }
+        }
+    }
+
+    private void OnKeyUp(KeyboardEventArgs e)
+    {
+        Options.UpdateAllControlOffset();
+        // CheckAreaOverlap();
 
     }
+
 }

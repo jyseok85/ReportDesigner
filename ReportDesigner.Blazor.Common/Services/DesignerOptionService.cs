@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.UI.ReportControls;
@@ -8,12 +9,17 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class DesignerOptionService
     {
+        [Inject]        
+        public required SelectedControlService SelectedControl { get; set; }
+
         public Margin PaperMargin { get; set; } = new Margin(38,38,38,38);
 
         public bool IsLandscape { get; set; } = false;
 
         public bool UseSnap { get; set; } = true;
         public int SnapPoint { get; set; } = 10;
+  
+
         private Size paperSize = new Size(798, 1124);
 
         public Size PaperSize { 
@@ -34,6 +40,7 @@ namespace ReportDesigner.Blazor.Common.Services
             Create,
             Resize,
             None,
+            Edit,
             Drag
         }
         public ActionState State { get; set; } = ActionState.None;
@@ -51,6 +58,9 @@ namespace ReportDesigner.Blazor.Common.Services
                 model.AbsoluteOffsetX = model.X + PaperMargin.Left;
                 model.AbsoluteOffsetY = model.X + PaperMargin.Top;
                 model.AbsoluteOffsetRight = model.AbsoluteOffsetX + model.Width;
+                if (model.Type == ReportComponentModel.Control.Band)
+                    model.AbsoluteOffsetRight = PaperSize.Width - PaperMargin.Right;
+
                 model.AbsoluteOffsetBottom = model.AbsoluteOffsetY + model.Height;
             }
 
@@ -59,6 +69,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void UpdateAllControlOffset()
         {
+            Console.WriteLine(this.GetType().Name);
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 if(model.Type == ReportComponentModel.Control.Report)
@@ -68,7 +79,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     model.Margin = PaperMargin;
                 }
 
-                if(model.Type != ReportComponentModel.Control.Report)
+                if(model.Type == ReportComponentModel.Control.Layer)
                 {
                     model.AbsoluteOffsetX = model.X + PaperMargin.Left;
                     model.AbsoluteOffsetY = model.Y + PaperMargin.Top;
@@ -80,7 +91,21 @@ namespace ReportDesigner.Blazor.Common.Services
                 {
                     model.Width = paperSize.Width - PaperMargin.Left - PaperMargin.Right;
                 }
+
+                if (model.Type == ReportComponentModel.Control.Label || model.Type == ReportComponentModel.Control.None)
+                {
+                    string uid = model.ParentUid;
+                    var bandModel = ControlDictionary[uid];
+
+                    model.AbsoluteOffsetX = model.X + bandModel.AbsoluteOffsetX;
+                    model.AbsoluteOffsetY = model.Y + bandModel.AbsoluteOffsetY;
+                    model.AbsoluteOffsetRight = model.AbsoluteOffsetX + model.Width;
+                    model.AbsoluteOffsetBottom = model.AbsoluteOffsetY + model.Height;
+                }
+
             }
+
+            UpdateSnapControl();
         }
 
 
@@ -164,8 +189,160 @@ namespace ReportDesigner.Blazor.Common.Services
 
             return snapPoint;
         }
+
+        /// <summary>
+        /// 모든 컨트롤에 대해서 편집모드 해제
+        /// </summary>
+        public void TurnOffEditModeForAllControls()
+        {
+            foreach (ReportComponentModel model in controlDictionary.Values)
+            {
+                model.IsEditMode = false;
+            }
+        }
+
+        /// <summary>
+        /// 현재 선택된 컨트롤을 키보드 방향의 가장 가까운 스냅포인트로 이동합니다.
+        /// </summary>
+        /// <param name="key">방향키</param>
+        public void SetSnapPoint(string key)
+        {
+            Console.WriteLine($"{key} {string.Join(",", snapAbsoluteX)}");
+            List<int> movement = new List<int>();
+
+            string uid = SelectedControl.CurrentSelectedModel.ParentUid;
+            var bandModel = ControlDictionary[uid];
+
+            switch (key)
+            {
+                case "ArrowRight":
+                    {  
+                        AddPoint(GetRightSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetRight));
+                        AddPoint(GetRightSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetX));
+
+                        if (movement.Count > 0)
+                        {
+                            //제일 조금 이동하는 거리를 가져온다.
+                            int nextMovement = movement.OrderBy(x => x).First();
+
+                            //밴드영역을 벗어나지 못하도록 한다. 
+                            if ((nextMovement + SelectedControl.CurrentSelectedModel.Right) < bandModel.AbsoluteOffsetRight)
+                                SelectedControl.CurrentSelectedModel.X += nextMovement;
+                            else
+                                SelectedControl.CurrentSelectedModel.X = bandModel.Width - SelectedControl.CurrentSelectedModel.Width;
+                        }
+                    }
+                    break;
+                case "ArrowLeft":
+                    {
+                        AddPoint(GetLeftSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetRight));
+                        AddPoint(GetLeftSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetX));
+
+                        if (movement.Count > 0)
+                        {
+                            //제일 조금 이동하는 거리를 가져온다.
+                            int nextMovement = movement.OrderBy(x => x).First();
+
+                            if (SelectedControl.CurrentSelectedModel.X - nextMovement > bandModel.X) 
+                                SelectedControl.CurrentSelectedModel.X -= nextMovement;
+                            else
+                                SelectedControl.CurrentSelectedModel.X = bandModel.X;
+                        }
+                    }
+                    break;
+                case "ArrowDown":
+                    {
+                        AddPoint(GetBottomSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetBottom));
+                        AddPoint(GetBottomSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetY));
+                        
+                        //오른쪽이나 아래쪽으로 1픽셀씩 더 나간다. 아마도 보더때문인듯한데??
+                        if (movement.Count > 0)
+                        {
+                            //제일 조금 이동하는 거리를 가져온다.
+                            int nextMovement = movement.OrderBy(x => x).First();
+                            if ((nextMovement + SelectedControl.CurrentSelectedModel.Bottom) < bandModel.AbsoluteOffsetBottom)
+                                SelectedControl.CurrentSelectedModel.Y += nextMovement;
+                            else
+                                SelectedControl.CurrentSelectedModel.Y = bandModel.Height - SelectedControl.CurrentSelectedModel.Height;
+                            Console.WriteLine(SelectedControl.CurrentSelectedModel.Y);
+                        }
+                    }
+                    break;
+                case "ArrowUp":
+                    {
+                        AddPoint(GetTopSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetBottom));
+                        AddPoint(GetTopSnapPoint(SelectedControl.CurrentSelectedModel.AbsoluteOffsetY));
+
+                        if (movement.Count > 0)
+                        {
+                            //제일 조금 이동하는 거리를 가져온다.
+                            int nextMovement = movement.OrderBy(x => x).First();
+
+                            if (SelectedControl.CurrentSelectedModel.Y - nextMovement > bandModel.Y)
+                                SelectedControl.CurrentSelectedModel.Y -= nextMovement;
+                            else
+                                SelectedControl.CurrentSelectedModel.Y = bandModel.Y;
+                        }
+                    }
+                    break;
+            }
+            void AddPoint(int point)
+            {
+                if (point > -1)
+                {
+                    if (movement.Contains(point) == false)
+                        movement.Add(point);
+                }
+            }
+
+            //우측으로 이동할 거리를 가져온다. 
+            int GetRightSnapPoint(int currentX)
+            {
+                var selected1 = snapAbsoluteX.Where(n => n > currentX);
+                if (selected1.Count() > 0)
+                {
+                    var point = selected1.OrderBy(x => x).First();
+                    return point - currentX;
+                }
+                else
+                    return -1;
+            }
+
+            int GetLeftSnapPoint(int currentX)
+            {
+                var selected1 = snapAbsoluteX.Where(n => n < currentX);
+                if (selected1.Count() > 0)
+                {
+                    var point = selected1.OrderBy(x => x).Last();
+                    return currentX - point;
+                }
+                else
+                    return -1;
+            }
+
+            int GetBottomSnapPoint(int currentY)
+            {
+                var selected1 = snapAbsoluteY.Where(n => n > currentY);
+                if (selected1.Count() > 0)
+                {
+                    var point = selected1.OrderBy(x => x).First();
+                    return point - currentY;
+                }
+                else
+                    return -1;               
+            }
+
+            int GetTopSnapPoint(int currentY)
+            {
+                var selected1 = snapAbsoluteY.Where(n => n < currentY);
+                if (selected1.Count() > 0)
+                {
+                    var point = selected1.OrderBy(x => x).Last();
+                    return currentY - point;
+                }
+                else
+                    return -1;
+            }
+        }
     }
-
-
-
 }
