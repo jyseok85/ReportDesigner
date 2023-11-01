@@ -20,6 +20,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         }
         public Control Type { get; set; } = Control.None;
 
+
         public ReportComponentModel() {
             this.Uid = Guid.NewGuid().ToString();
         }
@@ -69,6 +70,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public Margin Margin { get; set; } = new Margin();
         public Border Border { get; set; } = new Border();
 
-        
+        public bool IsOverlap { get; set; } = false;
+
     }
 }

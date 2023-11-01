@@ -104,10 +104,18 @@
             case "height":
                 return "height:" + (this.Model.Height) + "px;";
             case "border":
-                if (this.Model.DrawBorder)
-                    return "border: 1px solid grey;";
+                if(this.Model.IsOverlap == false)
+                {
+                    if (this.Model.DrawBorder)
+                        return "border: 1px solid grey;";
+                    else
+                        return "border: 1px solid transparent;";
+                }
                 else
-                    return "border: 1px solid transparent;";
+                {
+                    return "border: 1px solid red;";
+
+                }
             case "padding":
                 return "padding:10px;";
             case "word-break":

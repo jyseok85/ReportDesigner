@@ -4,6 +4,7 @@ using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.UI.ReportControls;
 using System.Drawing;
+using System.Reflection;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -106,10 +107,64 @@ namespace ReportDesigner.Blazor.Common.Services
             }
 
             UpdateSnapControl();
+            CheckAreaOverlap();
+        }
+        /// <summary>
+        /// 현재 선택된 컨트롤이 다른 컨트롤과 겹치는 계산해서, 겹칠경우 IsOverlap 속성을 변경합니다.
+        /// </summary>
+        private void CheckAreaOverlap()
+        {
+            if (SelectedControl.CurrentSelectedModel is null)
+                return;
+
+            int x1 = (int)SelectedControl.CurrentSelectedModel.X;
+            int x2 = (int)SelectedControl.CurrentSelectedModel.Right;
+            int y1 = (int)SelectedControl.CurrentSelectedModel.Y;
+            int y2 = SelectedControl.CurrentSelectedModel.Bottom;
+
+            SelectedControl.CurrentSelectedModel.IsOverlap = false;
+
+            
+            //이거 이중으로 한것좀 처리하자 
+            if (IsDragAbleControl(SelectedControl.CurrentSelectedModel.Type))
+            {
+                foreach (ReportComponentModel model in controlDictionary.Values)
+                {
+                    if(IsDragAbleControl(model.Type))
+                    {
+                        if (model.Equals(SelectedControl.CurrentSelectedModel))
+                            continue; 
+                        int cx1 = (int)model.X;
+                        int cx2 = (int)model.Right;
+                        int cy1 = (int)model.Y;
+                        int cy2 = (int)model.Bottom;
+
+                        if ((cx2 > x1 && cx1 < x2) && (cy2 > y1 && cy1 < y2))
+                        {
+                            model.IsOverlap = true;
+                            SelectedControl.CurrentSelectedModel.IsOverlap = true;
+                        }
+                        else
+                            model.IsOverlap = false;
+                    }
+                }            
+
+            }
+
         }
 
-
-
+        private bool IsDragAbleControl(ReportComponentModel.Control type)
+        {
+            switch(type)
+            { 
+                case ReportComponentModel.Control.Label:
+                case ReportComponentModel.Control.None:
+                    return true;
+                default:
+                    return false;
+            }
+             
+        }
         public SnapLinerModel SnapLinerModel => this.snapLinerModel;
         private SnapLinerModel snapLinerModel = new SnapLinerModel();
 

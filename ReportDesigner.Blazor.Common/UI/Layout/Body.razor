@@ -224,13 +224,21 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             DragService.PosY = snapPoint.Y - Options.PaperMargin.Top;
     }
 
+    bool keyReleased = true;
     private void OnKeyDown(KeyboardEventArgs e)
     {
+      
         if (SelectedControlService.CurrentSelectedModel is not null)
         {
             //컨트롤 키와 같이 누른경우
             if (e.CtrlKey)
             {
+                //컨트롤 방향키 스냅포인트로 이동. 연속 누르기 금지
+                if (keyReleased == false)
+                    return;
+
+                keyReleased = false;
+
                 if(e.Key != "Control")
                     Options.SetSnapPoint(e.Key);
             }
@@ -258,7 +266,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     private void OnKeyUp(KeyboardEventArgs e)
     {
         Options.UpdateAllControlOffset();
-        // CheckAreaOverlap();
+        keyReleased = true;
 
     }
 
