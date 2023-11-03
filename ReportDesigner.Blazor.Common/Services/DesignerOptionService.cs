@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.UI.ReportControls;
@@ -35,6 +36,25 @@ namespace ReportDesigner.Blazor.Common.Services
             PaperSizeChanged?.Invoke(paperSize.Width, delay);
         }
         public event EventHandler<int>? PaperSizeChanged;
+        
+        public event EventHandler<string>? Refresh;
+
+        public event EventHandler<string>? ControlSelectionChanged;
+
+        public void RefreshBody()
+        {
+            Refresh?.Invoke(null, "body");
+        }
+
+        public void RefreshRightPanel()
+        {
+            Refresh?.Invoke(null, "Right");
+        }
+
+        public void FireControlSelectionChangedEvent()
+        {
+            ControlSelectionChanged?.Invoke(null, "Right");
+        }
 
         public enum ActionState
         {
@@ -63,9 +83,27 @@ namespace ReportDesigner.Blazor.Common.Services
                     model.AbsoluteOffsetRight = PaperSize.Width - PaperMargin.Right;
 
                 model.AbsoluteOffsetBottom = model.AbsoluteOffsetY + model.Height;
+
+                model.Name = GenerateName(model.Type);  
             }
 
             controlDictionary.Add(key, model);
+
+            string GenerateName(ReportComponentModel.Control type)
+            {
+                for (int i = 1; i < 1000; i++)
+                {
+                    string name = type.ToString() + "_" + i.ToString("D3");
+                    var data = controlDictionary.Select(x=> x.Value).Where(x => x.Name == name);
+                    if(data.Count() == 0)
+                    {
+                        return name;
+                    }
+                }
+
+                //todo 컨트롤이 많아질경우 저 Linq의 속도 계산을 해봐야 함.
+                throw new Exception("동일한 컨트롤을 1000개 이상 생성할 수 없습니다.");
+            }
         }
 
         public void UpdateAllControlOffset()
@@ -90,7 +128,11 @@ namespace ReportDesigner.Blazor.Common.Services
 
                 if(model.Type == ReportComponentModel.Control.Band)
                 {
+                    model.AbsoluteOffsetX = model.X + PaperMargin.Left;
+                    model.AbsoluteOffsetY = model.Y + PaperMargin.Top;
                     model.Width = paperSize.Width - PaperMargin.Left - PaperMargin.Right;
+                    model.AbsoluteOffsetRight = model.AbsoluteOffsetX + model.Width;
+                    model.AbsoluteOffsetBottom = model.AbsoluteOffsetY + model.Height;
                 }
 
                 if (model.Type == ReportComponentModel.Control.Label || model.Type == ReportComponentModel.Control.None)

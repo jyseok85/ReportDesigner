@@ -1,16 +1,17 @@
-﻿<RadzenLayout @onkeydown:preventDefault="true"
-    Style="
+﻿<RadzenLayout Style="
 grid-template-columns: auto 1fr auto; 
 grid-template-areas: 
 'rz-header rz-header rz-header' 
 'rz-sidebar rz-body rz-right-sidebar'
 'rz-footer rz-footer rz-footer'
 ">
+
     <CascadingValue Value="this">
         <Header></Header>
         <LeftSideBar></LeftSideBar>
         <Body ></Body>
         <RightSideBar></RightSideBar>
+
         @* <RadzenFooter Style="background-color:gray"></RadzenFooter> *@
     </CascadingValue>
 </RadzenLayout>

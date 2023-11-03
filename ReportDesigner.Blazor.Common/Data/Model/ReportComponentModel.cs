@@ -47,7 +47,6 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public virtual int Y { get; set; } = 0;
         public virtual int Right { get { return X + Width; } set { } }
         public virtual int Bottom { get { return Y + Height; } set { } }
-        public bool DrawBorder { get; set; } = true;
         private bool selected = false;
         public bool Selected
         {
@@ -68,9 +67,25 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public bool Hidden { get; set; } = false;
         public Margin Margin { get; set; } = new Margin();
-        public Border Border { get; set; } = new Border();
 
         public bool IsOverlap { get; set; } = false;
 
+
+        public string BackColor { get; set; } = "rgba(0,0,0,0)";
+        public string ForeColor { get; set; } = "Black";
+        public bool UseBorder { get; set; } = true;
+        public string BorderColor { get; set; } = "Black";
+
+        public string BorderStyle { get; set; } = "solid";
+
+        public int BorderThickness 
+        { 
+            get { return Border.Left; }
+            set { Border.SetBorderThickness(value); }
+        }
+        public Border Border { get; set; } = new Border();
+
+        public string Text { get; set; } = string.Empty;
+        public string Format { get; set; } = string.Empty;
     }
 }

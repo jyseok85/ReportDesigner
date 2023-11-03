@@ -1,0 +1,149 @@
+﻿@inherits PropertyBase
+@inject DesignerOptionService Options
+@inject SelectedControlService SelectedControlService
+@inject DesignerCSSService CSS
+
+<RadzenPanelMenuItem Text="Layout">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Location</RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-small">X</RadzenText>
+                <RadzenNumeric class="property-item" Min="0" Max="Options.PaperSize.Width" TValue="int" @bind-Value=LocationX Disabled=disableControl />
+                <RadzenText class="property-displayName-small">Y</RadzenText>
+                <RadzenNumeric class="property-item" Min="0" Max="Options.PaperSize.Height" TValue="int" @bind-Value=LocationY Disabled=disableControl />
+            </RadzenStack>
+        </RadzenStack>
+        <div style="background-color:#fafafa; border-radius:0.5rem; padding:0.2rem 0 0.2rem 0;">
+            <RadzenStack class="property-stack small-height" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Absolute Location</RadzenText>
+                <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName">@AbsoluteLocation</RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+        </div>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Size</RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Center" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-small">W</RadzenText>
+                <RadzenNumeric class="property-item" Min="5" Max="Options.PaperSize.Width" TValue="int" @bind-Value=ControlWidth Disabled=disableControl />
+                <RadzenText class="property-displayName-small">H</RadzenText>
+                <RadzenNumeric class="property-item" Min="5" Max="Options.PaperSize.Height" TValue="int" @bind-value=ControlHeight />
+            </RadzenStack>
+        </RadzenStack>
+    </div>
+</RadzenPanelMenuItem>
+
+@code {
+    private bool disableControl = false;
+
+    //컨트롤타입에 따른 레이아웃의 Enable 여부 결정필요.
+    [Parameter]
+    public ReportComponentModel.Control Type
+    {
+        set
+        {
+            if (value == ReportComponentModel.Control.Band)
+                disableControl = true;
+            else
+                disableControl = false;
+        }
+    }
+
+    private string AbsoluteLocation
+    {
+        get
+        {
+            string data = string.Empty;
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                int x = SelectedControlService.CurrentSelectedModel.AbsoluteOffsetX;
+                int y = SelectedControlService.CurrentSelectedModel.AbsoluteOffsetY;
+                data = $"(X: {x} , Y: {y})";
+
+            }
+            return data;
+        }
+    }
+    private int LocationX
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.X;
+            else
+                return 0;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.X = value;
+            Options.RefreshBody();
+        }
+    }
+    private int LocationY
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Y;
+            else
+                return 0;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Y = value;
+            Options.RefreshBody();
+        }
+    }
+    private int AbsoluteLocationX
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.AbsoluteOffsetX;
+            return -1;
+        }
+    }
+    private int AbsoluteLocationY
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.AbsoluteOffsetY;
+            return -1;
+        }
+    }
+    private int ControlWidth
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Width;
+            else
+                return 0;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Width = value;
+            Options.RefreshBody();
+        }
+    }
+    private int ControlHeight
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Height;
+            else
+                return 0;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Height = value;
+            Options.RefreshBody();
+
+        }
+    }
+
+    
+}

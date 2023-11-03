@@ -1,0 +1,214 @@
+﻿@inherits PropertyBase
+@inject SelectedControlService SelectedControlService
+@inject DesignerCSSService CSS
+@inject DesignerOptionService Options
+
+<RadzenPanelMenuItem Text="Appearance">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">BackColor</RadzenText>
+            <RadzenColorPicker class="color-picker w-100" @bind-Value=BackColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton/>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">UseBorder</RadzenText>
+            <RadzenCheckBox @bind-Value=UseBorder Name="UseBorder" />
+        </RadzenStack>
+        @if (UseBorder)
+        {
+            <div style="background-color:#fafafa; border-radius:0.5rem; padding:0.2rem 0 0.2rem 0;">
+                <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName property-sub">Border Color</RadzenText>
+                    <RadzenColorPicker class="color-picker w-100" @bind-Value=@BorderColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton/>
+                </RadzenStack>
+                <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName property-sub">Border Thickness</RadzenText>
+                    <RadzenNumeric class="property-item" Min="1" Max="10" TValue="int" @bind-Value=BorderThickness/>
+                </RadzenStack>
+                <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName property-sub">Border Style</RadzenText>
+                    <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@BorderStyle Data=@borderStyleList PopupStyle=@popupStyle>
+
+                    </RadzenDropDown>
+                </RadzenStack>
+                <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName property-sub">Border Direction</RadzenText>
+                    <RadzenSelectBar @bind-Value=@borderSelectAll TValue="bool" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => SelectBorder(x)">
+                        <Items>
+                            <RadzenSelectBarItem Icon="border_outer" Value="true" Style="padding:0.2rem;" />
+                            <RadzenSelectBarItem Icon="border_clear" Value="false" Style="padding:0.2rem;" />
+                        </Items>
+                    </RadzenSelectBar>
+                    <RadzenSelectBar @bind-Value=@borderDirection TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => SelectBorderDirection(x)">
+                        <Items>
+                            <RadzenSelectBarItem Icon="border_top" Value="0" Style="padding:0.2rem;" />
+                            <RadzenSelectBarItem Icon="border_right" Value="1" Style="padding:0.2rem;" />
+                            <RadzenSelectBarItem Icon="border_bottom" Value="2" Style="padding:0.2rem;" />
+                            <RadzenSelectBarItem Icon="border_left" Value="3" Style="padding:0.2rem;" />
+                        </Items>
+                    </RadzenSelectBar>
+                </RadzenStack>
+            </div>
+        }
+    </div>
+</RadzenPanelMenuItem>
+@code { 
+
+    public string BackColor
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.BackColor;
+            else
+                return "";
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.BackColor = value;
+            Options.RefreshBody();
+        }
+    }
+    public string BorderColor
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.BorderColor;
+            else
+                return "";
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.BorderColor = value;
+            Options.RefreshBody();
+        }
+    }
+    public string BorderStyle
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.BorderStyle;
+            else
+                return "";
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.BorderStyle = value;
+            Options.RefreshBody();
+        }
+    }
+    public int BorderThickness
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.BorderThickness;
+            else
+                return 1;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.BorderThickness = value;
+            Options.RefreshBody();
+        }
+    }
+    public bool UseBorder
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.UseBorder;
+            else
+                return true;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.UseBorder = value;
+            Options.RefreshBody();
+        }
+    }
+
+    /// <summary>
+    /// 이런 변수는 HotReload시 적용되지 않는다. 불러오는 부분이 없어서 그런듯 하다.
+    /// </summary>
+    private string popupStyle = @" --rz-dropdown-item-font-size: 0.7rem;
+        --rz-dropdown-item-padding: 0.4rem 0.5rem;";
+
+    bool showHSV = true;
+    bool showRGBA = true;
+    bool showColors = false;
+    bool showButton = true;
+
+    //테두리
+    private List<string> borderStyleList = new List<string>();
+    private bool borderSelectAll = true;
+    IEnumerable<int> borderDirection = new int[] { 0, 1, 2, 3 };
+
+    protected override void OnInitialized()
+    {
+        if(borderStyleList.Count == 0)
+        {
+            borderStyleList.Add("Solid");
+            borderStyleList.Add("Dashed");
+            borderStyleList.Add("Dotted");
+        }
+    }
+
+    private void SelectBorder(bool value)
+    {
+        if (value)
+        {
+            borderDirection = new int[] { 0, 1, 2, 3 };
+        }
+        else
+            borderDirection = new int[] { };
+
+        SelectBorderDirection(borderDirection);
+    }
+
+    private void SelectBorderDirection(IEnumerable<int> x)
+    {
+        int borderDirectionCount = borderDirection.Count();
+        if (borderDirectionCount == 4)
+        {
+            borderSelectAll = true;
+        }
+        else
+        {
+            borderSelectAll = false;
+        }
+
+        if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+        {
+            if (borderDirectionCount == 4 )
+            {
+                SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = false;
+            }
+            else
+            {
+                SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = true;
+                SelectedControlService.CurrentSelectedModel.Border.SetAllBorderColor("transparent");
+                string color = BorderColor;
+                if(borderDirection.Contains(0)) //상단
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.TopColor = color;
+                }
+                if(borderDirection.Contains(1)) //우측
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.RightColor = color;
+                }
+                if(borderDirection.Contains(2)) //하단
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.BottomColor = color;
+                }
+                if (borderDirection.Contains(3)) //좌측
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.LeftColor = color;
+                }
+            }
+
+            Options.RefreshBody();
+        }
+    }
+}

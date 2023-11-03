@@ -1,0 +1,148 @@
+﻿@inherits PropertyBase
+@inject DesignerCSSService CSS
+@inject DesignerOptionService Options
+@inject SelectedControlService SelectedControlService
+
+
+<RadzenPanelMenuItem Text="Font">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Font Name</RadzenText>
+            <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@FontName Data=@fontList ValueProperty="Name" PopupStyle=@CSS.DropDownPopupStyle>
+                <Template>
+                    @(context.Name)
+                </Template>
+            </RadzenDropDown>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Font Color</RadzenText>
+            <RadzenColorPicker class="color-picker w-100" @bind-Value=@fontColor ShowHSV=@CSS.ShowHSV ShowRGBA=@CSS.ShowRGBA ShowColors=@CSS.ShowColors ShowButton=@CSS.ShowButton Change="@(x => OnColorChange(x,"font"))" />
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Font Size</RadzenText>
+            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" Value=@fontSize Change=@(args => fontSize = args) />
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Font Style</RadzenText>
+            <RadzenSelectBar @bind-Value=@fontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => SelectBorderDirection(x)">
+                <Items>
+                    <RadzenSelectBarItem Icon="format_bold" Value="0" Style="padding:0.2rem;" />
+                    <RadzenSelectBarItem Icon="format_italic" Value="1" Style="padding:0.2rem;" />
+                    <RadzenSelectBarItem Icon="format_underlined" Value="2" Style="padding:0.2rem;" />
+                    <RadzenSelectBarItem Icon="format_strikethrough" Value="3" Style="padding:0.2rem;" />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Text Alignment</RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
+                <RadzenSelectBar @bind-Value=@textAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                    <Items>
+                        <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="vertical_align_bottom" Value="2" Style="padding:0.2rem;" />
+                    </Items>
+                </RadzenSelectBar>
+            </RadzenStack>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName"></RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
+                <RadzenSelectBar @bind-Value=@textAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                    <Items>
+                        <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="format_align_right" Value="5" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="format_align_justify" Value="6" Style="padding:0.2rem;" />
+
+                    </Items>
+                </RadzenSelectBar>
+            </RadzenStack>
+        </RadzenStack>
+
+    </div>
+</RadzenPanelMenuItem>
+@code {
+    private string ControlName
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Name;
+            else
+                return string.Empty;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Name = value;
+            Options.RefreshBody();
+
+        }
+    }
+    private string fontName;
+    public string FontName
+    {
+        get { return this.fontName; }
+        set
+        {
+            this.fontName = value;
+        }
+    }
+    private int fontSize = 12;
+    string fontColor = "rgb(0, 0, 0)";     //블랙
+    int textAlignVertical = 1;
+    int textAlignHorizontal = 3;
+    List<FontModel> fontList = new List<FontModel>();
+    IEnumerable<int> fontStyle = new int[] { };
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //96dpi 기준일때의 값
+        if (fontList.Count == 0)
+        {
+            AddFont();
+        }
+    }
+
+    void OnColorChange(string value, string target)
+    {
+        switch (target.ToLower())
+        {
+            case "font": fontColor = value; break;
+        }
+    }
+    private void SelectBorderDirection(IEnumerable<int> x)
+    {
+        // if (borderDirection.Count() == 4)
+        //     borderSelectAll = true;
+        // else
+        //     bord
+        // erSelectAll = false;
+    }
+    
+    private void AddFont()
+    {
+        fontList.Add(new FontModel("Noto Sans"));
+        fontList.Add(new FontModel("Nanum Gothic"));
+        fontList.Add(new FontModel("Nanum Myeongjo"));
+        fontList.Add(new FontModel("Nanum Gothic Coding"));
+        fontList.Add(new FontModel("Nanum Brush Script"));
+        fontList.Add(new FontModel("Nanum Pen Script"));
+        fontList.Add(new FontModel("Arial"));
+        fontList.Add(new FontModel("Verdana"));
+        fontList.Add(new FontModel("Tahoma"));
+        fontList.Add(new FontModel("Trebuchet MS"));
+        fontList.Add(new FontModel("Times New Roman"));
+        fontList.Add(new FontModel("Georgia"));
+        fontList.Add(new FontModel("Garamond"));
+        fontList.Add(new FontModel("Courier New"));
+        fontList.Add(new FontModel("Brush Script MT"));
+    }
+
+    public void RefreshState()
+    {
+        this.StateHasChanged();
+    }
+}

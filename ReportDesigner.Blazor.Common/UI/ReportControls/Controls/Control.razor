@@ -8,23 +8,25 @@
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @onpointerdown:stopPropagation="true"
      @ondblclick="@( (x) => OnDbClick(x))"
-     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border"))>
+     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border")+ GetStyle("background-color") )>
      <CascadingValue Value="this">
         @if(DragService.Hidden)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
      </CascadingValue>
-    <div style=@("top:0;height:inherit;width:inherit;position:absolute;pointer-events: none; " + GetStyle("padding") +GetStyle("word-break"))>
-        @value
+
+
+     <div style=@("top:0;height:inherit;width:inherit;position:absolute;pointer-events: none;overflow:hidden;" + GetStyle("padding") +GetStyle("word-break"))>
+        @Model.Text
      </div>
      <RadzenTextArea @ref=textArea
         @ondrag:stopPropagation="true"
         @onpointerdown:stopPropagation="true"
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
-        @bind-Value=@value
-        Change=@(args => OnChange(args, "TextArea")) class="w-100" 
+        @bind-Value=@Model.Text
+        class="w-100" 
         Style="top:0;height:100%;width:100%;position:absolute;
         --rz-text-area-padding:10px;border-radius:0px;"
                     hidden=@HiddenEditMode />
@@ -36,7 +38,6 @@
     }
 </style>
 @code {
-    string value;
     public int Height => Model.Height;
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
@@ -95,7 +96,8 @@
 
     public string GetStyle(string type)
     {
-        switch (type.ToLower())
+        string name = type.ToLower();
+        switch (name)
         {
             case "translate":
                 return "translate(" + this.Model.X + "px, " + this.Model.Y + "px);";
@@ -106,20 +108,30 @@
             case "border":
                 if(this.Model.IsOverlap == false)
                 {
-                    if (this.Model.DrawBorder)
-                        return "border: 1px solid grey;";
+                    if (this.Model.UseBorder)
+                    {
+                        if(this.Model.Border.UseIndividualBorders)
+                            return 
+                            $"{name}-top: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.TopColor};" +
+                            $"{name}-right: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.RightColor};" +
+                            $"{name}-bottom: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.BottomColor};" +
+                            $"{name}-left: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.LeftColor};";
+                        else
+                            return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.BorderColor};";
+                    }
                     else
-                        return "border: 1px solid transparent;";
+                        return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} transparent;";
                 }
                 else
                 {
-                    return "border: 1px solid red;";
-
+                    return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} red;";
                 }
             case "padding":
                 return "padding:10px;";
             case "word-break":
                 return "word-break:break-all;";
+            case "background-color":
+                return type.ToLower() + ":" + this.Model.BackColor;
             default:
                 return string.Empty;
         }
@@ -139,10 +151,5 @@
         await this.textArea.Element.FocusAsync();
     }
 
-    void OnChange(string value, string name)
-    {
-        this.value = value;
-        //console.Log($"{name} value changed to {value}");
-    }
 
 }

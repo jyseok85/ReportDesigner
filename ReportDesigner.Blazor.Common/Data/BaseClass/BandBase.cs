@@ -151,6 +151,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
             var control = new ControlBase(x, y, width, height, tabIndex);
             control.Model.ParentUid = this.Model.Uid;
+            control.Model.Type = ReportComponentModel.Control.Label;
 
             //컴포넌트 목록에 추가한다.
             this.controlBases.Add(control);

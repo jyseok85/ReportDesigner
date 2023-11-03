@@ -1,0 +1,122 @@
+﻿@inherits PropertyBase
+@inject DesignerCSSService CSS
+@inject DesignerOptionService Options
+@inject SelectedControlService SelectedControlService
+
+<RadzenPanelMenuItem Text="Data">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Data Type</RadzenText>
+            <RadzenDropDown class="property-item" AllowClear="false" AllowFiltering="false" @bind-Value=@dataType Data=@dataTypeList PopupStyle=@CSS.DropDownPopupStyle>
+            </RadzenDropDown>
+        </RadzenStack>
+
+        @if (dataType == "Normal Text")
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Text</RadzenText>
+                <RadzenTextBox class="w-100 property-item" @bind-Value=Text></RadzenTextBox>
+            </RadzenStack>
+        }
+        else if (dataType == "DataTable")
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Table Name</RadzenText>
+                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+            </RadzenStack>
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Field Name</RadzenText>
+                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+            </RadzenStack>
+        }
+        else if (dataType == "Paramater")
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Parameter Name</RadzenText>
+                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+            </RadzenStack>
+        }
+        else if (dataType == "System Text")
+        {
+            //여기 리스트박스로 날짜, 시간, 날짜/시간, 페이지번호, 총페이지 , 페이지번호/총페이지(이거 모드에 따라 되고 안되고 할 수 있음)
+        }
+        @if (dataType == "Normal Text" || dataType == "DataTable" || dataType == "Parameter")
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Text Format</RadzenText>
+                <RadzenTextBox class="w-100 property-item" @bind-Value=Format></RadzenTextBox>
+                <RadzenButton Click=@(args => OnClick("Format Help")) Icon="help_outline" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" />
+                @* https://learn.microsoft.com/ko-kr/dotnet/standard/base-types/custom-numeric-format-strings *@
+            </RadzenStack>
+        }
+    </div>
+</RadzenPanelMenuItem>
+
+@code {
+    public string Format
+    {
+        set
+        {
+            if (value != string.Empty)
+            {
+                decimal number = 0;
+                bool result = decimal.TryParse(value, out number); //i now = 108
+                if(result == true)
+                {
+                    SelectedControlService.CurrentSelectedModel.Text = number.ToString(value);
+                }
+                SelectedControlService.CurrentSelectedModel.Format = value;
+
+                //todo placeholder 적용
+            }
+        }
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Format;
+            else
+                return "";
+        }
+    }
+    public string Text
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Text;
+            else
+                return "";
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Text = value;
+            Options.RefreshBody();
+        }
+    }
+
+    string dataType = "Normal Text";
+    List<string> dataTypeList = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //96dpi 기준일때의 값
+
+        //to do
+        if (dataTypeList.Count == 0)
+        {
+            dataType = "Normal Text";
+            dataTypeList.Add("Normal Text");
+            dataTypeList.Add("DataTable");
+            dataTypeList.Add("Parameter");
+            dataTypeList.Add("System Text");
+            dataTypeList.Add("Summary");
+        }
+    }
+
+
+    private void OnClick(string text)
+    {
+
+    }
+}

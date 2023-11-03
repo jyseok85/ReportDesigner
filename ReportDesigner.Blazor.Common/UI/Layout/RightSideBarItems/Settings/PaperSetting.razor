@@ -1,29 +1,33 @@
 ﻿@using System.Drawing;
+@inherits PropertyBase
+@inject MultiLanguageService DD
+@inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 
 <div class="side-panel-contents-background">
-    <RadzenText Text="@DD("Direction")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
+    <RadzenText Text="@DD.DD("Direction")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
     <RadzenSelectBar @bind-Value=@IsLandScape TValue="bool" class="d-flex" Size="ButtonSize.ExtraSmall" Style="margin:0.25rem 0 0.25rem 0;">
         <Items>
-            <RadzenSelectBarItem Text="@DD("Portrait")" Value="false" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD("Landscape")" Value="true" Style=" width:100%; text-align:center; " />
+            <RadzenSelectBarItem Text="@DD.DD("Portrait")" Value="false" Style=" width:100%; text-align:center; " />
+            <RadzenSelectBarItem Text="@DD.DD("Landscape")" Value="true" Style=" width:100%; text-align:center; " />
         </Items>
     </RadzenSelectBar>
-    <RadzenText Text="@DD("Paper Kind")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
-    <RadzenDropDown AllowClear="false" AllowFiltering="false" @bind-Value=@PaperKindValue Data=@paperKinds ValueProperty="Name" Style=@dropdownStyle PopupStyle=@popupStyle >
+    <RadzenText Text="@DD.DD("Paper Kind")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
+    <RadzenDropDown AllowClear="false" AllowFiltering="false" @bind-Value=@PaperKindValue Data=@paperKinds ValueProperty="Name" Style=@dropdownStyle PopupStyle=@CSS.DropDownPopupStyle>
         <Template>
             @(context.Name)
         </Template>
     </RadzenDropDown>
     
-    <RadzenText Text="@DD("Margin")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
+    <RadzenText Text="@DD.DD("Margin")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
     <RadzenSelectBar @bind-Value=@marginType TValue="int" class="d-flex" Size="ButtonSize.ExtraSmall" Style="margin:0.25rem 0 0.25rem 0;">
         <Items> 
-            <RadzenSelectBarItem Text="@DD("Default")" Value="0" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD("None")" Value="1" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD("Custom")" Value="2" Style=" width:100%; text-align:center; " />
+            <RadzenSelectBarItem Text="@DD.DD("Default")" Value="0" Style=" width:100%; text-align:center; " />
+            <RadzenSelectBarItem Text="@DD.DD("None")" Value="1" Style=" width:100%; text-align:center; " />
+            <RadzenSelectBarItem Text="@DD.DD("Custom")" Value="2" Style=" width:100%; text-align:center; " />
         </Items>
     </RadzenSelectBar>
+
 </div>
 <style>
     .side-panel-contents-background {
@@ -35,11 +39,7 @@
     private string dropdownStyle = @"display:block;padding:5px 3px 3px 7px;
                                     --rz-input-height:1.8rem;
                                     --rz-input-font-size:0.7rem;";
-    /// <summary>
-    /// 이런 변수는 HotReload시 적용되지 않는다. 불러오는 부분이 없어서 그런듯 하다.
-    /// </summary>
-    private string popupStyle = @"--rz-dropdown-item-font-size:0.7rem; 
-                                  --rz-dropdown-item-padding: 0.4rem 0.5rem;";
+
     private bool isLandscape = false;
     public bool IsLandScape
     {
@@ -49,16 +49,14 @@
             ChangePaperSize();
         }
     }
+    string value;
 
+
+    void OnChange(string value, string name)
+    {
+    }
     private int marginType = 0;
 
-    //추후 다국어 처리를 위한 함수
-    string DD(string text)
-    {
-        // if (this.initialized)
-        //     text = LanguageManager.Instance.DD(text);
-        return text;
-    }
     string paperKind = "A4";
     List<PaperKind> paperKinds = new List<PaperKind>();
     public string PaperKindValue

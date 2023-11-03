@@ -1,19 +1,21 @@
 ﻿@inject DesignerOptionService Options
 <RadzenSidebar class="rz-right-sidebar" @bind-Expanded="@showSidePanel" Style="border-left:solid 1px lightgray;">
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:inherit;gap:0;">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:100%;gap:0;">
         <RadzenStack Orientation="Orientation.Vertical" Style="flex-direction:inherit !important; background-color:red; height:inherit;transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
             <RadzenStack Orientation="Orientation.Vertical" Style="transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
-                <RadzenPanelMenu Click="OnParentClicked" Style=@((this.showRightSidePanel ?"width:300px;":"width:0px;") +"transition: var(--rz-transition-all);") Multiple="@multiple">
+                <RadzenPanelMenu Click="OnParentClicked" Style=@((this.showRightSidePanel ?"width:350px;":"width:0px;") +"transition: var(--rz-transition-all);") Multiple="@multiple">
                     @if (this.currentRightPanel == RightPanelType.Property)
                     {
-                        <RadzenPanelMenuItem Text="General" Icon="home">
+                        <LabelSetting @ref=labelSetting></LabelSetting>
+                        
+                      @*  <RadzenPanelMenuItem Text="General">
                             <RadzenPanelMenuItem Text="Buttons" Path="buttons" Icon="account_circle"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="Menu" Path="menu" Icon="line_weight"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="FileInput" Path="fileinput" Icon="attach_file"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="Dialog" Path="dialog" Icon="perm_media"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="Notification" Path="notification" Icon="announcement"></RadzenPanelMenuItem>
-                        </RadzenPanelMenuItem>
-                        <RadzenPanelMenuItem Text="Inputs" Icon="payment">
+                        </RadzenPanelMenuItem> *@
+                     @*    <RadzenPanelMenuItem Text="Inputs" Icon="payment">
                             <RadzenPanelMenuItem Text="CheckBox" Path="checkbox" Icon="check_circle"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="TextBox" Path="textbox" Icon="input"></RadzenPanelMenuItem>
                             <RadzenPanelMenuItem Text="TextArea" Path="textarea" Icon="description"></RadzenPanelMenuItem>
@@ -44,7 +46,7 @@
                                     <RadzenPanelMenuItem Click="OnChildClicked" Text="Item4"></RadzenPanelMenuItem>
                                 </RadzenPanelMenuItem>
                             </RadzenPanelMenuItem>
-                        </RadzenPanelMenuItem>
+                        </RadzenPanelMenuItem>  *@
                     }
                     else if (this.currentRightPanel == RightPanelType.Settings)
                     {
@@ -68,6 +70,7 @@
 
 </RadzenSidebar>
 @code {
+    LabelSetting labelSetting;
     bool showSidePanel = false;
 
     enum RightPanelType
@@ -81,6 +84,8 @@
 
     private RightPanelType currentRightPanel = RightPanelType.Property;
     private bool showRightSidePanel = false;
+
+
     void ShowRightPanel(MenuItemEventArgs args)
     {
         bool isFold = false;
@@ -146,5 +151,20 @@
     }
     void OnParentClicked(MenuItemEventArgs args)
     {
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Options.ControlSelectionChanged += ControlSelectionChanged;
+    }
+
+    private void ControlSelectionChanged(object? sender, string key)
+    {
+        if (key.Equals("Right"))
+        {
+            Console.WriteLine("Right");
+            labelSetting.RefreshState();
+        }
     }
 }

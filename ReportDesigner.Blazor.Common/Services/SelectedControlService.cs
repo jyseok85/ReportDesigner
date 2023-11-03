@@ -33,6 +33,9 @@ namespace ReportDesigner.Blazor.Common.Services
             models.Add(model);
             model.Selected = true;
             CurrentSelectedModel = model;
+
+            //오른쪽 속성탭이 열려 있다면 값을 업데이트 해준다.
+
         }
 
         public ReportComponentModel LastSelectModel => models[models.Count - 1];
@@ -71,6 +74,8 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
-        public required ReportComponentModel CurrentSelectedModel { get; set; }
+        public required ReportComponentModel CurrentSelectedModel { get; set; } = new ReportComponentModel();
+
+
     }
 }

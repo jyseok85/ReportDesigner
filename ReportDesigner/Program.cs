@@ -8,10 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DesignerOptionService>();
+builder.Services.AddScoped<DesignerCSSService>();
 builder.Services.AddScoped<ControlCreationService>();
 builder.Services.AddScoped<ControlModificationServcie>();
 builder.Services.AddScoped<SelectedControlService>();
 builder.Services.AddScoped<DragAndDropService>();
+builder.Services.AddScoped<MultiLanguageService>();
 
 var app = builder.Build();
 

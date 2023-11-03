@@ -52,6 +52,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     {
         base.OnInitialized();
         Options.PaperSizeChanged += this.PaperSizeChanged;
+        Options.Refresh += this.RefreshBody;
         AddReport();
         //todo 용지 사이즈를 초반에 셋팅해주는 부분이지만 이런코드를 넣는 위치를 바꿀 필요가 있다. 
         PaperSizeChanged(Options.PaperSize.Width, 0);
@@ -73,6 +74,14 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         PaperSizeChanged(Options.PaperSize.Width);
     }
 
+    private void RefreshBody(object? sender, string key)
+    {
+        if (key.Equals("body"))
+        {
+            Console.WriteLine("RefreshBody");
+            this.StateHasChanged();
+        }
+    }
 
     private void PaperSizeChanged(object? sender, int delay = 0)
     {
@@ -202,6 +211,9 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
         //todo 모든컨트롤 편집모드 해제
         Options.TurnOffEditModeForAllControls();
+
+        //컨트롤이 변경되었다고 이벤트를 보낸다. (변경안되도 호출되네?)
+        Options.FireControlSelectionChangedEvent();
     }
 
 
