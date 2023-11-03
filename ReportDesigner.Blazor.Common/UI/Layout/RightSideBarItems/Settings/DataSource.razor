@@ -2,6 +2,7 @@
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 @inject SelectedControlService SelectedControlService
+@inject MultiLanguageService DD
 
 <RadzenPanelMenuItem Text="Data">
     <div class="side-panel-contents-background">
@@ -44,7 +45,7 @@
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Text Format</RadzenText>
-                <RadzenTextBox class="w-100 property-item" @bind-Value=Format></RadzenTextBox>
+                <RadzenTextBox class="w-100 property-item" Placeholder="@placeHolder" @bind-Value=Format Disabled="@(!isNumber)"></RadzenTextBox>
                 <RadzenButton Click=@(args => OnClick("Format Help")) Icon="help_outline" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" />
                 @* https://learn.microsoft.com/ko-kr/dotnet/standard/base-types/custom-numeric-format-strings *@
             </RadzenStack>
@@ -53,20 +54,17 @@
 </RadzenPanelMenuItem>
 
 @code {
+    private string placeHolder = string.Empty;
+    private bool isNumber = true;
+    private decimal number = 0;
     public string Format
     {
         set
         {
             if (value != string.Empty)
-            {
-                decimal number = 0;
-                bool result = decimal.TryParse(value, out number); //i now = 108
-                if(result == true)
-                {
-                    SelectedControlService.CurrentSelectedModel.Text = number.ToString(value);
-                }
+            {               
+                SelectedControlService.CurrentSelectedModel.Text = number.ToString(value);               
                 SelectedControlService.CurrentSelectedModel.Format = value;
-
                 //todo placeholder 적용
             }
         }
@@ -89,6 +87,12 @@
         }
         set
         {
+            isNumber = decimal.TryParse(value, out number); //i now = 108
+            if (isNumber == false)
+                placeHolder = DD.DD("Not a number");
+            else
+                placeHolder = "";
+
             SelectedControlService.CurrentSelectedModel.Text = value;
             Options.RefreshBody();
         }
