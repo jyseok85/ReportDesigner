@@ -44,8 +44,8 @@
         @if (dataType == "Normal Text" || dataType == "DataTable" || dataType == "Parameter")
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
-                <RadzenText class="property-displayName">Text Format</RadzenText>
-                <RadzenTextBox class="w-100 property-item" Placeholder="@placeHolder" @bind-Value=Format Disabled="@(!isNumber)"></RadzenTextBox>
+                <RadzenText class="property-displayName">Number Format</RadzenText>
+                <RadzenTextBox class="w-100 property-item" Placeholder="@placeHolder" @bind-Value=Format Disabled="@(!IsNumber)"></RadzenTextBox>
                 <RadzenButton Click=@(args => OnClick("Format Help")) Icon="help_outline" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" />
                 @* https://learn.microsoft.com/ko-kr/dotnet/standard/base-types/custom-numeric-format-strings *@
             </RadzenStack>
@@ -55,9 +55,26 @@
 
 @code {
     private string placeHolder = string.Empty;
-    private bool isNumber = true;
     private decimal number = 0;
-    public string Format
+    string dataType = "Normal Text";
+    List<string> dataTypeList = new List<string>();
+
+    private bool IsNumber
+    {
+        get
+        {
+            bool isNumber = false;
+            isNumber = decimal.TryParse(Text, out number);
+            if (isNumber == false)
+                placeHolder = DD.DD("Not a number");
+            else
+                placeHolder = "";
+
+            return isNumber;
+        }
+    }
+
+    private string Format
     {
         set
         {
@@ -76,7 +93,7 @@
                 return "";
         }
     }
-    public string Text
+    private string Text
     {
         get
         {
@@ -87,19 +104,14 @@
         }
         set
         {
-            isNumber = decimal.TryParse(value, out number); //i now = 108
-            if (isNumber == false)
-                placeHolder = DD.DD("Not a number");
-            else
-                placeHolder = "";
+            
 
             SelectedControlService.CurrentSelectedModel.Text = value;
             Options.RefreshBody();
         }
     }
 
-    string dataType = "Normal Text";
-    List<string> dataTypeList = new List<string>();
+  
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,6 +133,7 @@
 
     private void OnClick(string text)
     {
-
+        //고급 옵션
+        //todo 포멧 도움창
     }
 }

@@ -30,6 +30,8 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public int Height { get; set; } = 0;
         public int Width { get; set; } = 0;
 
+
+
         /// <summary>
         /// 일반 X, Y 값은 Div에 그려질 상대값이 설정되며
         /// Absolute는 Report 기준으로 생성되는 절대값을 표현한다. 
@@ -65,6 +67,11 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public bool IsEditMode { get; set; } = false;
 
+        public bool Visible
+        {
+            get { return !Hidden; }
+            set { Hidden = !value; }
+        }
         public bool Hidden { get; set; } = false;
         public Margin Margin { get; set; } = new Margin();
 
@@ -87,5 +94,8 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public string Text { get; set; } = string.Empty;
         public string Format { get; set; } = string.Empty;
+
+        public Font Font { get; set; } = new Font();    
+
     }
 }

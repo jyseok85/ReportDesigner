@@ -16,15 +16,15 @@
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Color</RadzenText>
-            <RadzenColorPicker class="color-picker w-100" @bind-Value=@fontColor ShowHSV=@CSS.ShowHSV ShowRGBA=@CSS.ShowRGBA ShowColors=@CSS.ShowColors ShowButton=@CSS.ShowButton Change="@(x => OnColorChange(x,"font"))" />
+            <RadzenColorPicker class="color-picker w-100" @bind-Value=@FontColor ShowHSV=@CSS.ShowHSV ShowRGBA=@CSS.ShowRGBA ShowColors=@CSS.ShowColors ShowButton=@CSS.ShowButton />
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Size</RadzenText>
-            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" Value=@fontSize Change=@(args => fontSize = args) />
+            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" Value=@fontSize Change=@(x=>OnChangedFontSize(x)) />
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Style</RadzenText>
-            <RadzenSelectBar @bind-Value=@fontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => SelectBorderDirection(x)">
+            <RadzenSelectBar @bind-Value=@fontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => ChangeStyle(x)">
                 <Items>
                     <RadzenSelectBarItem Icon="format_bold" Value="0" Style="padding:0.2rem;" />
                     <RadzenSelectBarItem Icon="format_italic" Value="1" Style="padding:0.2rem;" />
@@ -37,11 +37,11 @@
             <RadzenText class="property-displayName">Text Alignment</RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
-                <RadzenSelectBar @bind-Value=@textAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                <RadzenSelectBar @bind-Value=@textAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => ChangeVerticalAlignment(x)">
                     <Items>
                         <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="vertical_align_bottom" Value="2" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
+                        <RadzenSelectBarItem Icon="vertical_align_bottom" Value="2" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
                     </Items>
                 </RadzenSelectBar>
             </RadzenStack>
@@ -50,7 +50,7 @@
             <RadzenText class="property-displayName"></RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
-                <RadzenSelectBar @bind-Value=@textAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                <RadzenSelectBar @bind-Value=@textAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => ChangeHorizontalAlignment(x)">
                     <Items>
                         <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
                         <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" />
@@ -65,31 +65,24 @@
     </div>
 </RadzenPanelMenuItem>
 @code {
-    private string ControlName
+    bool fixVerticalAlign = false;
+    private string FontName
     {
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.Name;
+                return SelectedControlService.CurrentSelectedModel.Font.FontFamily;
             else
                 return string.Empty;
         }
         set
         {
-            SelectedControlService.CurrentSelectedModel.Name = value;
+            SelectedControlService.CurrentSelectedModel.Font.FontFamily = value;
             Options.RefreshBody();
 
         }
     }
-    private string fontName;
-    public string FontName
-    {
-        get { return this.fontName; }
-        set
-        {
-            this.fontName = value;
-        }
-    }
+
     private int fontSize = 12;
     string fontColor = "rgb(0, 0, 0)";     //블랙
     int textAlignVertical = 1;
@@ -105,7 +98,21 @@
             AddFont();
         }
     }
-
+    public string FontColor
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Font.FontColor;
+            else
+                return "Black";
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Font.FontColor = value;
+            Options.RefreshBody();
+        }
+    }
     void OnColorChange(string value, string target)
     {
         switch (target.ToLower())
@@ -113,15 +120,82 @@
             case "font": fontColor = value; break;
         }
     }
-    private void SelectBorderDirection(IEnumerable<int> x)
+
+    private void OnChangedFontSize(int x)
     {
-        // if (borderDirection.Count() == 4)
-        //     borderSelectAll = true;
-        // else
-        //     bord
-        // erSelectAll = false;
+        fontSize = SelectedControlService.CurrentSelectedModel.Font.FontSize = x;
+        Options.RefreshBody();
     }
-    
+
+    private void ChangeStyle(IEnumerable<int> x)
+    {
+        /// font-style : italic
+        /// font-weight: bold;
+        /// text-decoration : underline
+        /// text-decoration : line-through
+
+        string style = string.Empty;
+        if(fontStyle.Contains(0))
+            style += "font-weight: bold;";
+        if(fontStyle.Contains(1))
+            style += "font-style : italic;";
+
+        if (fontStyle.Count() > 0 && fontStyle.Last() == 2)
+        {
+            style += "text-decoration : underline;";
+            if (fontStyle.Contains(3))
+            {
+                int[] underline = new int[] { 3 };
+                fontStyle = fontStyle.Except(underline);
+            }
+        }
+        if (fontStyle.Count() > 0 && fontStyle.Last() == 3)
+        {
+            style += "text-decoration : line-through;";
+            if (fontStyle.Contains(2))
+            {
+                int[] lineThrough = new int[] { 2 };
+                fontStyle = fontStyle.Except(lineThrough);
+            }
+        }
+
+        SelectedControlService.CurrentSelectedModel.Font.FontStyle = style;
+        Options.RefreshBody();
+    }
+
+    private void ChangeVerticalAlignment(int x)
+    {
+        string str = string.Empty;
+        if (x == 0)
+            str = "start";
+        else if (x == 1)
+            str = "center";
+        else if (x == 2)
+            str = "end";
+
+        SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = str;
+        Options.RefreshBody();
+    }
+    private void ChangeHorizontalAlignment(int x)
+    {
+        string str = string.Empty;
+        fixVerticalAlign = false;
+        if (x == 3)
+            str = "start";
+        else if (x == 4)
+            str = "center";
+        else if (x == 5)
+            str = "end";
+        else if (x == 6)
+        {
+            str = "even";
+            SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+            textAlignVertical = 0;
+            fixVerticalAlign = true;
+        }
+        SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment = str;
+        Options.RefreshBody();
+    }
     private void AddFont()
     {
         fontList.Add(new FontModel("Noto Sans"));
@@ -143,6 +217,56 @@
 
     public void RefreshState()
     {
+        this.UpdateFontSize();
+        this.UpdateFontStyle();
+        this.UpdateAlignment();
         this.StateHasChanged();
+    }
+    private void UpdateFontSize()
+    {
+        fontSize = SelectedControlService.CurrentSelectedModel.Font.FontSize;
+    }
+    private void UpdateFontStyle()
+    {
+        List<int> nums = new List<int>();
+        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("bold"))
+            nums.Add(0);
+        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("italic"))
+            nums.Add(1);
+        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("underline"))
+            nums.Add(2);
+        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("line-through"))
+            nums.Add(3);
+
+        fontStyle = nums.ToArray();
+    }
+    private void UpdateAlignment()
+    {
+        string verticalAlign = SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment;
+        string horizontalAlign = SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment;
+        switch (verticalAlign)
+        {
+            case "start":
+                textAlignVertical = 0; break;
+            case "center":
+                textAlignVertical = 1; break;
+            case "end":
+                textAlignVertical = 2; break;
+        }
+        switch (horizontalAlign)
+        {
+            case "start":
+                textAlignHorizontal = 3; break;
+            case "center":
+                textAlignHorizontal = 4; break;
+            case "end":
+                textAlignHorizontal = 5; break;
+            case "even":
+                textAlignHorizontal = 6;
+                SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+                fixVerticalAlign = true;
+                textAlignVertical = 0;
+                break;
+        }
     }
 }

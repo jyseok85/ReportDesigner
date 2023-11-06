@@ -8,16 +8,24 @@
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @onpointerdown:stopPropagation="true"
      @ondblclick="@( (x) => OnDbClick(x))"
-     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + GetStyle("border")+ GetStyle("background-color") )>
+     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
+                            GetStyle("border")+ GetStyle("background-color"))
+     >
      <CascadingValue Value="this">
         @if(DragService.Hidden)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
      </CascadingValue>
+    <div class="component-hidden-text" hidden=@HiddenControl>
+        visiblity : hidden
+     </div>
+
+    <div class=@("component-text " + GetClass()) 
+    style=@(GetStyle("padding") +GetStyle("word-break") + GetStyle("font-style") + GetStyle("align-items") +
+         GetStyle("justify-content") + GetStyle("font-size") + GetStyle("font-family") + GetStyle("color") )>
 
 
-     <div style=@("top:0;height:inherit;width:inherit;position:absolute;pointer-events: none;overflow:hidden;" + GetStyle("padding") +GetStyle("word-break"))>
         @Model.Text
      </div>
      <RadzenTextArea @ref=textArea
@@ -31,10 +39,38 @@
         --rz-text-area-padding:10px;border-radius:0px;"
                     hidden=@HiddenEditMode />
 </div>
-
 <style>
     .component{
         box-sizing: border-box;
+    }
+    .component-text{
+        top: 0;
+        height: inherit;
+        width: inherit;
+        position: absolute;
+        pointer-events: none;
+        overflow: hidden;
+        display:flex;
+    }
+    .component-hidden-text{
+        top:0;
+        right:0;
+        position:absolute;
+        pointer-events:none;
+        padding:3px;
+        font-size:x-small;
+        font-style:italic;
+        color:lightgray;
+
+    }
+    .justify{
+        text-align: justify;
+        display:block;
+    }
+    .justify:after{
+        content:"";
+        display:inline-block;
+        width:100%;
     }
 </style>
 @code {
@@ -65,6 +101,18 @@
 
         }
     }
+    public bool HiddenControl
+    {
+        get
+        {
+            if (this.Model.Hidden)
+                return false;
+            else
+                return true;
+
+        }
+    }
+
     void OnPointerDown(PointerEventArgs e, string value)
     {
         Console.WriteLine("Control.razor - OnPointerDown");
@@ -131,12 +179,31 @@
             case "word-break":
                 return "word-break:break-all;";
             case "background-color":
-                return type.ToLower() + ":" + this.Model.BackColor;
+                return $"{type.ToLower()} : {this.Model.BackColor}; ";
+            case "font-family":
+                return $"{type.ToLower()} : {this.Model.Font.FontFamily}; ";
+            case "font-size":
+                return $"{type.ToLower()} : {this.Model.Font.FontSize}px; ";
+            case "font-style":
+                return $"{this.Model.Font.FontStyle};";
+            case "align-items":
+                return $"{type.ToLower()} : {this.Model.Font.VerticlaAlignment}; ";
+            case "justify-content":
+                return $"{type.ToLower()} : {this.Model.Font.HorizontalAlignment}; ";
+            case "color":
+                return $"{type.ToLower()} : {this.Model.Font.FontColor}; ";
             default:
                 return string.Empty;
         }
     }
 
+    string GetClass()
+    {
+        if (this.Model.Font.HorizontalAlignment == "even")
+            return "justify";
+        else
+            return string.Empty;
+    }
 
     async Task OnDbClick(MouseEventArgs args)
     {

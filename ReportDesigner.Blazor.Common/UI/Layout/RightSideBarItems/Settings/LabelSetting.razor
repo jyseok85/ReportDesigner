@@ -6,14 +6,7 @@
 @inject SelectedControlService SelectedControlService
 
 <div class="label-setting">
-    <RadzenPanelMenuItem Text="Design" >
-        <div class="side-panel-contents-background">
-            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
-                <RadzenText class= "property-displayName">Name</RadzenText>
-                <RadzenTextBox class="w-100 property-item" @bind-Value=ControlName></RadzenTextBox>
-            </RadzenStack>
-        </div>        
-    </RadzenPanelMenuItem>
+    <Design @ref=design></Design>
     <Appearance @ref=appearance></Appearance>
     @if (SelectedControlService.CurrentSelectedModel.Type != ReportComponentModel.Control.Band)
     {
@@ -96,30 +89,18 @@
     }
 </style>
 @code {
+    Design design;
     Font font;
     Layout layout;
     DataSource datasource;
     Appearance appearance;
 
-    private string ControlName
-    {
-        get
-        {
-            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.Name;
-            else
-                return string.Empty;
-        }
-        set
-        {
-            SelectedControlService.CurrentSelectedModel.Name = value;
-            Options.RefreshBody();
 
-        }
-    }
+
 
     public void RefreshState()
     {
+        design.RefreshState();
         font.RefreshState();
         appearance.RefreshState();
         datasource.RefreshState();

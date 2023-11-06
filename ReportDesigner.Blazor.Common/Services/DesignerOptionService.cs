@@ -441,5 +441,20 @@ namespace ReportDesigner.Blazor.Common.Services
                     return -1;
             }
         }
+
+        public bool GetMoveableControl()
+        {
+            switch (SelectedControl.CurrentSelectedModel.Type)
+            {
+                case ReportComponentModel.Control.Report:
+                case ReportComponentModel.Control.Band:
+                case ReportComponentModel.Control.Layer:
+                    return false;
+                case ReportComponentModel.Control.Label:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
