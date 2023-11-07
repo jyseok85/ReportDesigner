@@ -3,7 +3,7 @@
 @inject SelectedControlService SelectedControlService
 @inject DesignerCSSService CSS
 
-<RadzenPanelMenuItem Text="Layout">
+<RadzenPanelMenuItem Text="Layout" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Location</RadzenText>

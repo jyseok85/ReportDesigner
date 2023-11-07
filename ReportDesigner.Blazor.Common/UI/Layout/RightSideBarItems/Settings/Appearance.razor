@@ -3,7 +3,7 @@
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 
-<RadzenPanelMenuItem Text="Appearance">
+<RadzenPanelMenuItem Text="Appearance" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">BackColor</RadzenText>
@@ -32,13 +32,13 @@
                 </RadzenStack>
                 <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                     <RadzenText class="property-displayName property-sub">Border Direction</RadzenText>
-                    <RadzenSelectBar @bind-Value=@borderSelectAll TValue="bool" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => SelectBorder(x)">
+                    <RadzenSelectBar @bind-Value=@BorderSelectALL TValue="bool" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
                         <Items>
                             <RadzenSelectBarItem Icon="border_outer" Value="true" Style="padding:0.2rem;" />
                             <RadzenSelectBarItem Icon="border_clear" Value="false" Style="padding:0.2rem;" />
                         </Items>
                     </RadzenSelectBar>
-                    <RadzenSelectBar @bind-Value=@borderDirection TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => SelectBorderDirection(x)">
+                    <RadzenSelectBar @bind-Value=@BorderDirection TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true">
                         <Items>
                             <RadzenSelectBarItem Icon="border_top" Value="0" Style="padding:0.2rem;" />
                             <RadzenSelectBarItem Icon="border_right" Value="1" Style="padding:0.2rem;" />
@@ -51,10 +51,10 @@
         }
     </div>
 </RadzenPanelMenuItem>
-@code { 
+@code {
     //todo 테두리 없음의 경우 디자이너에서는 하얀색 점선으로 표시한다. 
 
-    public string BackColor
+    private string BackColor
     {
         get
         {
@@ -69,64 +69,166 @@
             Options.RefreshBody();
         }
     }
-    public string BorderColor
+    private string BorderColor
     {
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.BorderColor;
+                return SelectedControlService.CurrentSelectedModel.Border.Color;
             else
                 return "";
         }
         set
         {
-            SelectedControlService.CurrentSelectedModel.BorderColor = value;
+            SelectedControlService.CurrentSelectedModel.Border.Color = value;
             Options.RefreshBody();
         }
     }
-    public string BorderStyle
+    private string BorderStyle
     {
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.BorderStyle;
+                return SelectedControlService.CurrentSelectedModel.Border.Style;
             else
                 return "";
         }
         set
         {
-            SelectedControlService.CurrentSelectedModel.BorderStyle = value;
+            SelectedControlService.CurrentSelectedModel.Border.Style = value;
             Options.RefreshBody();
         }
     }
-    public int BorderThickness
+    private int BorderThickness
     {
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.BorderThickness;
+                return SelectedControlService.CurrentSelectedModel.Border.Thickness;
             else
                 return 1;
         }
         set
         {
-            SelectedControlService.CurrentSelectedModel.BorderThickness = value;
+            SelectedControlService.CurrentSelectedModel.Border.Thickness = value;
             Options.RefreshBody();
         }
     }
-    public bool UseBorder
+    private bool UseBorder
     {
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.UseBorder;
+                return SelectedControlService.CurrentSelectedModel.Border.Use;
             else
                 return true;
         }
         set
         {
-            SelectedControlService.CurrentSelectedModel.UseBorder = value;
+            SelectedControlService.CurrentSelectedModel.Border.Use = value;
             Options.RefreshBody();
+        }
+    }
+
+    private bool BorderSelectALL
+    {
+        get
+        {
+            if(BorderDirection.Count() == 4)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        set
+        {
+            if (value)
+            {
+                BorderDirection = new int[] { 0, 1, 2, 3 };
+            }
+            else
+                BorderDirection = new int[] { };
+        }
+    }
+
+    private IEnumerable<int> BorderDirection
+    {
+        get{
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                if(SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders == true)
+                {
+                    List<int> nums = new List<int>();
+                    if (SelectedControlService.CurrentSelectedModel.Border.UseTopBorder)
+                        nums.Add(0);
+                    if (SelectedControlService.CurrentSelectedModel.Border.UseRightBorder)
+                        nums.Add(1);
+                    if (SelectedControlService.CurrentSelectedModel.Border.UseBottomBorder)
+                        nums.Add(2);
+                    if (SelectedControlService.CurrentSelectedModel.Border.UseLeftBorder)
+                        nums.Add(3);
+                    return nums.ToArray();
+                }
+                else
+                {
+                    if (UseBorder)
+                        return new int[] { 0, 1, 2, 3 };
+                    else
+                        return new int[] { };
+                }
+            }
+            else
+            {
+                return new int[] { 0, 1, 2, 3 };
+            }
+        }
+        set
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                if (value.Count() == 4)
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = false;
+                }
+                else
+                {
+                    SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = true;
+                    if (value.Contains(0)) //상단
+                    {
+                        SelectedControlService.CurrentSelectedModel.Border.UseTopBorder = true;
+                    }
+                    else
+                        SelectedControlService.CurrentSelectedModel.Border.UseTopBorder = false;
+
+                    if (value.Contains(1)) //우측
+                    {
+                        SelectedControlService.CurrentSelectedModel.Border.UseRightBorder = true;
+                    }
+                    else
+                        SelectedControlService.CurrentSelectedModel.Border.UseRightBorder = false;
+
+                    if (value.Contains(2)) //하단
+                    {
+                        SelectedControlService.CurrentSelectedModel.Border.UseBottomBorder = true;
+                    }
+                    else
+                        SelectedControlService.CurrentSelectedModel.Border.UseBottomBorder = false;
+
+                    if (value.Contains(3)) //좌측
+                    {
+                        SelectedControlService.CurrentSelectedModel.Border.UseLeftBorder = true;
+                    }
+                    else
+                        SelectedControlService.CurrentSelectedModel.Border.UseLeftBorder = false;
+
+                    SelectedControlService.CurrentSelectedModel.Border.UpdateBorderColor();
+                }
+
+                Options.RefreshBody();
+            }
         }
     }
 
@@ -143,8 +245,6 @@
 
     //테두리
     private List<string> borderStyleList = new List<string>();
-    private bool borderSelectAll = true;
-    IEnumerable<int> borderDirection = new int[] { 0, 1, 2, 3 };
 
     protected override void OnInitialized()
     {
@@ -156,60 +256,60 @@
         }
     }
 
-    private void SelectBorder(bool value)
-    {
-        if (value)
-        {
-            borderDirection = new int[] { 0, 1, 2, 3 };
-        }
-        else
-            borderDirection = new int[] { };
+    // private void SelectBorder(bool value)
+    // {
+    //     if (value)
+    //     {
+    //         borderDirection = new int[] { 0, 1, 2, 3 };
+    //     }
+    //     else
+    //         borderDirection = new int[] { };
 
-        SelectBorderDirection(borderDirection);
-    }
+    //     SelectBorderDirection(borderDirection);
+    // }
+    // private void SelectBorderDirection(IEnumerable<int> x)
+    // {
+    //     int borderDirectionCount = borderDirection.Count();
+    //     if (borderDirectionCount == 4)
+    //     {
+    //         borderSelectAll = true;
+    //     }
+    //     else
+    //     {
+    //         borderSelectAll = false;
+    //     }
 
-    private void SelectBorderDirection(IEnumerable<int> x)
-    {
-        int borderDirectionCount = borderDirection.Count();
-        if (borderDirectionCount == 4)
-        {
-            borderSelectAll = true;
-        }
-        else
-        {
-            borderSelectAll = false;
-        }
+    //     if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+    //     {
+    //         if (borderDirectionCount == 4 )
+    //         {
+    //             SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = false;
+    //         }
+    //         else
+    //         {
+    //             SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = true;
+    //             SelectedControlService.CurrentSelectedModel.Border.SetAllBorderColor("transparent");
+    //             string color = BorderColor;
+    //             if(borderDirection.Contains(0)) //상단
+    //             {
+    //                 SelectedControlService.CurrentSelectedModel.Border.TopColor = color;
+    //             }
+    //             if(borderDirection.Contains(1)) //우측
+    //             {
+    //                 SelectedControlService.CurrentSelectedModel.Border.RightColor = color;
+    //             }
+    //             if(borderDirection.Contains(2)) //하단
+    //             {
+    //                 SelectedControlService.CurrentSelectedModel.Border.BottomColor = color;
+    //             }
+    //             if (borderDirection.Contains(3)) //좌측
+    //             {
+    //                 SelectedControlService.CurrentSelectedModel.Border.LeftColor = color;
+    //             }
+    //         }
 
-        if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-        {
-            if (borderDirectionCount == 4 )
-            {
-                SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = false;
-            }
-            else
-            {
-                SelectedControlService.CurrentSelectedModel.Border.UseIndividualBorders = true;
-                SelectedControlService.CurrentSelectedModel.Border.SetAllBorderColor("transparent");
-                string color = BorderColor;
-                if(borderDirection.Contains(0)) //상단
-                {
-                    SelectedControlService.CurrentSelectedModel.Border.TopColor = color;
-                }
-                if(borderDirection.Contains(1)) //우측
-                {
-                    SelectedControlService.CurrentSelectedModel.Border.RightColor = color;
-                }
-                if(borderDirection.Contains(2)) //하단
-                {
-                    SelectedControlService.CurrentSelectedModel.Border.BottomColor = color;
-                }
-                if (borderDirection.Contains(3)) //좌측
-                {
-                    SelectedControlService.CurrentSelectedModel.Border.LeftColor = color;
-                }
-            }
+    //         Options.RefreshBody();
+    //     }
+    // }
 
-            Options.RefreshBody();
-        }
-    }
 }

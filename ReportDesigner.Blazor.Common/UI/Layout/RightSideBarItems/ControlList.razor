@@ -1,0 +1,39 @@
+﻿@inject DesignerOptionService Options
+@inject DesignerCSSService CSS
+@inject ControlModificationServcie ModificationService
+
+<div class="side-panel-contents-background">
+    <RadzenDropDown class="property-dropdown" @bind-Value=value
+    @bind-SearchText=SearchText AllowFiltering="true" FilterOperator="StringFilterOperator.StartsWith" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    AllowClear="true"  
+                    Data=@Options.ComponentList ValueProperty="Uid" TextProperty="Name" Style="--rz-input-font-size: 0.7rem;" PopupStyle=@(CSS.DropDownPopupStyle) SelectedItemChanged="(e) => OnSelectedItemChanged(e)">
+        <Template>
+            @($"{context.Name} ({context.Type})")
+        </Template>
+    </RadzenDropDown>
+</div>
+@code {
+    string value;
+    string SearchText;
+
+    //선택한 컨포넌트를 선택하자.
+
+    //디자인에서 이름변경하면 바로 드롭다운을 업데이트 하자.
+
+    private void OnSelectedItemChanged(object e)
+    {
+        //  
+        ReportComponentModel model = (ReportComponentModel)e;
+
+        //컨트롤의 포인트 다운로직. 
+        Options.SelectedControl.OnPointerDown(new PointerEventArgs(), model);
+        //드래그 로직은 필요없을듯..
+        ModificationService.UpdateSize(model.Width, model.Height);
+        //밴드의 포인트 업 또한 드래그 때문에 있는것
+
+        //바디의 포인트 업 또한 실질적으로 우측 컨트롤 업데이트 하는것 빼고 필요 없음.
+        Options.FireControlSelectionChangedEvent();
+        Options.RefreshBody();
+
+    }
+}

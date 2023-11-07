@@ -4,38 +4,49 @@
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 
-<div class="side-panel-contents-background">
-    <RadzenText Text="@DD.DD("Direction")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
-    <RadzenSelectBar @bind-Value=@IsLandScape TValue="bool" class="d-flex" Size="ButtonSize.ExtraSmall" Style="margin:0.25rem 0 0.25rem 0;">
-        <Items>
-            <RadzenSelectBarItem Text="@DD.DD("Portrait")" Value="false" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD.DD("Landscape")" Value="true" Style=" width:100%; text-align:center; " />
-        </Items>
-    </RadzenSelectBar>
-    <RadzenText Text="@DD.DD("Paper Kind")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
-    <RadzenDropDown AllowClear="false" AllowFiltering="false" @bind-Value=@PaperKindValue Data=@paperKinds ValueProperty="Name" Style=@dropdownStyle PopupStyle=@CSS.DropDownPopupStyle>
-        <Template>
-            @(context.Name)
-        </Template>
-    </RadzenDropDown>
-    
-    <RadzenText Text="@DD.DD("Margin")" TextStyle="TextStyle.Subtitle2" Style="margin-top:0.5rem;" />
-    <RadzenSelectBar @bind-Value=@marginType TValue="int" class="d-flex" Size="ButtonSize.ExtraSmall" Style="margin:0.25rem 0 0.25rem 0;">
-        <Items> 
-            <RadzenSelectBarItem Text="@DD.DD("Default")" Value="0" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD.DD("None")" Value="1" Style=" width:100%; text-align:center; " />
-            <RadzenSelectBarItem Text="@DD.DD("Custom")" Value="2" Style=" width:100%; text-align:center; " />
-        </Items>
-    </RadzenSelectBar>
+<RadzenPanelMenuItem Text="Paper" Icon="description" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName" Text="@DD.DD("Direction")" />
+            <RadzenSelectBar @bind-Value=@IsLandScape TValue="bool" class="d-flex property-selectbar" Size="ButtonSize.ExtraSmall">
+                <Items>
+                    <RadzenSelectBarItem Text="@DD.DD("Portrait")" Value="false" Style=@selectbarItemStyle />
+                    <RadzenSelectBarItem Text="@DD.DD("Landscape")" Value="true" Style=@selectbarItemStyle />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+        
+            <RadzenText class="property-displayName" Text="@DD.DD("Paper Kind")" />
+            <RadzenDropDown class="property-item" AllowClear="false" AllowFiltering="false" @bind-Value=@PaperKindValue Data=@paperKinds ValueProperty="Name" Style=@dropdownStyle PopupStyle=@CSS.DropDownPopupStyle>
+                <Template>
+                    @(context.Name)
+                </Template>
+            </RadzenDropDown>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
 
-</div>
+            <RadzenText class="property-displayName"  Text="@DD.DD("Margin")" />
+            <RadzenSelectBar class="d-flex property-selectbar" @bind-Value=@marginType TValue="int" Size="ButtonSize.ExtraSmall" >
+                <Items> 
+                    <RadzenSelectBarItem Text="@DD.DD("Default")" Value="0" Style=@selectbarItemStyle/>
+                    <RadzenSelectBarItem Text="@DD.DD("None")" Value="1" Style=@selectbarItemStyle />
+                    <RadzenSelectBarItem Text="@DD.DD("Custom")" Value="2" Style=@selectbarItemStyle />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenStack>
+    </div>
+</RadzenPanelMenuItem>
+
 <style>
-    .side-panel-contents-background {
-        padding: 0.75rem 1.25rem 0.75rem 1.25rem;
-        background-color: var(--rz-panel-menu-item-background-color);
+    .selectbar-item{
+        
     }
 </style>
 @code {
+    private string selectbarItemStyle = @"width:100%;
+        text-align:center;
+        font-size:0.65rem;";
     private string dropdownStyle = @"display:block;padding:5px 3px 3px 7px;
                                     --rz-input-height:1.8rem;
                                     --rz-input-font-size:0.7rem;";
@@ -51,7 +62,7 @@
     }
     string value;
 
-
+   
     void OnChange(string value, string name)
     {
     }

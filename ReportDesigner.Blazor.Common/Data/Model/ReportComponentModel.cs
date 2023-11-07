@@ -30,6 +30,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public int Height { get; set; } = 0;
         public int Width { get; set; } = 0;
 
+        public bool IsGroup { get { return Name != null; } }
 
 
         /// <summary>
@@ -80,16 +81,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public string BackColor { get; set; } = "rgba(0,0,0,0)";
         public string ForeColor { get; set; } = "Black";
-        public bool UseBorder { get; set; } = true;
-        public string BorderColor { get; set; } = "Black";
 
-        public string BorderStyle { get; set; } = "solid";
-
-        public int BorderThickness 
-        { 
-            get { return Border.Left; }
-            set { Border.SetBorderThickness(value); }
-        }
         public Border Border { get; set; } = new Border();
 
         public string Text { get; set; } = string.Empty;

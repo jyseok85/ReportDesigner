@@ -70,6 +70,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public Dictionary<string, ReportComponentModel> ControlDictionary { get { return controlDictionary; } }
 
+        public List<ReportComponentModel> ComponentList = new List<ReportComponentModel>();
         public void AddControl(string key, ReportComponentModel model)
         {
             Console.WriteLine(key);
@@ -84,10 +85,12 @@ namespace ReportDesigner.Blazor.Common.Services
 
                 model.AbsoluteOffsetBottom = model.AbsoluteOffsetY + model.Height;
 
-                model.Name = GenerateName(model.Type);  
             }
+            model.Name = GenerateName(model.Type);  
 
             controlDictionary.Add(key, model);
+            
+            ComponentList.Add(model);
 
             string GenerateName(ReportComponentModel.Control type)
             {
@@ -455,6 +458,65 @@ namespace ReportDesigner.Blazor.Common.Services
             }
 
             return false;
+        }
+
+        public Dictionary<string, bool> panelMenuState = new Dictionary<string, bool>();
+
+        public bool GetPanelMenuState(string key)
+        {
+            if (panelMenuState.ContainsKey(key))
+                return panelMenuState[key];
+            else
+                panelMenuState.Add(key, false);
+            return false;
+        }
+
+        public void SetPanelMenuState(string key, bool value)
+        {
+            if (panelMenuState.ContainsKey(key))
+                panelMenuState[key] = value;
+            else
+                panelMenuState.Add(key, false);
+        }
+        public Dictionary<string, bool> PanelMenuState
+        {
+            get {
+
+                if (panelMenuState.Count == 0)
+                {
+                    panelMenuState.Add("PaperSetting", false);
+                    panelMenuState.Add("FontPropertyy", false);
+                    panelMenuState.Add("Design", false);
+                    panelMenuState.Add("Appearance", false);
+                    panelMenuState.Add("Control", false);
+                    panelMenuState.Add("Layout", false);
+                }
+
+                return panelMenuState; }
+            set
+            {
+                if(panelMenuState.Count == 0)
+                {
+                    panelMenuState.Add("PaperSetting", false);
+                    panelMenuState.Add("FontPropertyy", false);
+                    panelMenuState.Add("Design", false);
+                    panelMenuState.Add("Appearance", false);
+                    panelMenuState.Add("Control", false);
+                    panelMenuState.Add("Layout", false);
+                }
+
+                panelMenuState = value;
+            }
+        }
+
+        public void SaveBrowserCache(string key, object value)
+        {
+            //todo 브라우저 캐시 저장.
+        }
+
+        public object LoadBrowserCache(string key)
+        {
+            return null;
         }
     }
 }

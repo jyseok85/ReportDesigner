@@ -149,5 +149,13 @@ namespace ReportDesigner.Blazor.Common.Services
             X = 0;
             Y = 0;
         }
+
+
+        public void UpdateSize(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+        }
+
     }
 }

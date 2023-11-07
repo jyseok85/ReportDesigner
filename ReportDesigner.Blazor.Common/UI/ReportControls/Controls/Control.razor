@@ -1,7 +1,10 @@
 ﻿@inherits ControlBase
 @inject SelectedControlService SelectService
+@inject ControlModificationServcie ModificationService
+
 @inject DragAndDropService DragService
 @inject DesignerOptionService Options
+@inject DesignerCSSService CSS
 
 <div class="component"
      tabindex="@Model.TabIndex"
@@ -23,9 +26,7 @@
 
     <div class=@("component-text " + GetClass()) 
     style=@(GetStyle("padding") +GetStyle("word-break") + GetStyle("font-style") + GetStyle("align-items") +
-         GetStyle("justify-content") + GetStyle("font-size") + GetStyle("font-family") + GetStyle("color") )>
-
-
+         GetStyle("justify-content") + GetStyle("font-size") + GetStyle("font-family") + GetStyle("color"))>
         @Model.Text
      </div>
      <RadzenTextArea @ref=textArea
@@ -34,24 +35,25 @@
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
         @bind-Value=@Model.Text
-        class="w-100" 
-        Style="top:0;height:100%;width:100%;position:absolute;
-        --rz-text-area-padding:10px;border-radius:0px;"
-                    hidden=@HiddenEditMode />
+        class="w-100 component-text-input"
+                    Style=@($"{GetStyle("padding")}{GetStyle("font-size")}") hidden=@HiddenEditMode />
 </div>
 <style>
     .component{
         box-sizing: border-box;
     }
+
+    
     .component-text{
         top: 0;
-        height: inherit;
-        width: inherit;
+        height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
+        width: 100%;
         position: absolute;
         pointer-events: none;
         overflow: hidden;
         display:flex;
     }
+    /* 우측상단에 표시할 텍스트 */
     .component-hidden-text{
         top:0;
         right:0;
@@ -61,7 +63,13 @@
         font-size:x-small;
         font-style:italic;
         color:lightgray;
-
+    }
+    .component-text-input {
+        top: 0;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        border-radius: 0px;
     }
     .justify{
         text-align: justify;
@@ -130,7 +138,8 @@
         {
             StateHasChanged();
             SelectService.OnPointerDown(e, this.Model);
-            modificationArea.UpdateElementSize();
+            ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
+            //modificationArea.UpdateElementSize();
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
             //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
@@ -156,26 +165,26 @@
             case "border":
                 if(this.Model.IsOverlap == false)
                 {
-                    if (this.Model.UseBorder)
+                    if (this.Model.Border.Use)
                     {
                         if(this.Model.Border.UseIndividualBorders)
                             return 
-                            $"{name}-top: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.TopColor};" +
-                            $"{name}-right: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.RightColor};" +
-                            $"{name}-bottom: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.BottomColor};" +
-                            $"{name}-left: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.Border.LeftColor};";
+                            $"{name}-top: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.TopColor};" +
+                            $"{name}-right: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.RightColor};" +
+                            $"{name}-bottom: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.BottomColor};" +
+                            $"{name}-left: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.LeftColor};";
                         else
-                            return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} {this.Model.BorderColor};";
+                            return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.Color};";
                     }
                     else
-                        return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} transparent;";
+                        return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} transparent;";
                 }
                 else
                 {
-                    return $"{name}: {this.Model.BorderThickness}px {this.Model.BorderStyle} red;";
+                    return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} red;";
                 }
             case "padding":
-                return "padding:10px;";
+                return $"{type.ToLower()} : {CSS.DefaultPadding}px; ";
             case "word-break":
                 return "word-break:break-all;";
             case "background-color":
