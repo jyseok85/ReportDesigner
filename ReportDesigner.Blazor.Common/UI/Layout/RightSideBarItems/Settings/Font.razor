@@ -20,11 +20,11 @@
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Size</RadzenText>
-            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" Value=@fontSize Change=@(x=>OnChangedFontSize(x)) />
+            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" @bind-Value=@FontSize/>
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Style</RadzenText>
-            <RadzenSelectBar @bind-Value=@fontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Change="(x) => ChangeStyle(x)">
+            <RadzenSelectBar @bind-Value=@FontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true">
                 <Items>
                     <RadzenSelectBarItem Icon="format_bold" Value="0" Style="padding:0.2rem;" />
                     <RadzenSelectBarItem Icon="format_italic" Value="1" Style="padding:0.2rem;" />
@@ -37,7 +37,7 @@
             <RadzenText class="property-displayName">Text Alignment</RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
-                <RadzenSelectBar @bind-Value=@textAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => ChangeVerticalAlignment(x)">
+                <RadzenSelectBar @bind-Value=@TextAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
                     <Items>
                         <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
                         <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
@@ -50,7 +50,7 @@
             <RadzenText class="property-displayName"></RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
-                <RadzenSelectBar @bind-Value=@textAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Change="(x) => ChangeHorizontalAlignment(x)">
+                <RadzenSelectBar @bind-Value=@TextAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
                     <Items>
                         <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
                         <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" />
@@ -66,6 +66,8 @@
 </RadzenPanelMenuItem>
 @code {
     bool fixVerticalAlign = false;
+    List<FontModel> fontList = new List<FontModel>();
+
     private string FontName
     {
         get
@@ -82,23 +84,7 @@
 
         }
     }
-
-    private int fontSize = 12;
-    string fontColor = "rgb(0, 0, 0)";     //블랙
-    int textAlignVertical = 1;
-    int textAlignHorizontal = 3;
-    List<FontModel> fontList = new List<FontModel>();
-    IEnumerable<int> fontStyle = new int[] { };
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        //96dpi 기준일때의 값
-        if (fontList.Count == 0)
-        {
-            AddFont();
-        }
-    }
-    public string FontColor
+    private string FontColor
     {
         get
         {
@@ -113,88 +99,165 @@
             Options.RefreshBody();
         }
     }
-    void OnColorChange(string value, string target)
+    private int FontSize
     {
-        switch (target.ToLower())
+        get
         {
-            case "font": fontColor = value; break;
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Font.FontSize;
+            else
+                return 14;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Font.FontSize = value;
+            Options.RefreshBody();
         }
     }
-
-    private void OnChangedFontSize(int x)
+    private int TextAlignHorizontal
     {
-        fontSize = SelectedControlService.CurrentSelectedModel.Font.FontSize = x;
-        Options.RefreshBody();
-    }
+        get { 
+            int textAlignHorizontal = 3;
+            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
+                return textAlignHorizontal;
 
-    private void ChangeStyle(IEnumerable<int> x)
-    {
-        /// font-style : italic
-        /// font-weight: bold;
-        /// text-decoration : underline
-        /// text-decoration : line-through
-
-        string style = string.Empty;
-        if(fontStyle.Contains(0))
-            style += "font-weight: bold;";
-        if(fontStyle.Contains(1))
-            style += "font-style : italic;";
-
-        if (fontStyle.Count() > 0 && fontStyle.Last() == 2)
-        {
-            style += "text-decoration : underline;";
-            if (fontStyle.Contains(3))
+            string horizontalAlign = SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment;
+            switch (horizontalAlign)
             {
-                int[] underline = new int[] { 3 };
-                fontStyle = fontStyle.Except(underline);
+                case "start":
+                    textAlignHorizontal = 3; break;
+                case "center":
+                    textAlignHorizontal = 4; break;
+                case "end":
+                    textAlignHorizontal = 5; break;
+                case "even":
+                    textAlignHorizontal = 6;
+                    SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+                    fixVerticalAlign = true;
+                    TextAlignVertical = 0;
+                    break;
             }
+            return textAlignHorizontal; 
         }
-        if (fontStyle.Count() > 0 && fontStyle.Last() == 3)
+        set
         {
-            style += "text-decoration : line-through;";
-            if (fontStyle.Contains(2))
+            string str = string.Empty;
+            fixVerticalAlign = false;
+            if (value == 3)
+                str = "start";
+            else if (value == 4)
+                str = "center";
+            else if (value == 5)
+                str = "end";
+            else if (value == 6)
             {
-                int[] lineThrough = new int[] { 2 };
-                fontStyle = fontStyle.Except(lineThrough);
+                str = "even";
+                SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+                fixVerticalAlign = true;
+                TextAlignVertical = 0;
             }
+            SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment = str;
+            Options.RefreshBody();
         }
-
-        SelectedControlService.CurrentSelectedModel.Font.FontStyle = style;
-        Options.RefreshBody();
     }
-
-    private void ChangeVerticalAlignment(int x)
+    private int TextAlignVertical
     {
-        string str = string.Empty;
-        if (x == 0)
-            str = "start";
-        else if (x == 1)
-            str = "center";
-        else if (x == 2)
-            str = "end";
-
-        SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = str;
-        Options.RefreshBody();
-    }
-    private void ChangeHorizontalAlignment(int x)
-    {
-        string str = string.Empty;
-        fixVerticalAlign = false;
-        if (x == 3)
-            str = "start";
-        else if (x == 4)
-            str = "center";
-        else if (x == 5)
-            str = "end";
-        else if (x == 6)
+        get
         {
-            str = "even";
-            SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
-            textAlignVertical = 0;
-            fixVerticalAlign = true;
+            int textAlignVertical = 1;
+            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
+                return textAlignVertical;
+
+            string verticalAlign = SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment;
+            switch (verticalAlign)
+            {
+                case "start":
+                    textAlignVertical = 0; break;
+                case "center":
+                    textAlignVertical = 1; break;
+                case "end":
+                    textAlignVertical = 2; break;
+            }
+            return textAlignVertical;
         }
-        SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment = str;
-        Options.RefreshBody();
+        set
+        {
+            string str = string.Empty;
+            switch(value)
+            {
+                case 0: str = "start";break;
+                case 1: str = "center";break;
+                case 2: str = "end"; break;
+            }
+            SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = str;
+            Options.RefreshBody();
+        }
+    }
+    private IEnumerable<int> FontStyle
+    {
+        get
+        {
+            List<int> nums = new List<int>();
+            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
+                return nums.ToArray();
+
+            if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("bold"))
+                nums.Add(0);
+            if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("italic"))
+                nums.Add(1);
+            if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("underline"))
+                nums.Add(2);
+            if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("line-through"))
+                nums.Add(3);
+
+            return nums.ToArray();
+        }
+        set
+        {
+            /// font-style : italic
+            /// font-weight: bold;
+            /// text-decoration : underline
+            /// text-decoration : line-through
+            IEnumerable<int> nums = value;            
+
+            string style = string.Empty;
+            if (nums.Contains(0))
+                style += "font-weight: bold;";
+            if (nums.Contains(1))
+                style += "font-style : italic;";
+
+            if (nums.Count() > 0 && nums.Last() == 2)
+            {
+                style += "text-decoration : underline;";
+                if (nums.Contains(3))
+                {
+                    int[] underline = new int[] { 3 };
+                    nums = nums.Except(underline);
+                }
+            }
+            if (nums.Count() > 0 && nums.Last() == 3)
+            {
+                style += "text-decoration : line-through;";
+                if (nums.Contains(2))
+                {
+                    int[] lineThrough = new int[] { 2 };
+                    nums = nums.Except(lineThrough);
+                }
+            }
+
+            SelectedControlService.CurrentSelectedModel.Font.FontStyle = style;
+            Options.RefreshBody();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //96dpi 기준일때의 값
+        if (fontList.Count == 0)
+        {
+            AddFont();
+        }
     }
     private void AddFont()
     {
@@ -213,60 +276,5 @@
         fontList.Add(new FontModel("Garamond"));
         fontList.Add(new FontModel("Courier New"));
         fontList.Add(new FontModel("Brush Script MT"));
-    }
-
-    public void RefreshState()
-    {
-        this.UpdateFontSize();
-        this.UpdateFontStyle();
-        this.UpdateAlignment();
-        this.StateHasChanged();
-    }
-    private void UpdateFontSize()
-    {
-        fontSize = SelectedControlService.CurrentSelectedModel.Font.FontSize;
-    }
-    private void UpdateFontStyle()
-    {
-        List<int> nums = new List<int>();
-        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("bold"))
-            nums.Add(0);
-        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("italic"))
-            nums.Add(1);
-        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("underline"))
-            nums.Add(2);
-        if (SelectedControlService.CurrentSelectedModel.Font.FontStyle.Contains("line-through"))
-            nums.Add(3);
-
-        fontStyle = nums.ToArray();
-    }
-    private void UpdateAlignment()
-    {
-        string verticalAlign = SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment;
-        string horizontalAlign = SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment;
-        switch (verticalAlign)
-        {
-            case "start":
-                textAlignVertical = 0; break;
-            case "center":
-                textAlignVertical = 1; break;
-            case "end":
-                textAlignVertical = 2; break;
-        }
-        switch (horizontalAlign)
-        {
-            case "start":
-                textAlignHorizontal = 3; break;
-            case "center":
-                textAlignHorizontal = 4; break;
-            case "end":
-                textAlignHorizontal = 5; break;
-            case "even":
-                textAlignHorizontal = 6;
-                SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
-                fixVerticalAlign = true;
-                textAlignVertical = 0;
-                break;
-        }
     }
 }
