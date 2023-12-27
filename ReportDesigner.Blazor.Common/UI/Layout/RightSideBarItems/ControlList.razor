@@ -22,6 +22,8 @@
 
     private void OnSelectedItemChanged(object e)
     {
+        if (e is null)
+            return;
         //  
         ReportComponentModel model = (ReportComponentModel)e;
 
