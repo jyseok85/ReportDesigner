@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
+using static ReportDesigner.Blazor.Common.Data.Model.BandModel;
 
 namespace ReportDesigner.Blazor.Common.Data.BaseClass
 {

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Radzen;
 using ReportDesigner.Blazor.Common.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,10 @@ builder.Services.AddScoped<ControlModificationServcie>();
 builder.Services.AddScoped<SelectedControlService>();
 builder.Services.AddScoped<DragAndDropService>();
 builder.Services.AddScoped<MultiLanguageService>();
+builder.Services.AddScoped<ContextMenuService>();
+builder.Services.AddScoped<ReportContextMenuService>();
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddRazorComponents();
 
 var app = builder.Build();
 

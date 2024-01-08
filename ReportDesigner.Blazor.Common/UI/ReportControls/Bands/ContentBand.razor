@@ -8,6 +8,7 @@
 <div class="content-band"
 @onpointerup=OnPointerUp
 @onpointerdown=OnPointerDown
+     @onpointerdown:stopPropagation="true"
      ondrag="event.preventDefault()"
      ondragover="event.preventDefault()" 
      style=@("height:" + Model.Height + "px;" + (Options.State == DesignerOptionService.ActionState.Create ? "cursor:crosshair;" : "") +

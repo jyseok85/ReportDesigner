@@ -87,7 +87,9 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public string Text { get; set; } = string.Empty;
         public string Format { get; set; } = string.Empty;
 
-        public Font Font { get; set; } = new Font();    
+        public Font Font { get; set; } = new Font();
+
+        public List<ReportComponentModel> Children { get; set; } = new List<ReportComponentModel>();
 
     }
 }

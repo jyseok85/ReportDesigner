@@ -34,6 +34,7 @@ namespace ReportDesigner.Blazor.Common.Services
             model.Selected = true;
             CurrentSelectedModel = model;
 
+            Console.WriteLine($"SelectedService - OnPointerDown : {CurrentSelectedModel.Name}");
             //오른쪽 속성탭이 열려 있다면 값을 업데이트 해준다.
 
         }

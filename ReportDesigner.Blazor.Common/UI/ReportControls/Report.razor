@@ -1,8 +1,10 @@
 ﻿@inject DesignerOptionService Options
+@inject SelectedControlService SelectedControlService
 @inherits ReportBase
 
 <div class=@("report")
      ondragover="event.preventDefault()" 
+     @onpointerdown=OnPointerDown
      style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>
     <SnapLiner Model="@Options.SnapLinerModel"></SnapLiner>
     <MarginLiner Width="Model.Width" Height="Model.Height"></MarginLiner>
@@ -43,6 +45,8 @@
         //리포트는 기본적으로 1개의 레이어를 갖는다.
         LayerBase layer = new LayerBase();
         layers.Add(layer);
+        layer.Model.ParentUid = Model.Uid;
+
         Options.AddControl(layer.Model.Uid, layer.Model);
 
         await Task.Yield();
@@ -52,4 +56,10 @@
     {
         
     }
+
+	public void OnPointerDown(PointerEventArgs e)
+	{
+		Console.WriteLine("Report.cs - OnPointerDown");		
+        SelectedControlService.OnPointerDown(e, Model);		
+	}
 }

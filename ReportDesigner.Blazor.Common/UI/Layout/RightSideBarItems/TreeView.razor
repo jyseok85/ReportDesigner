@@ -1,0 +1,128 @@
+﻿@inherits PropertyBase
+@inject DesignerOptionService Options
+@inject ControlModificationServcie ModificationService
+@inject SelectedControlService SelectedControlService
+
+<div class="side-panel-contents-background">
+
+    <RadzenTree @bind-Value=@GetSelection Change=@OnChange Data=@entries Expand=@LoadFiles Style="width: 100%; height: 300px; --rz-tree-node-toggle-width: 1.3rem;--rz-tree-node-padding:0.1rem 0.1rem;
+    ">
+        <RadzenTreeLevel
+            Text=@GetTextForNode Template=@FileOrFolderTemplate />
+    </RadzenTree>
+</div>
+
+
+@code {
+    RadzenTree tree;
+    private object GetSelection
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                // var item = new RadzenTreeItem()
+                //     {
+                //         Text = SelectedControlService.CurrentSelectedModel.Name,
+                //         Value = SelectedControlService.CurrentSelectedModel
+                //     };
+                // tree.ExpandItem(item);
+                return SelectedControlService.CurrentSelectedModel;
+            }
+            else
+                return null;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel = (ReportComponentModel)value;
+            Options.RefreshBody();
+
+        }
+    }
+    List<ReportComponentModel> entries = new List<ReportComponentModel>();
+    protected override void OnInitialized()
+    {
+        entries.Add(Options.ComponentList.First());
+    }
+
+    void LoadFiles(TreeExpandEventArgs args)
+    {
+        //args.Value 에 TreeMode의 값이 넘어온다.
+        var thisComponent = args.Value as ReportComponentModel;
+
+        var childrenList = Options.ComponentList.FindAll(x => x.ParentUid == thisComponent.Uid);
+
+        args.Children.Data = childrenList;
+        args.Children.Text = GetTextForNode;
+        //        args.Children.HasChildren = (Children) => (((List)Children).Count > 0);
+
+        //args.Children.Data IEnumerable 이므로 리스트 형태의 데이터가 들어간다, 즉 List<ReportComponentModel>
+        //자식 컨트롤이 있는지 여부
+        args.Children.HasChildren = (model) =>
+            //컨트롤 목록에서 컨트롤의 부모UID 와 현재 자식들에서 하나의 자식의 UID가 같은 갯수를 구하고, 그게 1개 이상일 경우 True 리턴
+            Options.ComponentList.FindAll(x => x.ParentUid == ((ReportComponentModel)model).Uid).Count() > 0;
+
+        //자식들의 표시 형태를 설정한다.
+        args.Children.Template = FileOrFolderTemplate;
+    }
+
+    //UI를 동적으로 생성합니다.
+    RenderFragment<RadzenTreeItem> FileOrFolderTemplate = (context) => builder =>
+    {
+        //ReportComponentModel 이 된다.
+        var model = context.Value as ReportComponentModel;
+
+        string icon = null;
+
+        switch(model.Type)
+        {
+            case ReportComponentModel.Control.Report:
+                icon = "assignment";
+                break;
+            case ReportComponentModel.Control.Layer:
+                icon = "layers";
+                break;
+            case ReportComponentModel.Control.Label:
+                icon = "text_fields";
+                break;
+            case ReportComponentModel.Control.Band:
+                icon = "table_rows";
+                break;
+            // case ReportComponentModel.Control.Table:
+            //     icon = "table";
+            //     break;
+        }
+
+        builder.OpenComponent<RadzenIcon>(0);
+        builder.AddAttribute(1, nameof(RadzenIcon.Icon), icon);
+        builder.CloseComponent();
+        builder.AddContent(3, context.Text);
+    };
+    string GetTextForNode(object data)
+    {
+        return ((ReportComponentModel)data).Name;
+    }
+    public void aa()
+    {
+    }
+
+    //todo : controllist 와 동일한 코드를 중복사용중. 하나로 합칠 필요가 있음.
+    void OnChange(TreeEventArgs args)
+    {
+        //body에서 컨트롤을 선택해준다. 
+         ReportComponentModel model = (ReportComponentModel)args.Value;
+        
+         //컨트롤의 포인트 다운로직. 
+        Options.SelectedControl.OnPointerDown(new PointerEventArgs(), model);
+        //드래그 로직은 필요없을듯..
+        ModificationService.UpdateSize(model.Width, model.Height);
+        //밴드의 포인트 업 또한 드래그 때문에 있는것
+
+        //바디의 포인트 업 또한 실질적으로 우측 컨트롤 업데이트 하는것 빼고 필요 없음.
+        Options.FireControlSelectionChangedEvent();
+        Options.RefreshBody();
+
+        Console.WriteLine("Change", $"Item Text: {args.Text}");
+    }
+
+}

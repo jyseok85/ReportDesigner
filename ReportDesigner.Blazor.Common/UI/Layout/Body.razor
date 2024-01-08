@@ -5,6 +5,8 @@
 @inject SelectedControlService SelectedControlService
 @inject ControlModificationServcie ModificationService
 @inject DragAndDropService DragService
+@inject ReportContextMenuService ReportContextMenuService
+@inject ContextMenuService ContextMenuService
 @inject IJSRuntime JsRuntime
 
 <RadzenBody id="mainbody"
@@ -14,6 +16,7 @@
 @onkeydown=OnKeyDown
 @onkeyup=OnKeyUp
 ondragover="event.preventDefault()"
+ContextMenu=@(args => ReportContextMenuService.ShowContextMenuWithItems(args))
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background"
          style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
@@ -57,6 +60,9 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //todo 용지 사이즈를 초반에 셋팅해주는 부분이지만 이런코드를 넣는 위치를 바꿀 필요가 있다. 
         PaperSizeChanged(Options.PaperSize.Width, 0);
         Options.SelectedControl = SelectedControlService;
+
+        ReportContextMenuService.ContextMenuService = ContextMenuService;
+        ReportContextMenuService.SelectedControl = SelectedControlService;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -68,6 +74,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //브라우저 사이즈시 콜백 추가
         await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
     }
+   
     [JSInvokable]
     public void OnBrowserResize()
     {

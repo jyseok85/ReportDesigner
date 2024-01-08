@@ -71,9 +71,9 @@ namespace ReportDesigner.Blazor.Common.Services
         public Dictionary<string, ReportComponentModel> ControlDictionary { get { return controlDictionary; } }
 
         public List<ReportComponentModel> ComponentList = new List<ReportComponentModel>();
-        public void AddControl(string key, ReportComponentModel model)
+        public void AddControl(string uid, ReportComponentModel model)
         {
-            Console.WriteLine(key);
+            Console.WriteLine(uid);
 
             if (model.Type != ReportComponentModel.Control.Report)
             {
@@ -88,9 +88,13 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             model.Name = GenerateName(model.Type);  
 
-            controlDictionary.Add(key, model);
+            controlDictionary.Add(uid, model);
             
             ComponentList.Add(model);
+
+            //컨트롤 트리용으로 별도로 생성한다. ?? 과연 최적화에 있어서 이게 맞는걸까?? 해당 탭(UI)가 표시될때 기존 데이터로 만들어주는게 낫지 않을까?
+            //고민하던 중.. 역시 괜히 해당 모델 만들어서 메모리 올리는것보다 기존 ControlDictionary를 사용해서 UI 표시될때 동적으로 생성해 주는게 더 좋을듯하다.
+            //그리고, ControlAddWorkIndex 를 추가로 생성하고, 컨트롤이 추가될때만 이 인덱스스를 변경시키고, 그 값이 변경이 되었을 경우에만 동적으로 갱신을 해주는 것이 좋을 것 같다. 
 
             string GenerateName(ReportComponentModel.Control type)
             {
@@ -104,7 +108,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
                 }
 
-                //todo 컨트롤이 많아질경우 저 Linq의 속도 계산을 해봐야 함.
+                //todo :컨트롤이 많아질경우 저 Linq의 속도 계산을 해봐야 함.
                 throw new Exception("동일한 컨트롤을 1000개 이상 생성할 수 없습니다.");
             }
         }
@@ -170,7 +174,7 @@ namespace ReportDesigner.Blazor.Common.Services
             SelectedControl.CurrentSelectedModel.IsOverlap = false;
 
             
-            //이거 이중으로 한것좀 처리하자 
+            //todo : 이거 이중으로 한것좀 처리하자 
             if (IsDragAbleControl(SelectedControl.CurrentSelectedModel.Type))
             {
                 foreach (ReportComponentModel model in controlDictionary.Values)
@@ -511,7 +515,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void SaveBrowserCache(string key, object value)
         {
-            //todo 브라우저 캐시 저장.
+            //todo : 브라우저 캐시 저장.
         }
 
         public object LoadBrowserCache(string key)
