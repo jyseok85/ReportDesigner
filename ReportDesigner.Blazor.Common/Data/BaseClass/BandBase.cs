@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Radzen.Blazor;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
+using System.Drawing;
 using System.Reflection.Metadata.Ecma335;
 using static ReportDesigner.Blazor.Common.Data.Model.BandModel;
 
@@ -171,21 +174,28 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         /// <summary>
         /// 복사 붙여넣기 할때 사용
         /// </summary>
-        public void CreateControl(ReportComponentModel model)
+        public void CreateControl(ReportComponentModel model, Location location = null)
         {
             int tabIndex = GetNextTabIndex();
             var control = new ControlBase(model.X, model.Y, model.Width, model.Height, tabIndex);
             control.Model = model;
             control.Model.Uid = Guid.NewGuid().ToString();
 
-            //붙여넣기 할때 같은 부모라면 위치를 10,10 만큼 이동시켜준다. 
-            if (control.Model.ParentUid == this.Model.Uid)
+            //붙여넣기 할때 지정된 위치가 없거나 같은 부모라면 위치를 10,10 만큼 이동시켜준다. 
+            if (location == null && control.Model.ParentUid == this.Model.Uid)
             {
                 control.Model.X += 10;
                 control.Model.Y += 10;
             }
             else
+            {
+                if (location != null)
+                {
+                    control.Model.X = location.X;
+                    control.Model.Y = location.Y;
+                }
                 control.Model.ParentUid = this.Model.Uid;
+            }
             //컴포넌트 목록에 추가한다.
             this.controlBases.Add(control);
             Options.AddControl(control.Model.Uid, control.Model);

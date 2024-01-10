@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Radzen;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
 using System;
 using System.Collections.Generic;
@@ -103,9 +104,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 }
                 var band = SelectedControl.RazorComponent as BandBase;
 
-                SelectedControl.CopiedModel.X = lastMouseX;
-                SelectedControl.CopiedModel.Y = lastMouseY;
-                ControlCreationService.PasteControl(SelectedControl.CopiedModel, band);
+                ControlCreationService.PasteControl(SelectedControl.CopiedModel, band, new Location(lastMouseX, lastMouseY));
                 SelectedControl.CopiedModel = null;
                 Options.RefreshBody();
             }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
+using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using System;
 using System.Collections.Generic;
@@ -86,9 +88,9 @@ namespace ReportDesigner.Blazor.Common.Services
             }
         }
 
-        public void PasteControl(ReportComponentModel model, BandBase band)
+        public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)
         {
-            band.CreateControl(model);
+            band.CreateControl(model, location);
         }
     }
 }
