@@ -2,7 +2,7 @@
 @inject SelectedControlService SelectedControlService
 @inherits ReportBase
 
-<div class=@("report")
+<div class=@("report") id="report"
      ondragover="event.preventDefault()" 
      @onpointerdown=OnPointerDown
      style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>

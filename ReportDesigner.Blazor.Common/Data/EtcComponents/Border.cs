@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 {
-    public class Border
+    public class Border : ICloneable
     {
         //2023.11.03
         //개별 테두리 두께 및 컬러는 적용할지 말지 판단 못함. 일단 속성은 만들어둠
@@ -107,6 +107,11 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
                 this.LeftColor = this.color; 
             else
                 this.LeftColor = "transparent";
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }

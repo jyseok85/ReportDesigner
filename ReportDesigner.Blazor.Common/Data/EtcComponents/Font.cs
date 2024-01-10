@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 {
-    public class Font
+    public class Font : ICloneable
     {
         public string FontFamily { get; set; } = "Noto Sans";
         public int FontSize { get; set; } = 14;
@@ -24,5 +24,10 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
         public string VerticlaAlignment { get; set; } = "center";
 
         public string HorizontalAlignment { get; set; } = "center";
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

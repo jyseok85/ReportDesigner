@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
+using ReportDesigner.Blazor.Common.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,6 +84,11 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 CurrentBand.CreateControl(X,Y,Width,Height);
             }
+        }
+
+        public void PasteControl(ReportComponentModel model, BandBase band)
+        {
+            band.CreateControl(model);
         }
     }
 }

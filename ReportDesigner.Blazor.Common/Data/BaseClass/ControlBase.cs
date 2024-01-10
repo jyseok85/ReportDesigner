@@ -7,12 +7,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 {
     public class ControlBase : ComponentBase
     {
-        public int TabIndex { get; set; } = 0;
 
-        public ControlModel Model { get; set; } = new ControlModel();
+        public ReportComponentModel Model { get; set; } = new ReportComponentModel();
 
 
         public ControlBase() {
+
         }
 
         public ControlBase(int x, int y, int width, int height, int tabIndex)
@@ -21,7 +21,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             Model.Y = y;
             Model.Width = width;
             Model.Height = height;
-            TabIndex = tabIndex;
+            Model.TabIndex = tabIndex;
         }
     }
 }

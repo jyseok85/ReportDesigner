@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
+using System.Reflection.Metadata.Ecma335;
 using static ReportDesigner.Blazor.Common.Data.Model.BandModel;
 
 namespace ReportDesigner.Blazor.Common.Data.BaseClass
@@ -106,7 +107,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                     DragService.StartDrag(Selectedservice.CurrentSelectedModel, e.ClientX, e.ClientY);
             }
             else
-                Selectedservice.OnPointerDown(e, this.Model);
+                Selectedservice.OnPointerDown(e, this.Model, this);
         }
 
 
@@ -138,6 +139,14 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             }
         }
 
+        private int GetNextTabIndex()
+        {
+            int tabIndex = 0;
+            if (controlBases.Count > 0)
+                tabIndex = controlBases.Max(x => x.Model.TabIndex) + 1;
+            return tabIndex;
+        }
+        
         public void CreateControl(int x, int y, int width, int height)
         {
             //최소 사이즈 이상 드래그 된 경우만 진행한다. ?? 아니면 작게 그리면 최소사이즈만큼 그려준다?
@@ -146,9 +155,9 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                 return;
 
             //새로 생성하는 컨트롤에 TabIndex를 할상해서 키보드 이벤트를 받도록 한다. 
-            int tabIndex = 0;
-            if (controlBases.Count > 0)
-                tabIndex = controlBases.Max(x => x.TabIndex) + 1;
+            int tabIndex = GetNextTabIndex();
+
+
 
             var control = new ControlBase(x, y, width, height, tabIndex);
             control.Model.ParentUid = this.Model.Uid;
@@ -157,6 +166,30 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             //컴포넌트 목록에 추가한다.
             this.controlBases.Add(control);
             Options.AddControl(control.Model.Uid, control.Model);
+        }
+
+        /// <summary>
+        /// 복사 붙여넣기 할때 사용
+        /// </summary>
+        public void CreateControl(ReportComponentModel model)
+        {
+            int tabIndex = GetNextTabIndex();
+            var control = new ControlBase(model.X, model.Y, model.Width, model.Height, tabIndex);
+            control.Model = model;
+            control.Model.Uid = Guid.NewGuid().ToString();
+
+            //붙여넣기 할때 같은 부모라면 위치를 10,10 만큼 이동시켜준다. 
+            if (control.Model.ParentUid == this.Model.Uid)
+            {
+                control.Model.X += 10;
+                control.Model.Y += 10;
+            }
+            else
+                control.Model.ParentUid = this.Model.Uid;
+            //컴포넌트 목록에 추가한다.
+            this.controlBases.Add(control);
+            Options.AddControl(control.Model.Uid, control.Model);
+
         }
     }
 }

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,10 +22,16 @@ namespace ReportDesigner.Blazor.Common.Services
             control
         }
      
+        
 
         private List<ReportComponentModel> models = new List<ReportComponentModel>();
         public List<ReportComponentModel> Models => models;
-        public void OnPointerDown(PointerEventArgs e, ReportComponentModel model)
+
+        //todo : 쓸지 말지 아직 모르겠음.
+        private object razorComponent;
+        public object RazorComponent => razorComponent;
+
+        public void OnPointerDown(PointerEventArgs e, ReportComponentModel model, object razorComponent = null)
         {
             if(e.CtrlKey == false)
             {
@@ -33,6 +41,8 @@ namespace ReportDesigner.Blazor.Common.Services
             models.Add(model);
             model.Selected = true;
             CurrentSelectedModel = model;
+
+            this.razorComponent = razorComponent;
 
             Console.WriteLine($"SelectedService - OnPointerDown : {CurrentSelectedModel.Name}");
             //오른쪽 속성탭이 열려 있다면 값을 업데이트 해준다.
@@ -77,6 +87,19 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public required ReportComponentModel CurrentSelectedModel { get; set; } = new ReportComponentModel();
 
+        public void SetEditMode()
+        {
+            CurrentSelectedModel.IsEditMode = true;
+        }
 
+        public ReportComponentModel CopiedModel = new ReportComponentModel();
+
+        public void CopyControl()
+        {
+            CopiedModel = CurrentSelectedModel.DeepClone();
+
+
+        }
+        
     }
 }

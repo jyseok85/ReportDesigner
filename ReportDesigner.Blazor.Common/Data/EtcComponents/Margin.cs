@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 {    
-    public class Margin
+    public class Margin : ICloneable
     {
         public int Left { get; set; } = 10;
         public int Top { get; set; } = 10;
@@ -21,6 +21,11 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
             this.Right = right;
             this.Bottom = bottom;   
             this.Left = left;
-        } 
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

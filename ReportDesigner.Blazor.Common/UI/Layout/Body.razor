@@ -16,9 +16,9 @@
 @onkeydown=OnKeyDown
 @onkeyup=OnKeyUp
 ondragover="event.preventDefault()"
-ContextMenu=@(args => ReportContextMenuService.ShowContextMenuWithItems(args))
+ContextMenu=@(args => ShowContextMenu(args))
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
-    <div class="report-background"
+    <div class="report-background" id="report-background"
          style=@("transform:scale(" + designer.Zoom * 0.01f + ");margin:16px 0 0 " + leftOffset + "px;")>
         <RulerY Size="@report.Model.Height"></RulerY>
         <RulerX Size="@report.Model.Width"></RulerX>
@@ -29,6 +29,16 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     window.getBodyWidth = function () {
         return document.getElementById('mainbody').offsetWidth;
     };
+    window.getLocationOfReport = function()
+    {
+        var mainbody = document.getElementById('mainbody');
+        var reportback = document.getElementById('report-background');
+        var report = document.getElementById('report');
+
+        return [mainbody.offsetLeft + reportback.offsetLeft + report.offsetLeft,
+        mainbody.offsetTop + reportback.offsetTop + report.offsetTop];
+
+    }
 </script>
 <style>
     .report-background{
@@ -63,6 +73,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
         ReportContextMenuService.ContextMenuService = ContextMenuService;
         ReportContextMenuService.SelectedControl = SelectedControlService;
+        ReportContextMenuService.ControlCreationService = CreationService;
+        ReportContextMenuService.Options = Options;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -74,7 +86,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //브라우저 사이즈시 콜백 추가
         await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
     }
-   
+
     [JSInvokable]
     public void OnBrowserResize()
     {
@@ -201,10 +213,12 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     private void OnPointerLeave()
     {
         Console.WriteLine("Body - OnPointerLeave");
+        //todo : 항상타서 성능잡아먹음. 아무작업없이 마우스 움직일때 어떻게 할지 고민필요.
         ReleaseState();
     }
 
     private void ReleaseState()
+
     {
         Options.State = DesignerOptionService.ActionState.None;
         Console.WriteLine("Body - ReleaseState");
@@ -246,7 +260,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     bool keyReleased = true;
     private void OnKeyDown(KeyboardEventArgs e)
     {
-      
+
         if (SelectedControlService.CurrentSelectedModel is not null)
         {
             //컨트롤 키와 같이 누른경우
@@ -289,4 +303,12 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     }
 
+    public async void ShowContextMenu(MouseEventArgs args)
+    {
+        var offset = await JsRuntime.InvokeAsync<int[]>("getLocationOfReport");
+        Point point = new Point();
+        point.X = offset[0];
+        point.Y = offset[1];
+        ReportContextMenuService.ShowContextMenuWithItems(args, point);
+    }
 }

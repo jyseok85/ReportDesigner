@@ -14,6 +14,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         {
             None,
             Label,
+            Table,
             Band,
             Layer,
             Report
@@ -24,6 +25,8 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public ReportComponentModel() {
             this.Uid = Guid.NewGuid().ToString();
         }
+        public int TabIndex { get; set; } = 0;
+
         public string ParentUid { get; set; } = string.Empty;
         public string Uid { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
@@ -90,6 +93,22 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public Font Font { get; set; } = new Font();
 
         public List<ReportComponentModel> Children { get; set; } = new List<ReportComponentModel>();
+
+        /// <summary>
+        /// C#에서는 깊은복사(참조복사)가 없다. 왜 아직도?? 왜?? 느려도 만들어줘야지..
+        /// 그래서 얕은복사(값만복사) 이 후에 참조된값들을 각각 복사한다.
+        /// </summary>
+        /// <returns></returns>
+        public ReportComponentModel DeepClone()
+        {
+            var thisModel = (ReportComponentModel) this.MemberwiseClone();
+            thisModel.Margin = (Margin)Margin.Clone();
+            thisModel.Border = (Border)Border.Clone();
+            thisModel.Font = (Font)Font.Clone();
+            return thisModel;
+
+            //todo : DeepClone - Children 이 있다면 그것도 복사해줘야 함.
+        }
 
     }
 }
