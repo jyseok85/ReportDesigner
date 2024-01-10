@@ -1,17 +1,18 @@
 ﻿@using System.Reflection;
-@inherits BandBase 
+@inherits BandBase
 @inject ControlCreationService CreationService
 @inject DragAndDropService DragService
 @inject DesignerOptionService Options
 
 
+
 <div class="content-band"
-@onpointerup=OnPointerUp
-@onpointerdown=OnPointerDown
+     tabIndex = "1" 
+     @onpointerup=OnPointerUp
+     @onpointerdown=OnPointerDown
      @onpointerdown:stopPropagation="true"
      ondrag="event.preventDefault()"
      ondragover="event.preventDefault()"
-     
      style=@("height:" + Model.Height + "px;" + (Options.State == DesignerOptionService.ActionState.Create ? "cursor:crosshair;" : "") +
      (Model.Selected == true ? "border: solid #0dcaf0 1px;" : "border: solid transparent 1px;"))>
 
@@ -25,26 +26,27 @@
         <DragObject DragService="DragService"></DragObject>
     </CascadingValue>
 
-  </div>
+</div>
 <style>
     .content-band {
         background-color: lightcyan;
         border: solid #0dcaf0 1px;
         /* grid-area: report; */
     }
-    .band{
 
-    }    
+    .band {
+    }
 </style>
 @code {
 
+    //todo : tabIndex 계산로직 추가해야함.
+    public int TabIndex { get; set; } = 1;
     [Parameter]
     public BandBase Base
     {
-        set {
+        set
+        {
             this.Model = value.Model;
         }
     }
-    
 }
- 

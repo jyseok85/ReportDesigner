@@ -260,23 +260,40 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     bool keyReleased = true;
     private void OnKeyDown(KeyboardEventArgs e)
     {
-
         if (SelectedControlService.CurrentSelectedModel is not null)
         {
             //컨트롤 키와 같이 누른경우
             if (e.CtrlKey)
             {
+                Console.WriteLine(e.Key);
+
                 //컨트롤 방향키 스냅포인트로 이동. 연속 누르기 금지
                 if (keyReleased == false)
                     return;
 
-                keyReleased = false;
 
-                if(e.Key != "Control")
+                if(e.Key.Contains("Arrow"))
+                {
                     Options.SetSnapPoint(e.Key);
+                    keyReleased = false;
+                }
+                else if(e.Key == "c")
+                {
+                    SelectedControlService.CopyControl();
+                    keyReleased = false;
+                }
+                else if(e.Key == "v")
+                {
+
+                    var band = SelectedControlService.RazorComponent as BandBase;
+                    if (band is not null)
+                        CreationService.PasteControl(SelectedControlService.CopiedModel, band);
+                }
             }
             else
             {
+                Console.WriteLine(e.Key);
+
                 switch (e.Key)
                 {
                     case "ArrowRight":

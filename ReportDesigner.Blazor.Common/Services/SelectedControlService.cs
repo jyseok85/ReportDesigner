@@ -31,6 +31,12 @@ namespace ReportDesigner.Blazor.Common.Services
         private object razorComponent;
         public object RazorComponent => razorComponent;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="model">선택한 오브젝트</param>
+        /// <param name="razorComponent">현재 Razor 오브젝트</param>
         public void OnPointerDown(PointerEventArgs e, ReportComponentModel model, object razorComponent = null)
         {
             if(e.CtrlKey == false)
@@ -44,7 +50,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
             this.razorComponent = razorComponent;
 
-            Console.WriteLine($"SelectedService - OnPointerDown : {CurrentSelectedModel.Name}");
+            Console.WriteLine($"SelectedService - OnPointerDown : {CurrentSelectedModel.Name} razor {razorComponent?.GetType()}");
             //오른쪽 속성탭이 열려 있다면 값을 업데이트 해준다.
 
         }
@@ -97,7 +103,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public void CopyControl()
         {
             CopiedModel = CurrentSelectedModel.DeepClone();
-
+            Console.WriteLine("Control Copied");
 
         }
         

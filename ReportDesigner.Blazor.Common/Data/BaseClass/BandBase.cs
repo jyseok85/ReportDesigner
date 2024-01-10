@@ -179,6 +179,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             int tabIndex = GetNextTabIndex();
             var control = new ControlBase(model.X, model.Y, model.Width, model.Height, tabIndex);
             control.Model = model;
+            control.Model.Selected = false;
             control.Model.Uid = Guid.NewGuid().ToString();
 
             //붙여넣기 할때 지정된 위치가 없거나 같은 부모라면 위치를 10,10 만큼 이동시켜준다. 
