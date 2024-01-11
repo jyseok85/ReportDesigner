@@ -309,6 +309,9 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                     case "ArrowUp":
                         SelectedControlService.CurrentSelectedModel.Y -= 1;
                         break;
+                    case "Delete":
+                        ReportContextMenuService.RemoveControl();
+                        break;
                 }
             }
         }

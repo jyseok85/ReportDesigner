@@ -53,7 +53,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     menuList.Add(CreateMenu("Bring to front", "home"));
                     menuList.Add(CreateMenu("Send to back", "home"));
                     menuList.Add(CreateMenu("Duplicate", "home"));
-                    menuList.Add(CreateMenu("Delete", "home")); //휴지통모양
+                    menuList.Add(CreateMenu("Remove", "home")); //휴지통모양
                     menuList.Add(CreateMenu("Copy", "copy"));
                     break;
                 case Data.Model.ReportComponentModel.Control.Report:
@@ -97,7 +97,7 @@ namespace ReportDesigner.Blazor.Common.Services
             var band = SelectedControlService.RazorComponent as BandBase;
 
             Location loc = null;
-            if(useLastMousePos == true)
+            if (useLastMousePos == true)
             {
                 loc = new Location(lastMouseX, lastMouseY);
             }
@@ -106,10 +106,32 @@ namespace ReportDesigner.Blazor.Common.Services
             SelectedControlService.CopiedModel = null;
             Options.RefreshBody();
         }
+        public void RemoveControl()
+        {
+            //의미상
+            //delete : 복구할수 없음
+            //remove : 복구가능
+
+            //1.band 에서 삭제하고
+            //2.DesignerOption에서 삭제한다.
+            var band = SelectedControlService.CurrentBand;
+            band.RemoveSelectedControl();
+        }
         public async void OnMenuItemClick(MenuItemEventArgs args)
         {
             var action = args.Text.ToLower();
-            if (action == "copy")
+            if(action == "cut")
+            {
+                //컨트롤을 복사하고,
+                //컨트롤을 삭제한다. 
+            }
+            else if(action  == "remove")
+            {
+                //컨트롤을 삭제한다. 
+                RemoveControl();
+                Options.RefreshBody();
+            }
+            else if (action == "copy")
             {
                 SelectedControlService.CopyControl();
             }

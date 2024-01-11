@@ -113,6 +113,12 @@ namespace ReportDesigner.Blazor.Common.Services
             }
         }
 
+        public void RemoveControl(string uid)
+        {
+            var control = controlDictionary[uid];
+            this.ComponentList.Remove(control);
+            this.controlDictionary.Remove(uid);
+        }
         public void UpdateAllControlOffset()
         {
             Console.WriteLine(this.GetType().Name);

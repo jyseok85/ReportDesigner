@@ -200,5 +200,17 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             Options.AddControl(control.Model.Uid, control.Model);
 
         }
+
+        public void RemoveSelectedControl()
+        {
+            var uid = Selectedservice.CurrentSelectedModel.Uid;
+            var control = controlBases.Find(x => x.Model.Uid == uid);
+
+            if (control != null)
+            {
+                this.controlBases.Remove(control);
+                Options.RemoveControl(uid);
+            }
+        }
     }
 }
