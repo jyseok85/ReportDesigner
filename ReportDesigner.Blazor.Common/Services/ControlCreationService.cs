@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
@@ -14,6 +16,8 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class ControlCreationService
     {
+        [Inject]
+        public required SelectedControlService SelectedControlService { get; set; }
         public int Width { get; set; } = 100;
 
         public int Height { get; set; } = 30;
@@ -30,7 +34,6 @@ namespace ReportDesigner.Blazor.Common.Services
         public int ClientX { get; set; }
         public int ClientY { get; set; }
 
-        public BandBase? CurrentBand { get; set; }
        
         public void ActionStart(PointerEventArgs e)
         {
@@ -77,20 +80,17 @@ namespace ReportDesigner.Blazor.Common.Services
             Width = 0;
             Height = 0;
             Hidden = true;
-            CurrentBand = null;           
         }
 
         public void CreateControl()
         {
-            if(CurrentBand is not null)
-            {
-                CurrentBand.CreateControl(X,Y,Width,Height);
-            }
+            SelectedControlService.CurrentBand.CreateControl(X,Y,Width,Height);
         }
 
         public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)
         {
-            band.CreateControl(model, location);
+            if(band is not null)
+                band.CreateControl(model, location);
         }
     }
 }

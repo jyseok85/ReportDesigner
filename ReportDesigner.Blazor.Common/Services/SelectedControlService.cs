@@ -32,6 +32,11 @@ namespace ReportDesigner.Blazor.Common.Services
         public object RazorComponent => razorComponent;
 
         /// <summary>
+        /// 변경시점 - 컨트롤을 생성할때, 밴드를 클릭할때
+        /// </summary>
+        public BandBase? CurrentBand { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="e"></param>
@@ -47,6 +52,11 @@ namespace ReportDesigner.Blazor.Common.Services
             models.Add(model);
             model.Selected = true;
             CurrentSelectedModel = model;
+
+            if (razorComponent is BandBase)
+            {
+                this.CurrentBand = razorComponent as BandBase;
+            }
 
             this.razorComponent = razorComponent;
 

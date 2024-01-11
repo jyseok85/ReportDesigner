@@ -7,6 +7,7 @@
 @inject DragAndDropService DragService
 @inject ReportContextMenuService ReportContextMenuService
 @inject ContextMenuService ContextMenuService
+@inject IClipboardService ClipboardService
 @inject IJSRuntime JsRuntime
 
 <RadzenBody id="mainbody"
@@ -71,10 +72,13 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         PaperSizeChanged(Options.PaperSize.Width, 0);
         Options.SelectedControl = SelectedControlService;
 
+        CreationService.SelectedControlService = SelectedControlService;
+
         ReportContextMenuService.ContextMenuService = ContextMenuService;
-        ReportContextMenuService.SelectedControl = SelectedControlService;
+        ReportContextMenuService.SelectedControlService = SelectedControlService;
         ReportContextMenuService.ControlCreationService = CreationService;
         ReportContextMenuService.Options = Options;
+        ReportContextMenuService.ClipboardService = ClipboardService;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -284,10 +288,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                 }
                 else if(e.Key == "v")
                 {
-
-                    var band = SelectedControlService.RazorComponent as BandBase;
-                    if (band is not null)
-                        CreationService.PasteControl(SelectedControlService.CopiedModel, band);
+                    ReportContextMenuService.PasteControl(useLastMousePos:false);
                 }
             }
             else

@@ -1,23 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Append.Blazor.Clipboard;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
-using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
     public class ReportContextMenuService
     {
         [Inject]
-        public required SelectedControlService SelectedControl { get; set; }
+        public required SelectedControlService SelectedControlService { get; set; }
 
         [Inject]
         public required ContextMenuService ContextMenuService { get; set; }
@@ -28,6 +22,9 @@ namespace ReportDesigner.Blazor.Common.Services
         [Inject]
         public required DesignerOptionService Options { get; set; }
 
+        [Inject]
+        public required IClipboardService ClipboardService { get; set; }
+
         int lastMouseX = 0;
         int lastMouseY = 0;
         public void ShowContextMenuWithItems(MouseEventArgs args, Point reportLocation)
@@ -37,17 +34,17 @@ namespace ReportDesigner.Blazor.Common.Services
             //마우스위치는 
             Console.WriteLine($"{args.ClientX} {args.ClientY}");
             Console.WriteLine($"{lastMouseX} {lastMouseY}");
-            if (SelectedControl == null)
+            if (SelectedControlService == null)
             {
                 Console.WriteLine("선택된 컨트롤이 없습니다.");
                 return;
             }
-            var type = SelectedControl.CurrentSelectedModel.Type;
+            var type = SelectedControlService.CurrentSelectedModel.Type;
             Console.WriteLine($"ShowContextMenuWithItems {type}");
             var menuList = new List<ContextMenuItem>();
 
             int index = 1;
-                
+
             switch (type)
             {
                 case Data.Model.ReportComponentModel.Control.Table:
@@ -63,7 +60,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 case Data.Model.ReportComponentModel.Control.Layer:
                     break;
                 case Data.Model.ReportComponentModel.Control.Band:
-                    if(SelectedControl.CopiedModel is not null)
+                    if (SelectedControlService.CopiedModel is not null)
                         menuList.Add(CreateMenu("Paste", "paste"));
                     break;
 
@@ -72,7 +69,7 @@ namespace ReportDesigner.Blazor.Common.Services
             if (type == Data.Model.ReportComponentModel.Control.Label)
             {
                 menuList.Add(CreateMenu("Copy Content", "info"));
-             //   menuList.Add(CreateMenu("Edit", "home"));
+                //   menuList.Add(CreateMenu("Edit", "home"));
             }
 
             menuList.Add(CreateMenu("Info", "home"));//속성창 열기
@@ -90,33 +87,105 @@ namespace ReportDesigner.Blazor.Common.Services
             }
         }
 
-        async void OnMenuItemClick(MenuItemEventArgs args)
+        public void PasteControl(bool useLastMousePos)
         {
-            if(args.Text.ToLower() == "copy")
+            if (SelectedControlService.CopiedModel == null)
             {
-                SelectedControl.CopyControl();
+                Console.WriteLine("복사된 컨트롤이 없습니다.");
+                return;
             }
-            if(args.Text.ToLower() == "paste") //부모밴드가 왜 Null?
-            {
-                if(SelectedControl.CopiedModel == null)
-                {
-                    Console.WriteLine("복사된 컨트롤이 없습니다.");
-                }
-                var band = SelectedControl.RazorComponent as BandBase;
+            var band = SelectedControlService.RazorComponent as BandBase;
 
-                ControlCreationService.PasteControl(SelectedControl.CopiedModel, band, new Location(lastMouseX, lastMouseY));
-                SelectedControl.CopiedModel = null;
-                Options.RefreshBody();
-            }
-            //SelectedControl.SetEditMode();
-            //var label = SelectedControl.RazorComponent as Control;
-            //await label.OnDbClick(null);
-            
-            Console.WriteLine($"Menu item with Value={args.Value} clicked");
-            if (!args.Value.Equals(3) && !args.Value.Equals(4))
+            Location loc = null;
+            if(useLastMousePos == true)
             {
-                ContextMenuService.Close();
+                loc = new Location(lastMouseX, lastMouseY);
             }
+
+            ControlCreationService.PasteControl(SelectedControlService.CopiedModel, band, loc);
+            SelectedControlService.CopiedModel = null;
+            Options.RefreshBody();
         }
+        public async void OnMenuItemClick(MenuItemEventArgs args)
+        {
+            var action = args.Text.ToLower();
+            if (action == "copy")
+            {
+                SelectedControlService.CopyControl();
+            }
+            else if (action == "copy content")
+            {
+                var text = SelectedControlService.CurrentSelectedModel.Text;
+                //클립보드를 복사하기 전에는 Document 에 포커스가 있어야 하기 때문에 컨텍스트 메뉴 팝업을 먼저 닫아 버린다. 
+                ContextMenuService.Close();
+                await ClipboardService.CopyTextToClipboardAsync(text);
+                Console.WriteLine($"Clipboard Copied : {text}");
+            }
+            else if (action == "paste") //부모밴드가 왜 Null?
+            {
+                PasteControl(true);
+            }
+            else if(action == "send to back")
+            {
+                //현재 선택한 컨트롤의 z-index를 가져온다. 
+                int zIndex = SelectedControlService.CurrentSelectedModel.ZIndex;
+
+                var controls = SelectedControlService.CurrentBand.controlBases;
+
+                //현재 값보다 작은 컨트롤만 찾는다.
+                var targetControls = controls.Where(x => x.Model.ZIndex < zIndex);
+
+                //검색된 값중 가장 큰값을 찾는다.
+                var target = targetControls.OrderByDescending(x => x.Model.ZIndex).First();
+                //var target = targetList.Max(x => x.Model.ZIndex);
+
+                if(target is not null)
+                {
+                    //교환하기
+                    int old = target.Model.ZIndex;
+                    target.Model.ZIndex = zIndex;
+                    SelectedControlService.CurrentSelectedModel.ZIndex = old;
+
+                    //상태변경을 해줘야한다. 
+                    Options.RefreshBody();
+                }
+                else
+                {
+                    Console.WriteLine("현재 컨트롤이 제일 아래에 있습니다.");
+                }
+            }
+            else if(action == "bring to front")
+            {
+                //현재 선택한 컨트롤의 z-index를 가져온다. 
+                int zIndex = SelectedControlService.CurrentSelectedModel.ZIndex;
+
+                var controls = SelectedControlService.CurrentBand.controlBases;
+
+                //현재 큰 컨트롤만 찾는다. 
+                var targetControls = controls.Where(x => x.Model.ZIndex > zIndex);
+
+                //검색된 값중 가장 작은값을 찾는다.
+                var target = targetControls.OrderBy(x => x.Model.ZIndex).First();
+
+                if (target is not null)
+                {
+                    //교환하기
+                    int old = target.Model.ZIndex;
+                    target.Model.ZIndex = zIndex;
+                    SelectedControlService.CurrentSelectedModel.ZIndex = old;
+
+                    //상태변경을 해줘야한다. 
+                    Options.RefreshBody();
+                }
+                else
+                {
+                    Console.WriteLine("현재 컨트롤이 제일 위에 있습니다.");
+                }
+            }
+            ContextMenuService.Close();
+        }
+
+
+        
     }
 }

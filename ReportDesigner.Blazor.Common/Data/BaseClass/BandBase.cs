@@ -96,7 +96,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
             if (Options.State == DesignerOptionService.ActionState.Create)
             {
-                CreationService.CurrentBand = this;
+                Selectedservice.CurrentBand = this;
                 //자식 컴포넌트가 선택되지 않았다면 선택된 모든 컴포넌트를 해제해준다.
                 DeselectAllControls();
 
@@ -157,11 +157,8 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             if (width < controlMinimumSize || height < controlMinimumSize)
                 return;
 
-            //새로 생성하는 컨트롤에 TabIndex를 할상해서 키보드 이벤트를 받도록 한다. 
+            //새로 생성하는 컨트롤에 TabIndex를 할당해서 키보드 이벤트를 받도록 한다. 
             int tabIndex = GetNextTabIndex();
-
-
-
             var control = new ControlBase(x, y, width, height, tabIndex);
             control.Model.ParentUid = this.Model.Uid;
             control.Model.Type = ReportComponentModel.Control.Label;
@@ -176,12 +173,13 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         /// </summary>
         public void CreateControl(ReportComponentModel model, Location location = null)
         {
-            int tabIndex = GetNextTabIndex();
-            var control = new ControlBase(model.X, model.Y, model.Width, model.Height, tabIndex);
+            var control = new ControlBase();
             control.Model = model;
+            control.Model.TabIndex = GetNextTabIndex();
+            control.Model.ZIndex = control.Model.TabIndex;
+
             control.Model.Selected = false;
             control.Model.Uid = Guid.NewGuid().ToString();
-
             //붙여넣기 할때 지정된 위치가 없거나 같은 부모라면 위치를 10,10 만큼 이동시켜준다. 
             if (location == null && control.Model.ParentUid == this.Model.Uid)
             {

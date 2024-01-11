@@ -12,7 +12,7 @@
      @onpointerdown:stopPropagation="true"
      @ondblclick="@( (x) => OnDbClick(x))"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
-                            GetStyle("border")+ GetStyle("background-color"))
+                            GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index"))
      >
      <CascadingValue Value="this">
         @if(DragService.Hidden)
@@ -201,6 +201,8 @@
                 return $"{type.ToLower()} : {this.Model.Font.HorizontalAlignment}; ";
             case "color":
                 return $"{type.ToLower()} : {this.Model.Font.FontColor}; ";
+            case "z-index":
+                return $"{type.ToLower()} : {this.Model.ZIndex}; ";
             default:
                 return string.Empty;
         }

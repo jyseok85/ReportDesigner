@@ -3,6 +3,7 @@ using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,7 +36,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public bool IsGroup { get { return Name != null; } }
 
-
+        public int ZIndex { get; set; }
         /// <summary>
         /// 일반 X, Y 값은 Div에 그려질 상대값이 설정되며
         /// Absolute는 Report 기준으로 생성되는 절대값을 표현한다. 

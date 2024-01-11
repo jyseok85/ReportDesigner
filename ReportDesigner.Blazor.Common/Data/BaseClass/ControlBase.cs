@@ -22,6 +22,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             Model.Width = width;
             Model.Height = height;
             Model.TabIndex = tabIndex;
+            Model.ZIndex = tabIndex;
         }
     }
 }

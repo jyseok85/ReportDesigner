@@ -1,3 +1,4 @@
+using Append.Blazor.Clipboard;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
@@ -18,6 +19,7 @@ builder.Services.AddScoped<MultiLanguageService>();
 builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddScoped<ReportContextMenuService>();
 builder.Services.AddScoped<DialogService>();
+builder.Services.AddClipboard();
 builder.Services.AddRazorComponents();
 
 var app = builder.Build();
