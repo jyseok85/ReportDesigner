@@ -126,7 +126,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public void UpdateAllControlOffset()
         {
-            Console.WriteLine(this.GetType().Name);
+            Console.WriteLine($"{this.GetType().Name} : UpdateAllControlOffset");
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 if(model.Type == ReportComponentModel.Control.Report)
@@ -207,10 +207,15 @@ namespace ReportDesigner.Blazor.Common.Services
                         else
                             model.IsOverlap = false;
                     }
-                }            
-
+                }
             }
-
+            else
+            {
+                foreach (ReportComponentModel model in controlDictionary.Values)
+                {
+                    model.IsOverlap = false;
+                }
+            }
         }
 
         private bool IsDragAbleControl(ReportComponentModel.Control type)

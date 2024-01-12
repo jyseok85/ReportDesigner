@@ -14,9 +14,9 @@
 @onpointerup=OnPointerUp
 @onpointermove=OnPointerMove
 @onpointerleave=OnPointerLeave
-@onkeydown=OnKeyDown
+@onkeydown="OnKeyDown"
 @onkeyup=OnKeyUp
-ondragover="event.preventDefault()"
+@ondrag:preventDefault="true"
 ContextMenu=@(args => ShowContextMenu(args))
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background" id="report-background"
@@ -296,6 +296,13 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                     ReportContextMenuService.PasteControl(useLastMousePos:false);
                     keyReleased = false;
                 }
+                else if(e.Key == "d")
+                {
+                    ReportContextMenuService.DuplicateControl();
+                    keyReleased = false;
+
+                }
+
             }
             else
             {
@@ -327,7 +334,6 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     {
         Options.UpdateAllControlOffset();
         keyReleased = true;
-
     }
 
     public async void ShowContextMenu(MouseEventArgs args)

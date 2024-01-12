@@ -88,6 +88,21 @@ namespace ReportDesigner.Blazor.Common.Services
             }
         }
 
+        public void DuplicateControl()
+        {
+            Console.WriteLine("Duplicat Control");
+            //컨트롤을 복사하고.
+            SelectedControlService.CopyControl();
+
+            var band = SelectedControlService.CurrentBand;
+            var source = SelectedControlService.CurrentSelectedModel;
+
+            //현재 컨트롤의 가로만큼 우측으로 이동해서
+            var location = new Location(source.X + source.Width, source.Y);
+           
+            //컨트롤을 복제해준다. 
+            ControlCreationService.PasteControl(SelectedControlService.CopiedModel, band, location);
+        }
         public void PasteControl(bool useLastMousePos)
         {
             if (SelectedControlService.CopiedModel == null)
@@ -104,7 +119,6 @@ namespace ReportDesigner.Blazor.Common.Services
             }
 
             ControlCreationService.PasteControl(SelectedControlService.CopiedModel, band, loc);
-            SelectedControlService.CopiedModel = null;
         }
         public void RemoveControl()
         {
@@ -141,6 +155,10 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 SelectedControlService.CopyControl();
             }
+            else if(action == "duplicate")
+            {
+                DuplicateControl();
+            }
             else if (action == "copy content")
             {
                 var text = SelectedControlService.CurrentSelectedModel.Text;
@@ -157,6 +175,10 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 Options.FireControlSelectionChangedEvent("ShowRightPanel");
             }
+            //todo : 뒤로보내기 앞으로보내기는 컨트롤 z-index로 하나씩 되어있다. 그래서 1씩 변경을 하는데, 첫번째 컨트롤과 맨마지막 컨트롤과의 상하관계를 조절하려면 
+            //중간 단계를 전부 수행해줘야 한다. (현재는 수동)
+            //이걸 해주려면 컨트롤이 중복되었는지 체크하는 로직이 들어가야 하고, z-index도 상대적으로 변경되어야 할 필요가 있다.
+            //성능좀 많이 먹는거 아닐까??
             else if(action == "send to back")
             {
                 //현재 선택한 컨트롤의 z-index를 가져온다. 

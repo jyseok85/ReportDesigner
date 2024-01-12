@@ -28,8 +28,8 @@ namespace ReportDesigner.Blazor.Common.Services
         public List<ReportComponentModel> Models => models;
 
         //todo : 쓸지 말지 아직 모르겠음.
-        private object razorComponent;
-        public object RazorComponent => razorComponent;
+        //private object razorComponent;
+        //public object RazorComponent => razorComponent;
 
         /// <summary>
         /// 변경시점 - 컨트롤을 생성할때, 밴드를 클릭할때
@@ -44,24 +44,27 @@ namespace ReportDesigner.Blazor.Common.Services
         /// <param name="razorComponent">현재 Razor 오브젝트</param>
         public void OnPointerDown(PointerEventArgs e, ReportComponentModel model, object razorComponent = null)
         {
-            if(e.CtrlKey == false)
+            SelectControl(e.CtrlKey, model, razorComponent);
+        }
+        public void SelectControl(bool isMultiSelect, ReportComponentModel model, object parentBand = null)
+        {
+            Console.WriteLine($"SelectedService - SelectControl : {CurrentSelectedModel.Name} razor {parentBand?.GetType()}");
+            if (isMultiSelect == false)
             {
                 models.ForEach(x => x.Selected = false);
-                models.Clear();               
+                models.Clear();
             }
             models.Add(model);
             model.Selected = true;
+
             CurrentSelectedModel = model;
 
-            if (razorComponent is BandBase)
+            if (parentBand is BandBase)
             {
-                this.CurrentBand = razorComponent as BandBase;
+                this.CurrentBand = parentBand as BandBase;
             }
 
-            this.razorComponent = razorComponent;
-
-            Console.WriteLine($"SelectedService - OnPointerDown : {CurrentSelectedModel.Name} razor {razorComponent?.GetType()}");
-            //오른쪽 속성탭이 열려 있다면 값을 업데이트 해준다.
+            //this.razorComponent = razorComponent;
 
         }
 
@@ -108,7 +111,7 @@ namespace ReportDesigner.Blazor.Common.Services
             CurrentSelectedModel.IsEditMode = true;
         }
 
-        public ReportComponentModel CopiedModel = new ReportComponentModel();
+        public ReportComponentModel? CopiedModel = new ReportComponentModel();
 
         public void CopyControl()
         {

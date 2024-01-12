@@ -84,13 +84,20 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void CreateControl()
         {
-            SelectedControlService.CurrentBand.CreateControl(X,Y,Width,Height);
+            SelectedControlService.CurrentBand?.CreateControl(X,Y,Width,Height);
         }
 
         public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)
         {
-            if(band is not null)
+            if (band is not null)
+            {
                 band.CreateControl(model, location);
+
+                //붙여넣기 한 컨트롤을 선택해 주어야 한다.
+                SelectedControlService.SelectControl(false, model, band);
+
+                SelectedControlService.CopiedModel = null;
+            }
         }
     }
 }
