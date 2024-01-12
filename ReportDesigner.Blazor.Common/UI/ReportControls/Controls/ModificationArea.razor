@@ -20,7 +20,7 @@
 @onpointermove:preventDefault="true"
 
      style=@("width:" + (ModificationService.Width) + "px;height:" + (ModificationService.Height) + "px;" +
-     GetTransform() + "border:1px solid #337ab7") hidden=@(parent.Selected == true ? false : true )>
+     GetTransform() + GetStyle("border")) hidden=@(parent.Selected == true ? false : true )>
 
 
     <div class="ui-resize-handle ui-resizable-w" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
@@ -121,5 +121,22 @@
         ModificationService.Width = parent.Model.Width;
         ModificationService.Height = parent.Model.Height;
         StateHasChanged();
+    }
+
+    public string GetStyle(string type)
+    {
+        switch(type.ToLower())
+        {
+            case "border":
+                if (this.parent.Model.IsOverlap == false)
+                {
+                    return $"{type.ToLower()}:1px solid #337ab7;";
+                }
+                else
+                {
+                    return $"{type.ToLower()}:1px solid red;";
+                }
+         }
+        return "";
     }
 }
