@@ -55,6 +55,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     menuList.Add(CreateMenu("Duplicate", "home"));
                     menuList.Add(CreateMenu("Remove", "home")); //휴지통모양
                     menuList.Add(CreateMenu("Copy", "copy"));
+                    menuList.Add(CreateMenu("Cut", "cut"));
                     break;
                 case Data.Model.ReportComponentModel.Control.Report:
                 case Data.Model.ReportComponentModel.Control.Layer:
@@ -94,7 +95,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 Console.WriteLine("복사된 컨트롤이 없습니다.");
                 return;
             }
-            var band = SelectedControlService.RazorComponent as BandBase;
+            var band = SelectedControlService.CurrentBand;
 
             Location loc = null;
             if (useLastMousePos == true)
@@ -104,7 +105,6 @@ namespace ReportDesigner.Blazor.Common.Services
 
             ControlCreationService.PasteControl(SelectedControlService.CopiedModel, band, loc);
             SelectedControlService.CopiedModel = null;
-            Options.RefreshBody();
         }
         public void RemoveControl()
         {
@@ -117,19 +117,25 @@ namespace ReportDesigner.Blazor.Common.Services
             var band = SelectedControlService.CurrentBand;
             band.RemoveSelectedControl();
         }
+
+        public void CutControl()
+        {
+            //컨트롤을 복사하고,
+            SelectedControlService.CopyControl();
+            //컨트롤을 삭제한다. 
+            RemoveControl();
+        }
         public async void OnMenuItemClick(MenuItemEventArgs args)
         {
             var action = args.Text.ToLower();
             if(action == "cut")
             {
-                //컨트롤을 복사하고,
-                //컨트롤을 삭제한다. 
+                CutControl();
             }
             else if(action  == "remove")
             {
                 //컨트롤을 삭제한다. 
                 RemoveControl();
-                Options.RefreshBody();
             }
             else if (action == "copy")
             {
@@ -146,6 +152,10 @@ namespace ReportDesigner.Blazor.Common.Services
             else if (action == "paste") //부모밴드가 왜 Null?
             {
                 PasteControl(true);
+            }
+            else if(action == "info")
+            {
+                Options.FireControlSelectionChangedEvent("ShowRightPanel");
             }
             else if(action == "send to back")
             {
@@ -168,8 +178,6 @@ namespace ReportDesigner.Blazor.Common.Services
                     target.Model.ZIndex = zIndex;
                     SelectedControlService.CurrentSelectedModel.ZIndex = old;
 
-                    //상태변경을 해줘야한다. 
-                    Options.RefreshBody();
                 }
                 else
                 {
@@ -196,14 +204,14 @@ namespace ReportDesigner.Blazor.Common.Services
                     target.Model.ZIndex = zIndex;
                     SelectedControlService.CurrentSelectedModel.ZIndex = old;
 
-                    //상태변경을 해줘야한다. 
-                    Options.RefreshBody();
                 }
                 else
                 {
                     Console.WriteLine("현재 컨트롤이 제일 위에 있습니다.");
                 }
             }
+            Options.RefreshBody();
+
             ContextMenuService.Close();
         }
 

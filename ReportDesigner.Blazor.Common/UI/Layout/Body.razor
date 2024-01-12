@@ -286,9 +286,15 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                     SelectedControlService.CopyControl();
                     keyReleased = false;
                 }
+                else if(e.Key == "x")
+                {
+                    ReportContextMenuService.CutControl();
+                    keyReleased = false;
+                }
                 else if(e.Key == "v")
                 {
                     ReportContextMenuService.PasteControl(useLastMousePos:false);
+                    keyReleased = false;
                 }
             }
             else

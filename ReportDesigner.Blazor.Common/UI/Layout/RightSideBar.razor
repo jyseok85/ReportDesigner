@@ -9,8 +9,8 @@
         <RadzenStack Orientation="Orientation.Vertical" Style="flex-direction:inherit !important; background-color:lightgray; height:inherit;transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
             <RadzenStack Orientation="Orientation.Vertical" Style="transition: var(--rz-transition-all);--rz-panel-menu-item-transition: var(--rz-transition-all);">
                 <RadzenPanelMenu Click="OnParentClicked" Style=@((this.showRightSidePanel ?"width:350px;":"width:0px;") +"transition: var(--rz-transition-all);") Multiple="@multiple">
-                    <div class="right-panel">  
-                        <ControlList></ControlList>
+                    <div class="right-panel">
+                        <ControlList ></ControlList>
                         @if (this.currentRightPanel == RightPanelType.Property)
                         {
                             <Design @ref=design></Design>
@@ -28,10 +28,10 @@
                             <PaperSetting></PaperSetting>
                             <ControlSetting></ControlSetting>
                         }
-                        else if(this.currentRightPanel == RightPanelType.ObjectBrowser)
+                        else if (this.currentRightPanel == RightPanelType.ObjectBrowser)
                         {
                             <div style="background-color:#D7D7D7;height:1px;" />
-                            <TreeView @ref=treeview></TreeView>
+                            <ControlView @ref=treeview></ControlView>
                         }
                     </div>
                 </RadzenPanelMenu>
@@ -80,7 +80,7 @@
         min-width: 7rem;
         max-width: 7rem;
         margin-top: 0.5rem; /* 폰트사이즈 0.7rem 의 경우 */
-        /* user-select: none; /* 드래그 or 더블클릭 선택 막기 */ */
+        /* user-select: none; /* 드래그 or 더블클릭 선택 막기 */
     }
 
     .property-displayName-small {
@@ -109,6 +109,7 @@
     .property-selectbar {
         width: 100%;
     }
+
     .property-dropdown {
         display: block;
         padding: 5px 3px 3px 7px;
@@ -137,7 +138,7 @@
     Layout? layout;
     DataSource? datasource;
     Appearance? appearance;
-    TreeView? treeview;
+    ControlView? treeview;
 
     bool showSidePanel = false;
 
@@ -154,16 +155,10 @@
     private bool showRightSidePanel = false;
 
 
-    void ShowRightPanel(MenuItemEventArgs args)
+    void ShowRightPanel(string type)
     {
-        //패널 버튼을 클릭하면 해당 목록을 표시한다. 
-
-        //컨트롤을 클릭하면 해당 목록에 연관된 속성을 표시한다. 
-
-        //리포트, 레이어는 선택방법이 없고, 드롭다운에서 선택시. 디자인, 레이아웃을 표시해준다. 
-
         bool isFold = false;
-        switch (args.Text.ToUpper())
+        switch (type)
         {
             case "PROPERTY":
                 if (currentRightPanel == RightPanelType.Property && showRightSidePanel == true)
@@ -210,13 +205,23 @@
                 }
                 break;
         }
-
         if (this.showRightSidePanel != isFold)
         {
             this.showRightSidePanel = isFold;
             Options.FirePaperSizeChangedEvent(100);
         }
 
+    }
+    void ShowRightPanel(MenuItemEventArgs args)
+    {
+        //패널 버튼을 클릭하면 해당 목록을 표시한다.
+
+        //컨트롤을 클릭하면 해당 목록에 연관된 속성을 표시한다.
+
+        //리포트, 레이어는 선택방법이 없고, 드롭다운에서 선택시. 디자인, 레이아웃을 표시해준다.
+
+        string type = args.Text.ToUpper();
+        ShowRightPanel(type);
         StateHasChanged();
 
     }
@@ -239,7 +244,7 @@
     {
         //해당 패널을 갱신시킨다.
         //데이터는 전달하는게 아니라.
-        //해당 패널의 속성에서 패널 갱신시킬때 Get 부분을 타게 되고 불러오게 된다. 
+        //해당 패널의 속성에서 패널 갱신시킬때 Get 부분을 타게 되고 불러오게 된다.
         if (key.Equals("Right"))
         {
             Console.WriteLine("Right");
@@ -248,11 +253,17 @@
             appearance?.RefreshState();
             datasource?.RefreshState();
             layout.RefreshState();
-            treeview?.RefreshState();
+            //treeview?.RefreshState();
 
         }
+        else if (key.Equals("ShowRightPanel"))
+        {
+            ShowRightPanel("PROPERTY");
+        }
+
+
 
         StateHasChanged();
-    }
         //todo : 레이아웃에서 컨트롤 이동시 스냅이 업데이트 안됨. todo
+    }
 }

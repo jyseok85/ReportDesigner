@@ -53,8 +53,13 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void FireControlSelectionChangedEvent()
         {
-            ControlSelectionChanged?.Invoke(null, "Right");
+            FireControlSelectionChangedEvent("Right");
         }
+        public void FireControlSelectionChangedEvent(string key)
+        {
+            ControlSelectionChanged?.Invoke(null, key);
+        }
+
 
         public enum ActionState
         {
