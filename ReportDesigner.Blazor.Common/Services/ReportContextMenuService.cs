@@ -176,7 +176,7 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 PasteControl(true);
             }
-            else if(action == "Property")
+            else if(action == "property")
             {
                 Options.FireControlSelectionChangedEvent("ShowRightPanel");
             }
