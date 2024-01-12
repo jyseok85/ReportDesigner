@@ -7,38 +7,38 @@
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">BackColor</RadzenText>
-            <RadzenColorPicker class="color-picker w-100" @bind-Value=BackColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton/>
+            <RadzenColorPicker class="color-picker w-100" @bind-Value=BackColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton Disabled=Locked />
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">UseBorder</RadzenText>
-            <RadzenCheckBox @bind-Value=UseBorder Name="UseBorder" />
+            <RadzenCheckBox @bind-Value=UseBorder Name="UseBorder" Disabled=Locked />
         </RadzenStack>
         @if (UseBorder)
         {
             <div style="background-color:#fafafa; border-radius:0.5rem; padding:0.2rem 0 0.2rem 0;">
                 <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                     <RadzenText class="property-displayName property-sub">Border Color</RadzenText>
-                    <RadzenColorPicker class="color-picker w-100" @bind-Value=@BorderColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton/>
+                    <RadzenColorPicker class="color-picker w-100" @bind-Value=@BorderColor ShowHSV=@showHSV ShowRGBA=@showRGBA ShowColors=@showColors ShowButton=@showButton Disabled=Locked />
                 </RadzenStack>
                 <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                     <RadzenText class="property-displayName property-sub">Border Thickness</RadzenText>
-                    <RadzenNumeric class="property-item" Min="1" Max="10" TValue="int" @bind-Value=BorderThickness/>
+                    <RadzenNumeric class="property-item" Min="1" Max="10" TValue="int" @bind-Value=BorderThickness Disabled=Locked />
                 </RadzenStack>
                 <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                     <RadzenText class="property-displayName property-sub">Border Style</RadzenText>
-                    <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@BorderStyle Data=@borderStyleList PopupStyle=@popupStyle>
+                    <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@BorderStyle Data=@borderStyleList PopupStyle=@popupStyle Disabled=Locked>
 
                     </RadzenDropDown>
                 </RadzenStack>
                 <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                     <RadzenText class="property-displayName property-sub">Border Direction</RadzenText>
-                    <RadzenSelectBar @bind-Value=@BorderSelectALL TValue="bool" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                    <RadzenSelectBar @bind-Value=@BorderSelectALL TValue="bool" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
                         <Items>
                             <RadzenSelectBarItem Icon="border_outer" Value="true" Style="padding:0.2rem;" />
                             <RadzenSelectBarItem Icon="border_clear" Value="false" Style="padding:0.2rem;" />
                         </Items>
                     </RadzenSelectBar>
-                    <RadzenSelectBar @bind-Value=@BorderDirection TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true">
+                    <RadzenSelectBar @bind-Value=@BorderDirection TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Disabled=Locked>
                         <Items>
                             <RadzenSelectBarItem Icon="border_top" Value="0" Style="padding:0.2rem;" />
                             <RadzenSelectBarItem Icon="border_right" Value="1" Style="padding:0.2rem;" />
@@ -68,6 +68,10 @@
             SelectedControlService.CurrentSelectedModel.BackColor = value;
             Options.RefreshBody();
         }
+    }
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
     }
     private string BorderColor
     {

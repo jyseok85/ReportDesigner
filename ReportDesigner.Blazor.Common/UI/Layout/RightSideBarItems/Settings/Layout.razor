@@ -28,13 +28,13 @@
                 <RadzenText class="property-displayName-small">W</RadzenText>
                 <RadzenNumeric class="property-item" Min="5" Max="Options.PaperSize.Width" TValue="int" @bind-Value=ControlWidth Disabled=disableControl />
                 <RadzenText class="property-displayName-small">H</RadzenText>
-                <RadzenNumeric class="property-item" Min="5" Max="Options.PaperSize.Height" TValue="int" @bind-value=ControlHeight />
+                    <RadzenNumeric class="property-item" Min="5" Max="Options.PaperSize.Height" TValue="int" @bind-value=ControlHeight Disabled=Locked />
             </RadzenStack>
         </RadzenStack>
     </div>
 </RadzenPanelMenuItem>
 
-@code {
+    @code {
     private bool disableControl = false;
 
     //컨트롤타입에 따른 레이아웃의 Enable 여부 결정필요.
@@ -46,10 +46,18 @@
             if (value == ReportComponentModel.Control.Band)
                 disableControl = true;
             else
-                disableControl = false;
+            {
+                if (Locked == true)
+                    disableControl = true;
+                else
+                    disableControl = false;
+            }
         }
     }
-
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
+    }
     private string AbsoluteLocation
     {
         get

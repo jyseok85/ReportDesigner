@@ -31,7 +31,7 @@
                         else if (this.currentRightPanel == RightPanelType.ObjectBrowser)
                         {
                             <div style="background-color:#D7D7D7;height:1px;" />
-                            <ControlView @ref=treeview></ControlView>
+                            //<ControlView @ref=treeview></ControlView>
                         }
                     </div>
                 </RadzenPanelMenu>
@@ -245,9 +245,9 @@
         //해당 패널을 갱신시킨다.
         //데이터는 전달하는게 아니라.
         //해당 패널의 속성에서 패널 갱신시킬때 Get 부분을 타게 되고 불러오게 된다.
+        Console.WriteLine($"ControlSelectionChanged : {key}");
         if (key.Equals("Right"))
         {
-            Console.WriteLine("Right");
             design.RefreshState();
             font?.RefreshState();
             appearance?.RefreshState();

@@ -8,7 +8,7 @@
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Data Type</RadzenText>
-            <RadzenDropDown class="property-item" AllowClear="false" AllowFiltering="false" @bind-Value=@dataType Data=@dataTypeList PopupStyle=@CSS.DropDownPopupStyle>
+            <RadzenDropDown class="property-item" AllowClear="false" AllowFiltering="false" @bind-Value=@dataType Data=@dataTypeList PopupStyle=@CSS.DropDownPopupStyle Disabled=Locked>
             </RadzenDropDown>
         </RadzenStack>
 
@@ -16,25 +16,25 @@
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Text</RadzenText>
-                <RadzenTextBox class="w-100 property-item" @bind-Value=Text></RadzenTextBox>
+                <RadzenTextBox class="w-100 property-item" @bind-Value=Text Disabled=Locked></RadzenTextBox>
             </RadzenStack>
         }
         else if (dataType == "DataTable")
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Table Name</RadzenText>
-                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+                <RadzenTextBox class="w-100 property-item" Disabled=Locked></RadzenTextBox>
             </RadzenStack>
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Field Name</RadzenText>
-                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+                <RadzenTextBox class="w-100 property-item" Disabled=Locked></RadzenTextBox>
             </RadzenStack>
         }
         else if (dataType == "Paramater")
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Parameter Name</RadzenText>
-                <RadzenTextBox class="w-100 property-item"></RadzenTextBox>
+                <RadzenTextBox class="w-100 property-item" Disabled=Locked></RadzenTextBox>
             </RadzenStack>
         }
         else if (dataType == "System Text")
@@ -70,10 +70,17 @@
             else
                 placeHolder = "";
 
+            if (Locked)
+                return false;
+
             return isNumber;
         }
     }
 
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
+    }
     private string Format
     {
         set

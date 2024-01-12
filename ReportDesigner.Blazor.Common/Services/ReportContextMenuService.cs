@@ -49,31 +49,36 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 case Data.Model.ReportComponentModel.Control.Table:
                 case Data.Model.ReportComponentModel.Control.Label:
-                    menuList.Add(CreateMenu("Lock", "home"));
-                    menuList.Add(CreateMenu("Bring to front", "home"));
-                    menuList.Add(CreateMenu("Send to back", "home"));
-                    menuList.Add(CreateMenu("Duplicate", "home"));
-                    menuList.Add(CreateMenu("Remove", "home")); //휴지통모양
-                    menuList.Add(CreateMenu("Copy", "copy"));
-                    menuList.Add(CreateMenu("Cut", "cut"));
+                    if (SelectedControlService.CurrentSelectedModel.Locked)
+                        menuList.Add(CreateMenu("UnLock", "lock_open"));
+                    else
+                    {
+                        menuList.Add(CreateMenu("Lock", "lock"));
+                        menuList.Add(CreateMenu("Bring to front", "flip_to_front"));
+                        menuList.Add(CreateMenu("Send to back", "flip_to_back"));
+                        menuList.Add(CreateMenu("Duplicate", "difference"));
+                        menuList.Add(CreateMenu("Remove", "delete")); //휴지통모양
+                        menuList.Add(CreateMenu("Cut", "content_cut"));
+                        menuList.Add(CreateMenu("Copy", "content_copy"));
+                    }
                     break;
                 case Data.Model.ReportComponentModel.Control.Report:
                 case Data.Model.ReportComponentModel.Control.Layer:
                     break;
                 case Data.Model.ReportComponentModel.Control.Band:
                     if (SelectedControlService.CopiedModel is not null)
-                        menuList.Add(CreateMenu("Paste", "paste"));
+                        menuList.Add(CreateMenu("Paste", "content_paste"));
                     break;
 
             }
 
             if (type == Data.Model.ReportComponentModel.Control.Label)
             {
-                menuList.Add(CreateMenu("Copy Content", "info"));
-                //   menuList.Add(CreateMenu("Edit", "home"));
+                if(SelectedControlService.CurrentSelectedModel.Locked == false)
+                    menuList.Add(CreateMenu("Copy Content", "content_copy"));
             }
 
-            menuList.Add(CreateMenu("Info", "home"));//속성창 열기
+            menuList.Add(CreateMenu("Property", "edit_attributes"));//속성창 열기
 
 
             ContextMenuService.Open(args, menuList, OnMenuItemClick);
@@ -171,7 +176,7 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 PasteControl(true);
             }
-            else if(action == "info")
+            else if(action == "Property")
             {
                 Options.FireControlSelectionChangedEvent("ShowRightPanel");
             }
@@ -189,21 +194,30 @@ namespace ReportDesigner.Blazor.Common.Services
                 //현재 값보다 작은 컨트롤만 찾는다.
                 var targetControls = controls.Where(x => x.Model.ZIndex < zIndex);
 
-                //검색된 값중 가장 큰값을 찾는다.
-                var target = targetControls.OrderByDescending(x => x.Model.ZIndex).First();
-                //var target = targetList.Max(x => x.Model.ZIndex);
-
-                if(target is not null)
+                if (targetControls.Count() > 0)
                 {
-                    //교환하기
-                    int old = target.Model.ZIndex;
-                    target.Model.ZIndex = zIndex;
-                    SelectedControlService.CurrentSelectedModel.ZIndex = old;
 
+                    //검색된 값중 가장 큰값을 찾는다.
+                    var target = targetControls.OrderByDescending(x => x.Model.ZIndex).First();
+                    //var target = targetList.Max(x => x.Model.ZIndex);
+
+                    if (target is not null)
+                    {
+                        //교환하기
+                        int old = target.Model.ZIndex;
+                        target.Model.ZIndex = zIndex;
+                        SelectedControlService.CurrentSelectedModel.ZIndex = old;
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("현재 컨트롤이 제일 아래에 있습니다.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("현재 컨트롤이 제일 아래에 있습니다.");
+                    Console.WriteLine("교체할 컨트롤이 없습니다.");
+
                 }
             }
             else if(action == "bring to front")
@@ -216,21 +230,34 @@ namespace ReportDesigner.Blazor.Common.Services
                 //현재 큰 컨트롤만 찾는다. 
                 var targetControls = controls.Where(x => x.Model.ZIndex > zIndex);
 
-                //검색된 값중 가장 작은값을 찾는다.
-                var target = targetControls.OrderBy(x => x.Model.ZIndex).First();
-
-                if (target is not null)
+                if(targetControls.Count() > 0)
                 {
-                    //교환하기
-                    int old = target.Model.ZIndex;
-                    target.Model.ZIndex = zIndex;
-                    SelectedControlService.CurrentSelectedModel.ZIndex = old;
 
+                    //검색된 값중 가장 작은값을 찾는다.
+                    var target = targetControls.OrderBy(x => x.Model.ZIndex).First();
+
+                    if (target is not null)
+                    {
+                        //교환하기
+                        int old = target.Model.ZIndex;
+                        target.Model.ZIndex = zIndex;
+                        SelectedControlService.CurrentSelectedModel.ZIndex = old;
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("현재 컨트롤이 제일 위에 있습니다.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("현재 컨트롤이 제일 위에 있습니다.");
+                    Console.WriteLine("교체할 컨트롤이 없습니다.");
                 }
+            }
+            else if(action.Contains("lock"))
+            {
+                SelectedControlService.CurrentSelectedModel.Locked = !SelectedControlService.CurrentSelectedModel.Locked;
+                Options.FireControlSelectionChangedEvent();
             }
             Options.RefreshBody();
 

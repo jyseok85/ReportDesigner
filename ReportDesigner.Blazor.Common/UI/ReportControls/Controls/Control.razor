@@ -15,7 +15,7 @@
                             GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index"))
      >
      <CascadingValue Value="this">
-        @if(DragService.Hidden)
+        @if(DragService.Hidden && !Model.Locked)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
@@ -138,15 +138,18 @@
         {
             StateHasChanged();
             SelectService.OnPointerDown(e, this.Model, this);
-            ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
             //modificationArea.UpdateElementSize();
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
             //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
+            if (this.Model.Locked == false)
+            {
+                ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
 
-            DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
-            //DragService.Hidden = false;
-            Options.State = DesignerOptionService.ActionState.Drag;
+                DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
+                //DragService.Hidden = false;
+                Options.State = DesignerOptionService.ActionState.Drag;
+            }
             Console.WriteLine("isDragAble = true;");
         }
     }
@@ -219,6 +222,12 @@
     public async Task OnDbClick(MouseEventArgs args)
     {
         Console.WriteLine("OnDoubleClick");
+        if (this.Model.Locked is true)
+        {
+            Console.WriteLine("Locked!!");
+            return;
+        }
+
         this.Model.IsEditMode = true;
         Options.State = DesignerOptionService.ActionState.Edit;
         DragService.Hidden = false;

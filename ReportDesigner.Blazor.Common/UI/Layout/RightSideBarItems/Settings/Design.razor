@@ -8,13 +8,13 @@
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Name</RadzenText>
-            <RadzenTextBox class="w-100 property-item" @bind-Value=ControlName></RadzenTextBox>
+            <RadzenTextBox class="w-100 property-item" @bind-Value=ControlName Disabled=Locked></RadzenTextBox>
         </RadzenStack>
         @if (Options.GetMoveableControl())
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Visible</RadzenText>
-                <RadzenCheckBox @bind-Value=Visible Name="Visible" />
+                <RadzenCheckBox @bind-Value=Visible Name="Visible" Disabled=Locked />
             </RadzenStack>
         }
     </div>
@@ -35,6 +35,11 @@
             Options.RefreshBody();
 
         }
+    }
+
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
     }
 
     private string ControlName

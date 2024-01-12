@@ -8,7 +8,7 @@
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Name</RadzenText>
-            <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@FontName Data=@fontList ValueProperty="Name" PopupStyle=@CSS.DropDownPopupStyle>
+            <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@FontName Data=@fontList ValueProperty="Name" PopupStyle=@CSS.DropDownPopupStyle Disabled=Locked>
                 <Template>
                     @(context.Name)
                 </Template>
@@ -16,15 +16,15 @@
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Color</RadzenText>
-            <RadzenColorPicker class="color-picker w-100" @bind-Value=@FontColor ShowHSV=@CSS.ShowHSV ShowRGBA=@CSS.ShowRGBA ShowColors=@CSS.ShowColors ShowButton=@CSS.ShowButton />
+            <RadzenColorPicker class="color-picker w-100" @bind-Value=@FontColor ShowHSV=@CSS.ShowHSV ShowRGBA=@CSS.ShowRGBA ShowColors=@CSS.ShowColors ShowButton=@CSS.ShowButton Disabled=Locked />
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Size</RadzenText>
-            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" @bind-Value=@FontSize/>
+            <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" @bind-Value=@FontSize Disabled=Locked />
         </RadzenStack>
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">Font Style</RadzenText>
-            <RadzenSelectBar @bind-Value=@FontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true">
+            <RadzenSelectBar @bind-Value=@FontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Disabled=Locked>
                 <Items>
                     <RadzenSelectBarItem Icon="format_bold" Value="0" Style="padding:0.2rem;" />
                     <RadzenSelectBarItem Icon="format_italic" Value="1" Style="padding:0.2rem;" />
@@ -37,7 +37,7 @@
             <RadzenText class="property-displayName">Text Alignment</RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
-                <RadzenSelectBar @bind-Value=@TextAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                <RadzenSelectBar @bind-Value=@TextAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
                     <Items>
                         <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
                         <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
@@ -50,7 +50,7 @@
             <RadzenText class="property-displayName"></RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
-                <RadzenSelectBar @bind-Value=@TextAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall">
+                <RadzenSelectBar @bind-Value=@TextAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
                     <Items>
                         <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
                         <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" />
@@ -82,6 +82,10 @@
             Options.RefreshBody();
 
         }
+    }
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
     }
     private string FontColor
     {

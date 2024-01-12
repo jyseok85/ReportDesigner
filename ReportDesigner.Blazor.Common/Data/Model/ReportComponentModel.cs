@@ -22,6 +22,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         }
         public Control Type { get; set; } = Control.None;
 
+        public bool Locked { get; set; } = false;
 
         public ReportComponentModel() {
             this.Uid = Guid.NewGuid().ToString();

@@ -66,7 +66,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
             //this.razorComponent = razorComponent;
 
-        }
+        }      
 
         public ReportComponentModel LastSelectModel => models[models.Count - 1];
 
