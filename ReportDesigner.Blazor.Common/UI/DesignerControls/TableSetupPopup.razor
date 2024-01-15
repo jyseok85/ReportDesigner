@@ -1,0 +1,51 @@
+﻿@inject DesignerCSSService CSS
+@inject DialogService DialogService
+
+<div style="--rz-input-font-size: 0.625rem;--bs-body-font-size:0.625rem; ">
+<RadzenCard Class="rz-mx-auto">
+<RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+    <RadzenText class="property-displayName" TextStyle="TextStyle.Overline" >Row</RadzenText>
+        <RadzenNumeric class="property-item" Min="0" TValue="int" @bind-Value=rowCount Style="" />
+</RadzenStack>
+<RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+        <RadzenText class="property-displayName" TextStyle="TextStyle.Overline">Col</RadzenText>
+            <RadzenNumeric class="property-item" Min="0" TValue="int" @bind-Value=colCount />
+</RadzenStack>
+</RadzenCard>
+
+<RadzenCard Class="rz-mx-auto" Style="height:6.5rem;margin-top:0.5rem;">
+    <RadzenRadioButtonList @bind-Value=@value TValue="int" class="mb-5" >
+        <Items >
+                <RadzenRadioButtonListItem Text="Fixed column width" Value="1" Style="font-size:0.8rem"/>
+                <RadzenRadioButtonListItem Text="Adjust to band width" Value="2" Style="font-size:0.8rem" />
+                <RadzenRadioButtonListItem Text="Adjust to band width and height" Value="3" Style="font-size:0.8rem" />
+        </Items>
+    </RadzenRadioButtonList>
+</RadzenCard>
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="4%"  Wrap="FlexWrap.Wrap" Style="margin-top:1rem; ">
+        <RadzenButton style="width: 48%" Click=@(args => OnClick("cancel")) Text="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+        <RadzenButton style="width: 48%" BusyText="Saving ..." Click=@(args => OnClick("confirm")) Text="Confirm" />
+</RadzenStack>
+
+</div>
+@code {
+    int rowCount = 3;
+    int colCount = 3;
+    int value = 1;
+    private void OnClick(string text)
+    {
+        if (text == "cancel")
+        {
+            DialogService.Close(null);
+        }
+        else
+        {
+            Dictionary<string, int> result = new();
+            result.Add("row", rowCount);
+            result.Add("col", colCount);
+            result.Add("type", value);
+            DialogService.Close(result);
+        }
+    }
+
+}

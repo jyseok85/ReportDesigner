@@ -18,6 +18,7 @@ namespace ReportDesigner.Blazor.Common.Services
     {
         [Inject]
         public required SelectedControlService SelectedControlService { get; set; }
+
         public int Width { get; set; } = 100;
 
         public int Height { get; set; } = 30;
@@ -34,7 +35,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public int ClientX { get; set; }
         public int ClientY { get; set; }
 
-       
+
         public void ActionStart(PointerEventArgs e)
         {
             ActionStart(e.OffsetX, e.OffsetY, e.ClientX, e.ClientY);
@@ -73,18 +74,21 @@ namespace ReportDesigner.Blazor.Common.Services
             Height = (int)(y - Y) - 1;
             Console.WriteLine($"ActionMove {x} {X} {Width},{Height}");
         }
-
-        public void ActionEnd()
+        public void ActionExit()
         {
-            CreateControl();
             Width = 0;
             Height = 0;
             Hidden = true;
         }
-
-        public void CreateControl()
+        public void ActionEnd()
         {
-            SelectedControlService.CurrentBand?.CreateControl(X,Y,Width,Height);
+            CreateControl();
+            ActionExit();
+        }
+
+        public void CreateControl(ReportComponentModel.Control type = ReportComponentModel.Control.Label, object result = null)
+        {
+            SelectedControlService.CurrentBand?.CreateControl(X, Y, Width, Height, type, result);
         }
 
         public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)

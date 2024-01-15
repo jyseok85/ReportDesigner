@@ -19,7 +19,14 @@
     <CascadingValue Value="this">
         @foreach (ControlBase control in controlBases)
         {
-            <Control Base="control"></Control>
+            if(control.Model.Type == ReportComponentModel.Control.Label)
+            {
+                <Control Base="control"></Control>
+            }
+            else if (control.Model.Type == ReportComponentModel.Control.Table)
+            {
+                <Table Base="control"></Table>
+            }
         }
 
         <CreationArea CreationService=CreationService />

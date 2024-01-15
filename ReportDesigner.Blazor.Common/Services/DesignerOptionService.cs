@@ -70,6 +70,9 @@ namespace ReportDesigner.Blazor.Common.Services
             Drag
         }
         public ActionState State { get; set; } = ActionState.None;
+        
+        public ReportComponentModel.Control CreateControlType { get; set; } = ReportComponentModel.Control.None;
+
 
         private Dictionary<string, ReportComponentModel> controlDictionary = new Dictionary<string, ReportComponentModel>();
 

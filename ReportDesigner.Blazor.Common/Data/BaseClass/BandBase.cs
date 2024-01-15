@@ -5,6 +5,7 @@ using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
 using System.Drawing;
+using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using static ReportDesigner.Blazor.Common.Data.Model.BandModel;
 
@@ -150,7 +151,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             return tabIndex;
         }
         
-        public void CreateControl(int x, int y, int width, int height)
+        public void CreateControl(int x, int y, int width, int height, ReportComponentModel.Control type = ReportComponentModel.Control.Label, object result = null)
         {
             //최소 사이즈 이상 드래그 된 경우만 진행한다. ?? 아니면 작게 그리면 최소사이즈만큼 그려준다?
             int controlMinimumSize = 10;
@@ -161,8 +162,47 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             int tabIndex = GetNextTabIndex();
             var control = new ControlBase(x, y, width, height, tabIndex);
             control.Model.ParentUid = this.Model.Uid;
-            control.Model.Type = ReportComponentModel.Control.Label;
+            control.Model.Type = type;
 
+            if (type == ReportComponentModel.Control.Table && result != null)
+            {
+                var dic = ((Dictionary<string, int>)result);
+
+                int rowCount = dic["row"];
+                int colCount = dic["col"];
+                int value = dic["type"];
+
+                if (value > 1)
+                {
+                    control.Model.X = 0;
+                    control.Model.Width = this.Model.Width;
+                }
+                if(value > 2)
+                {
+                    control.Model.Y = 0;
+                    control.Model.Height = this.Model.Height;
+                }
+                control.Model.TableInfo = new TableInfo();
+                control.Model.TableInfo.RowCount = rowCount;
+                control.Model.TableInfo.ColCount = colCount;
+
+                for (int r = 0; r < rowCount; r++)
+                {
+                    for(int c = 0; c < colCount; c++ )
+                    {
+                        var model = new ReportComponentModel();
+                        model.TableCellInfo = new TableCellInfo();
+                        model.TableCellInfo.Col = c;
+                        model.TableCellInfo.Row = r;
+                        model.Width = control.Model.Width / colCount;
+                        model.Height = control.Model.Height / rowCount;
+
+                        control.Model.Children.Add(model);
+
+                    }
+                }
+
+            }
             //컴포넌트 목록에 추가한다.
             this.controlBases.Add(control);
             Options.AddControl(control.Model.Uid, control.Model);

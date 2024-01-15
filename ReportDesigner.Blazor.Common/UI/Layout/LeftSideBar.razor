@@ -2,8 +2,8 @@
 
 <RadzenSidebar Style="width:auto;overflow:hidden">
     <RadzenPanelMenu DisplayStyle="@(designer.SidebarExpanded?MenuItemDisplayStyle.IconAndText:MenuItemDisplayStyle.Icon)" ShowArrow=false>
-        <RadzenPanelMenuItem Text="Label" Icon="text_fields" Click=@(args=>OnButtonClicked("")) />
-        <RadzenPanelMenuItem Text="Table" Icon="grid_on" />
+        <RadzenPanelMenuItem Text="Label" Icon="text_fields" Click=@(args=>OnButtonClicked("label")) />
+        <RadzenPanelMenuItem Text="Table" Icon="grid_on" Click=@(args=>OnButtonClicked("table")) />
         <RadzenPanelMenuItem Text="Picture Box" Icon="image" />
         @* 기본적으로 펼치기 버튼이 포함되어있는데 그걸 사용안함으로 할경우 사이즈가 틀어진다.. 제작자가 수정해야 할듯한데.. *@
         <RadzenPanelMenuItem Text="Shapes" Icon="interests" Style="--rz-panel-menu-icon-2nd-level-margin:0;
@@ -23,6 +23,18 @@
 
     void OnButtonClicked(string name)
     {
+        switch(name)
+        {
+            case "label":
+                Options.CreateControlType = ReportComponentModel.Control.Label;
+                break;
+            case "table":
+                Options.CreateControlType = ReportComponentModel.Control.Table;
+                break;
+            default:
+                Console.WriteLine($"이 컨트롤은 구현되지 않았습니다. {name}");
+                return;
+        }        
         Options.State = DesignerOptionService.ActionState.Create;
     }
 }

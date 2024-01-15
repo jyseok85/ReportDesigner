@@ -16,6 +16,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
             None,
             Label,
             Table,
+            TableCell,
             Band,
             Layer,
             Report
@@ -96,6 +97,8 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public List<ReportComponentModel> Children { get; set; } = new List<ReportComponentModel>();
 
+        public TableInfo TableInfo { get; set; }
+        public TableCellInfo TableCellInfo { get; set; } = null;
         /// <summary>
         /// C#에서는 깊은복사(참조복사)가 없다. 왜 아직도?? 왜?? 느려도 만들어줘야지..
         /// 그래서 얕은복사(값만복사) 이 후에 참조된값들을 각각 복사한다.
@@ -112,5 +115,20 @@ namespace ReportDesigner.Blazor.Common.Data.Model
             //todo : DeepClone - Children 이 있다면 그것도 복사해줘야 함.
         }
 
+    }
+
+    public class TableInfo
+    {
+        public int RowCount { get; set; }
+        public int ColCount { get; set; }   
+    }
+
+    public class TableCellInfo
+    {
+        public int Row { get; set; } = 0;
+        public int Col { get; set; } = 0;
+        //세로 병합
+        public int RowSpan { get; set; } = 1;
+        public int ColSpan { get; set; } = 1;
     }
 }
