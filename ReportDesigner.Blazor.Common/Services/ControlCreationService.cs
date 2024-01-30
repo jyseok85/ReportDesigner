@@ -88,14 +88,86 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void CreateControl(ReportComponentModel.Control type = ReportComponentModel.Control.Label, object result = null)
         {
-            SelectedControlService.CurrentBand?.CreateControl(X, Y, Width, Height, type, result);
+            //최소 사이즈 이상 드래그 된 경우만 진행한다. ?? 아니면 작게 그리면 최소사이즈만큼 그려준다?
+            int controlMinimumSize = 10;
+            if (this.Width < controlMinimumSize || this.Height < controlMinimumSize)
+                return;
+
+            //새로 생성하는 컨트롤에 TabIndex를 할당해서 키보드 이벤트를 받도록 한다. 
+            var control = new ControlBase(X, Y, Width, Height);
+            control.Model.Type = type;
+
+            if (type == ReportComponentModel.Control.Table && result != null)
+            {
+                var dic = ((Dictionary<string, int>)result);
+
+                int rowCount = dic["row"];
+                int colCount = dic["col"];
+                int value = dic["type"];
+
+                if (value > 1)
+                {
+                    control.Model.X = 0;
+                    control.Model.Width = SelectedControlService.CurrentBand.Model.Width;
+                }
+                if (value > 2)
+                {
+                    control.Model.Y = 0;
+                    control.Model.Height = SelectedControlService.CurrentBand.Model.Height;
+                }
+                control.Model.TableInfo = new TableInfo();
+                control.Model.TableInfo.RowCount = rowCount;
+                control.Model.TableInfo.ColCount = colCount;
+                control.Model.Border = new Border(0, 0, 0, 0);
+
+                for (int r = 0; r < rowCount; r++)
+                {
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        var model = new ReportComponentModel();
+                        model.TableCellInfo = new TableCellInfo();
+                        model.TableCellInfo.Col = c;
+                        model.TableCellInfo.Row = r;
+                        model.Type = ReportComponentModel.Control.TableCell;
+                        //HTML 테이블의 문제인지 셀을 실제 사이즈를 더하면 1픽셀이 사라짐.
+                        //테이블은 지정한 대로 만들어지는듯하고,
+                        //내부 셀은 1픽셀(마지막 우측 테두리)를 제외하고 계산되는듯 함.
+                        //tr 의 테두리를 없애도 어떻게 계산이 불가.
+                        var tableInnerWidth = control.Model.Width - 1;
+                        var tableInnerHiehgt = control.Model.Height - 1;
+
+                        if (c == colCount - 1)
+                            model.Width = tableInnerWidth / colCount + tableInnerWidth % colCount;
+                        else
+                            model.Width = tableInnerWidth / colCount;
+
+                        if (r == rowCount - 1)
+                            model.Height = tableInnerHiehgt / rowCount + tableInnerHiehgt % colCount;
+                        else
+                            model.Height = tableInnerHiehgt / rowCount;
+
+                        //높이는 뭔가 계산이 다르게 되는듯하다..
+                        model.Height -= 1;
+
+                        control.Model.Children.Add(model);
+                         
+                    }
+                }
+                
+            }
+
+            SelectedControlService.CurrentBand?.AddControl(control);
+
         }
 
         public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)
         {
             if (band is not null)
             {
-                band.CreateControl(model, location);
+                var control = new ControlBase();
+                control.Model = model;
+
+                band.AddControl(control, location);
 
                 //붙여넣기 한 컨트롤을 선택해 주어야 한다.
                 SelectedControlService.SelectControl(false, model, band);

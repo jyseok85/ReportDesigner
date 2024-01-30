@@ -47,7 +47,16 @@
         get
         {
             if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
-                return SelectedControlService.CurrentSelectedModel.Name;
+            {
+                var type = SelectedControlService.CurrentSelectedModel.Type;
+                if(type == ReportComponentModel.Control.TableCell)
+                {
+                    var info = SelectedControlService.CurrentSelectedModel.TableCellInfo;
+                    return $"C:{info.Col} R:{info.Row}";
+                }
+                else
+                    return SelectedControlService.CurrentSelectedModel.Name;
+            }
             else
                 return string.Empty;
         }

@@ -8,48 +8,52 @@
 
 <div class="component"
      tabindex="@Model.TabIndex"
+     id = "@Model.Uid"
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @onpointerdown:stopPropagation="true"
-     @ondblclick="@( (x) => OnDbClick(x))"
+     @onpointermove="OnPointerMove"
+     @onkeydown="OnKeyDown"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
-                            GetStyle("background-color") + GetStyle("z-index"))
+                            GetStyle("background-color") + GetStyle("z-index") + "outline:none;")
      >
-  @*    <CascadingValue Value="this">
+    <CascadingValue Value="this">
         @if(DragService.Hidden && !Model.Locked)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
-     </CascadingValue> *@
-    <div class="component-hidden-text" hidden=@HiddenControl>
-        visiblity : hidden
+     </CascadingValue>
+     <div class="component-hidden-text" hidden=@HiddenControl>
+        visibility : hidden
      </div>
+     <CascadingValue Value="this">
 
-     <table>
+     <table class="table" style=@( GetStyle("width") + GetStyle("height") + "margin:0;" )>
         @for(int r = 0; r < Model.TableInfo.RowCount; r++)
         {
-            <tr>
+            //line-height: 내부 컨트롤의 기본 간격을 설정한다. 
+            //별도의 입력컨트롤이 있어서 설정안할경우 문제가 발생하는듯하다.
+            <tr style=@("line-height:0;" + GetRowHeight(r) ) > <!-- 셀 내부 여백 제거-->
                 @for(int c = 0; c < Model.TableInfo.ColCount; c++)
                 {
                     var childModel = Model.Children.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
-                    <TableCell Model=childModel></TableCell>     
+
+                    <TableCell @ref=childModel.TableCellInfo.RazorCellRef Model=childModel></TableCell>     
                 }
             </tr>    
         }
      </table>
-
-     <RadzenTextArea @ref=textArea
-        @ondrag:stopPropagation="true"
-        @onpointerdown:stopPropagation="true"
-        @onpointerup:stopPropagation="true"
-        @onkeydown:stopPropagation="true"
-        @bind-Value=@Model.Text
-        class="w-100 component-text-input"
-                    Style=@($"{GetStyle("padding")}{GetStyle("font-size")}") hidden=@HiddenEditMode />
+     </CascadingValue>
+      
+    @if(isDraging)
+    {
+        <div></div>
+    }
 </div>
 <style>
-     table,th,td{
-          border: 1px solid black;
-    }
+  @*   table, th,td{
+        border: 1px solid black;
+        
+    } *@
     .component{
         box-sizing: border-box;
     }
@@ -61,14 +65,37 @@
 
     }
     
-    .component-text{
+    .table{
         top: 0;
         height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
         width: 100%;
         position: absolute;
-        pointer-events: none;
         overflow: hidden;
+        table-layout:fixed; /* 자동 셀크기 증가 막기 */
+    }
+     .table-text{
         display:flex;
+        height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
+        width: 100%;
+        pointer-events: none;
+        line-height : 1;  /*기본값은 1이긴한데... 고급옵션에 따라 변경필요 */
+        padding:0 !important;
+    }
+    .table-text-inner{      
+        overflow: hidden;
+        display:block;
+
+    }
+     .table-text-input {
+        border-radius: 0px;
+        background-color:white !important;
+        box-shadow:none !important;
+        border-bottom-width:0 !important;
+        width:100%;
+        height:100%;
+        resize:none;
+        border:0 !important;
+        overflow-y: hidden;  /*스크롤 제거 */
     }
     /* 우측상단에 표시할 텍스트 */
     .component-hidden-text{
@@ -81,24 +108,14 @@
         font-style:italic;
         color:lightgray;
     }
-    .component-text-input {
-        top: 0;
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        border-radius: 0px;
-    }
-    .justify{
-        text-align: justify;
-        display:block;
-    }
-    .justify:after{
-        content:"";
-        display:inline-block;
-        width:100%;
-    }
 </style>
 @code {
+    public List<TableCell> children = new List<TableCell>();
+
+    private List<int> xPositionList = new List<int>();
+    private List<int> yPositionList = new List<int>();
+    private bool isDraging = false;
+
     public int Height => Model.Height;
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
@@ -106,6 +123,7 @@
     ModificationArea modificationArea;
 
     RadzenTextArea textArea;
+
     [Parameter]
     public ControlBase Base
     {
@@ -138,10 +156,56 @@
         }
     }
 
+    Dictionary<int, int> widths = new Dictionary<int, int>();
+    Dictionary<int, int> heights = new Dictionary<int, int>();
 
-    void OnPointerDown(PointerEventArgs e, string value)
+    public string GetRowHeight(int i)
     {
-        Console.WriteLine("Control.razor - OnPointerDown");
+        if (this.Model.TableInfo.RowHeights is not null)
+            return "height:" + this.Model.TableInfo.RowHeights[i] + "px;";
+        else
+            return "";
+    }
+    protected override async Task OnInitializedAsync()
+    {    
+        foreach(ReportComponentModel model in Model.Children)
+        {
+            int width = model.Width;
+            int height = model.Height;
+
+            int col = model.TableCellInfo.Col;
+            if(widths.ContainsKey(col) == false)
+            {
+                widths.Add(col, width);
+            }
+            int row = model.TableCellInfo.Row;
+            if(heights.ContainsKey(row) == false)
+            {
+                heights.Add(row, height);
+            }
+        }
+    }
+    private string cursorStyle = "cursor:default;";
+    void OnPointerMove(PointerEventArgs e)
+    {
+        return;
+        if(e.OffsetX < 3 || e.OffsetY < 3 || e.OffsetX > this.Width - 3 || e.OffsetY > this.Height - 3)
+        {
+            return;
+        }
+
+        if (Math.Abs(e.OffsetX) < 3 ||  Math.Abs(e.OffsetX - this.Model.Width ) < 3)
+            cursorStyle = "cursor:col-resize;";
+        else if (Math.Abs(e.OffsetY) < 3 ||  Math.Abs( e.OffsetY - this.Model.Height) < 3)
+            cursorStyle = "cursor:row-resize;";
+        else
+            cursorStyle = "cursor:default;";
+        StateHasChanged();
+    }
+
+    public void OnPointerDown(PointerEventArgs e, string value)
+    {
+        Console.WriteLine("Table.razor - OnPointerDown");
         if(value == "EditArea")
         {
             return; 
@@ -155,6 +219,8 @@
         else
         {
             StateHasChanged();
+
+            //테이블의경우 일반적으로 마우스 클릭해서 선택하지 않는다. 
             SelectService.OnPointerDown(e, this.Model, this);
             //modificationArea.UpdateElementSize();
 
@@ -163,10 +229,9 @@
             if (this.Model.Locked == false)
             {
                 ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
-
-                DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
+                //DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
                 //DragService.Hidden = false;
-                Options.State = DesignerOptionService.ActionState.Drag;
+                //Options.State = DesignerOptionService.ActionState.Drag;
             }
             Console.WriteLine("isDragAble = true;");
         }
@@ -217,9 +282,9 @@
             case "font-style":
                 return $"{this.Model.Font.FontStyle};";
             case "align-items":
-                return $"{type.ToLower()} : {this.Model.Font.VerticlaAlignment}; ";
+                return $"{type.ToLower()} : {this.Model.Paragraph.VerticalAlignment}; ";
             case "justify-content":
-                return $"{type.ToLower()} : {this.Model.Font.HorizontalAlignment}; ";
+                return $"{type.ToLower()} : {this.Model.Paragraph.HorizontalAlignment}; ";
             case "color":
                 return $"{type.ToLower()} : {this.Model.Font.FontColor}; ";
             case "z-index":
@@ -231,31 +296,17 @@
 
     string GetClass()
     {
-        if (this.Model.Font.HorizontalAlignment == "even")
+        if (this.Model.Paragraph.HorizontalAlignment == "even")
             return "justify";
         else
             return string.Empty;
     }
-
-    public async Task OnDbClick(MouseEventArgs args)
+    private void OnKeyDown(KeyboardEventArgs e)
     {
-        Console.WriteLine("OnDoubleClick");
-        if (this.Model.Locked is true)
+        if(e.Key.ToLower() == "escape")
         {
-            Console.WriteLine("Locked!!");
-            return;
+            OnPointerDown(new PointerEventArgs(), "esc");
         }
-
-        this.Model.IsEditMode = true;
-        Options.State = DesignerOptionService.ActionState.Edit;
-        DragService.Hidden = false;
-        while (this.textArea == null)
-            await Task.Delay(10);
-
-        await this.textArea.Element.FocusAsync();
-        await this.textArea.Element.FocusAsync();
-        this.StateHasChanged();
     }
-
-
+    //todo : 테이블 사이즈 변경하면 제대로 변경안됨.
 }

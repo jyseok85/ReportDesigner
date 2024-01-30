@@ -8,6 +8,7 @@
 @inject ReportContextMenuService ReportContextMenuService
 @inject ContextMenuService ContextMenuService
 @inject DialogService DialogService
+@inject DesignerCSSService CSS
 @inject IClipboardService ClipboardService
 @inject IJSRuntime JsRuntime
 
@@ -80,6 +81,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         ReportContextMenuService.ControlCreationService = CreationService;
         ReportContextMenuService.Options = Options;
         ReportContextMenuService.ClipboardService = ClipboardService;
+        SelectedControlService.CSS = CSS;
+        SelectedControlService.JsRuntime = JsRuntime;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -210,6 +213,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                     string uid = SelectedControlService.LastSelectModel.ParentUid;
                     var bandModel = Options.ControlDictionary[uid];
 
+                    //기본 마진 * 2 이하로는 만들지 않는다. 
+                    
                     SelectedControlService.ApplyResize(ModificationService.X, ModificationService.Y, ModificationService.Width, ModificationService.Height, bandModel);
 
                     //선택된 컨트롤이 부모밴드보다 커질경우 부모밴드 또한 늘려준다.
@@ -223,6 +228,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
                         bandModel.Height = SelectedControlService.LastSelectModel.Bottom;
 
                     StateHasChanged();
+
                 }
             }
             ModificationService.ActionEnd();

@@ -69,6 +69,10 @@ namespace ReportDesigner.Blazor.Common.Services
                     if (SelectedControlService.CopiedModel is not null)
                         menuList.Add(CreateMenu("Paste", "content_paste"));
                     break;
+                case Data.Model.ReportComponentModel.Control.TableCell:
+                    //todo : 테이블선택 기능 구현 필요
+                    menuList.Add(CreateMenu("Select Table", "edit_attributes"));
+                    break;
 
             }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web.Virtualization;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
+using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,6 +96,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
         public Font Font { get; set; } = new Font();
 
+        public Paragraph Paragraph { get; set; } = new Paragraph();
         public List<ReportComponentModel> Children { get; set; } = new List<ReportComponentModel>();
 
         public TableInfo TableInfo { get; set; }
@@ -106,10 +108,11 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         /// <returns></returns>
         public ReportComponentModel DeepClone()
         {
-            var thisModel = (ReportComponentModel) this.MemberwiseClone();
-            thisModel.Margin = (Margin)Margin.Clone();
-            thisModel.Border = (Border)Border.Clone();
-            thisModel.Font = (Font)Font.Clone();
+            var thisModel       = (ReportComponentModel) this.MemberwiseClone();
+            thisModel.Margin    = (Margin)Margin.Clone();
+            thisModel.Border    = (Border)Border.Clone();
+            thisModel.Font      = (Font)Font.Clone();
+            thisModel.Paragraph = (Paragraph)Paragraph.Clone();
             return thisModel;
 
             //todo : DeepClone - Children 이 있다면 그것도 복사해줘야 함.
@@ -121,10 +124,14 @@ namespace ReportDesigner.Blazor.Common.Data.Model
     {
         public int RowCount { get; set; }
         public int ColCount { get; set; }   
+
+        public Dictionary<int, int> ColWidths { get; set; }
+        public Dictionary<int, int> RowHeights { get; set; }
     }
 
     public class TableCellInfo
     {
+        public TableCell RazorCellRef { get; set; }
         public int Row { get; set; } = 0;
         public int Col { get; set; } = 0;
         //세로 병합

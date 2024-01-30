@@ -318,9 +318,18 @@ namespace ReportDesigner.Blazor.Common.Services
         /// </summary>
         public void TurnOffEditModeForAllControls()
         {
+            Console.WriteLine("TurnOffEditModeForAllControls");
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 model.IsEditMode = false;
+
+                if(model.Type == ReportComponentModel.Control.Table)
+                {
+                    foreach(ReportComponentModel tablecell in model.Children)
+                    {
+                        tablecell.IsEditMode = false;
+                    }
+                }
             }
         }
 

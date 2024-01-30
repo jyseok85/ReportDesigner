@@ -23,3 +23,19 @@ window.browserResize = {
         GLOBAL.DotNetReference.invokeMethodAsync('OnBrowserResize');
     }
 }
+
+window.getDivSize = function (id) {
+    var client = document.getElementById(id).getBoundingClientRect();
+    return { width: client.width, height: client.height };
+}
+//window.initResizeObserver = function (elementRef) {
+//    const element = elementRef.current;
+
+//    const resizeObserver = new ResizeObserver(entries => {
+//        const entry = entries[0];
+//        const { width, height } = entry.contentRect;
+//        GLOBAL.DotNetReference.invokeMethodAsync('UpdateSize', width, height);
+//    });
+
+//    resizeObserver.observe(element);
+//};

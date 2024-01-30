@@ -15,14 +15,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         }
 
-        public ControlBase(int x, int y, int width, int height, int tabIndex)
+        public ControlBase(int x, int y, int width, int height)
         {
             Model.X = x;
             Model.Y = y;
             Model.Width = width;
             Model.Height = height;
-            Model.TabIndex = tabIndex;
-            Model.ZIndex = tabIndex;
         }
     }
 }

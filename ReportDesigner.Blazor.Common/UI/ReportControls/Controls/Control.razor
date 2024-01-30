@@ -20,14 +20,14 @@
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
      </CascadingValue>
-    <div class="component-hidden-text" hidden=@HiddenControl>
+    <div class="overlay-text" hidden=@HiddenControl>
         visiblity : hidden
      </div>
 
-    <div class=@("component-text " + GetClass()) 
-    style=@(GetStyle("padding") +GetStyle("word-break") + GetStyle("font-style") + GetStyle("align-items") +
-         GetStyle("justify-content") + GetStyle("font-size") + GetStyle("font-family") + GetStyle("color"))>
-        @Model.Text
+     <div class="component-text" style=@(OuterTextStyle)>
+        <div class="component-text-inner" style=@(InnerTextStyle)>
+            @Model.Text
+         </div>
      </div>
      <RadzenTextArea @ref=textArea
         @ondrag:stopPropagation="true"
@@ -36,25 +36,30 @@
         @onkeydown:stopPropagation="true"
         @bind-Value=@Model.Text
         class="w-100 component-text-input"
-                    Style=@($"{GetStyle("padding")}{GetStyle("font-size")}") hidden=@HiddenEditMode />
+                    Style=@InputTextStyle hidden=@HiddenEditMode  />
 </div>
 <style>
     .component{
         box-sizing: border-box;
+        outline:none; /* 포커스가 갔을때 기본 Outline 이 생성되는걸 막기위해서. 물론 이코드는 포커스일때만 아니라 그냥 다 막는다.  */
+        line-height:1;
     }
 
-    
+
     .component-text{
+        display:flex;
         top: 0;
         height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
         width: 100%;
         position: absolute;
         pointer-events: none;
+    }
+    .component-text-inner{      
         overflow: hidden;
-        display:flex;
+        display:block;
     }
     /* 우측상단에 표시할 텍스트 */
-    .component-hidden-text{
+    .overlay-text{
         top:0;
         right:0;
         position:absolute;
@@ -71,20 +76,55 @@
         position: absolute;
         border-radius: 0px;
     }
-    .justify{
-        text-align: justify;
-        display:block;
-    }
-    .justify:after{
-        content:"";
-        display:inline-block;
-        width:100%;
-    }
 </style>
 @code {
+
+    public string OuterTextStyle
+    {
+        get
+        {
+            string style =
+                GetStyle("align-items") + 
+                GetStyle("justify-content");
+            return style;
+        }
+    }
+    public string InnerTextStyle
+    {
+        get
+        {
+            string style = GetStyle("padding") + //장평조절 기능때문에 여기서 사용
+                           GetStyle("text-align") +
+                           GetStyle("word-break") +
+                           GetStyle("font-style") +
+                           GetStyle("font-size") +
+                           GetStyle("font-family") +
+                           GetStyle("color") +
+                           GetStyle("white-space")
+                           ;
+            return style;
+        }
+    }
+
+    public string InputTextStyle
+    {
+        get
+        {
+            string style = GetStyle("padding") +
+                           GetStyle("font-size") +
+                           GetStyle("font-style") +
+                           GetStyle("font-family") +
+                           //포커스일때 기본컨트롤 스타일 삭제
+                           "border:0px;"  +          
+                           "box-shadow:none;" + 
+                           //리사이즈 컨트롤 삭제
+                           "resize:none;";      
+            return style;
+        }
+    }
+
     public int Height => Model.Height;
     public int Width => Model.Width;
-    public bool Selected => Model.Selected;
     private bool isDbClicked = false;
     ModificationArea modificationArea;
 
@@ -156,68 +196,10 @@
 
     public string GetStyle(string type)
     {
-        string name = type.ToLower();
-        switch (name)
-        {
-            case "translate":
-                return "translate(" + this.Model.X + "px, " + this.Model.Y + "px);";
-            case "width":
-                return "width:" + (this.Model.Width) + "px;";
-            case "height":
-                return "height:" + (this.Model.Height) + "px;";
-            case "border":
-                if(this.Model.IsOverlap == false)
-                {
-                    if (this.Model.Border.Use)
-                    {
-                        if(this.Model.Border.UseIndividualBorders)
-                            return 
-                            $"{name}-top: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.TopColor};" +
-                            $"{name}-right: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.RightColor};" +
-                            $"{name}-bottom: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.BottomColor};" +
-                            $"{name}-left: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.LeftColor};";
-                        else
-                            return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.Color};";
-                    }
-                    else
-                        return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} transparent;";
-                }
-                else
-                {
-                    return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} red;";
-                }
-            case "padding":
-                return $"{type.ToLower()} : {CSS.DefaultPadding}px; ";
-            case "word-break":
-                return "word-break:break-all;";
-            case "background-color":
-                return $"{type.ToLower()} : {this.Model.BackColor}; ";
-            case "font-family":
-                return $"{type.ToLower()} : {this.Model.Font.FontFamily}; ";
-            case "font-size":
-                return $"{type.ToLower()} : {this.Model.Font.FontSize}px; ";
-            case "font-style":
-                return $"{this.Model.Font.FontStyle};";
-            case "align-items":
-                return $"{type.ToLower()} : {this.Model.Font.VerticlaAlignment}; ";
-            case "justify-content":
-                return $"{type.ToLower()} : {this.Model.Font.HorizontalAlignment}; ";
-            case "color":
-                return $"{type.ToLower()} : {this.Model.Font.FontColor}; ";
-            case "z-index":
-                return $"{type.ToLower()} : {this.Model.ZIndex}; ";
-            default:
-                return string.Empty;
-        }
+        var style= CSS.GetModelStyle(type, this.Model);
+        return style;
     }
 
-    string GetClass()
-    {
-        if (this.Model.Font.HorizontalAlignment == "even")
-            return "justify";
-        else
-            return string.Empty;
-    }
 
     public async Task OnDbClick(MouseEventArgs args)
     {
@@ -239,5 +221,5 @@
         this.StateHasChanged();
     }
 
-
+    //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
 }

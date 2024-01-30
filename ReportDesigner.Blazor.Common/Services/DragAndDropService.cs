@@ -31,6 +31,10 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public double MouseX { get; set; }
         public double MouseY { get; set; }
+
+        /// <summary>
+        /// 드래그 오브젝트가 보일지 말지여부
+        /// </summary>
         public bool Hidden { get; set; } = true;
 
         public void StartDrag(string Uid, int objectPosX, int objectPosY, int objectWidth, int objectHeight, double mouseClientX, double mouseClientY)

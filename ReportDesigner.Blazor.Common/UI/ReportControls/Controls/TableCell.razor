@@ -1,4 +1,7 @@
-﻿@inject SelectedControlService SelectService
+﻿@using Microsoft.JSInterop;
+@inject IJSRuntime JsRuntime
+
+@inject SelectedControlService SelectService
 @inject ControlModificationServcie ModificationService
 
 @inject DragAndDropService DragService
@@ -6,27 +9,166 @@
 @inject DesignerCSSService CSS
 
 
-    <div class="component-hidden-text" hidden=@HiddenControl>
-        visiblity : hidden
-     </div>
+    
+<td
+    @ref="cell"
+    @ondblclick="@( (x) => OnDbClick(x))"
+    @onpointerup="OnMouseUp"
+    @onpointerdown=@(e => OnPointerDown(e, "cell"))
+    @onpointerdown:stopPropagation = "true"
+    style=@(CellStyle + SelectedColor())>
 
-    <td style=@(GetStyle("width") + GetStyle("height")+ GetStyle("word-break") + GetStyle("font-style") + GetStyle("align-items") +
-                GetStyle("justify-content") + GetStyle("font-size") + GetStyle("font-family") + GetStyle("color"))> 
-                      
-    </td>
-   
+    @* @onpointerdown:stopPropagation="true" *@ 
+    @* @onkeyup=OnKeyUp
+    @onkeyup:stopPropagation="true" *@
+
+    
+    @* <div style=@CellStyle2>
+            @Model.Text
+        </div> *@
+    <div class="table-text" style=@(OuterTextStyle)>
+        @if(HiddenEditMode == true)
+        {
+            <div class="table-text-inner" style=@(InnerTextStyle)>
+            @Model.Text
+            </div>
+        } 
+            <RadzenTextArea @ref=textArea class="table-text-input"
+    @ondrag:stopPropagation="true"
+    @onpointerdown:stopPropagation="true"
+    @onpointerup:stopPropagation="true"
+    @onkeydown:stopPropagation="true"
+    @bind-Value=@Model.Text
+    
+    Style=@CSS.GetDynamicTableTextInner(Model) hidden=@HiddenEditMode >
+    </RadzenTextArea>
+    </div>
+  
+    
+
+    <div class="component-hidden-text" hidden=@HiddenControl>
+        visibility : hidden
+    </div>
+
+</td>
+
+@* <script>
+    window.getDivSize = function (element) {
+        var rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+    };
+</script> *@
 @code {
+        string SelectedColor()
+        {
+            if (this.Model.Selected)
+                return "background-color:#FAFAFA;";
+            else
+                return string.Empty;
+        }
+    public string OuterTextStyle
+    {
+        get
+        {
+            string style =
+                GetStyle("align-items") +
+                GetStyle("justify-content") +
+                            "border-bottom-width:0px;";
+            return style;
+        }
+    }
+    public string InnerTextStyle
+    {
+        get
+        {
+            string style = GetStyle("padding") + //장평조절 기능때문에 여기서 사용
+                           GetStyle("text-align") +
+                           GetStyle("word-break") +
+                           GetStyle("font-style") +
+                           GetStyle("font-size") +
+                           GetStyle("font-family") +
+                           GetStyle("color") +
+                           GetStyle("white-space") +
+                           GetStyle("height") 
+                           ;
+
+            //높이를(height) 설정해줘야 텍스트 사이즈에 따라서 div가 늘어나지 않는다. 일반 컨트롤은 position이 absolute 라서 괜찮음.
+            return style;
+        }
+    }
+
+    //todo : 테두리를 조절할때 세로사이즈를 변경해줘야 한다. ?? 0.5픽셀일때 문제가 되는데 어떻게 할까?
+
+    private string CellStyle
+    {
+        get {
+            string style =
+            GetStyle("width") +
+            GetStyle("height") +
+            GetStyle("border") +
+            // GetStyle("word-break") + 
+            // GetStyle("font-style") + 
+            // GetStyle("vertical-align") +
+            // GetStyle("text-align") +
+            // GetStyle("font-size") + 
+            // GetStyle("font-family") + 
+            // GetStyle("color") + 
+            // GetStyle("background-color") + 
+            // GetStyle("padding") + 
+            // GetStyle("white-space")+
+            // "overflow:hidden;text-overflow:ellipsis;" + 
+            // "display:block;" +
+             GetStyle("background-color") +
+
+            "padding:0px;" +
+        cursorStyle;
+            return style;
+        }
+    }
+    private string cursorStyle = "cursor:default;";
+    private string paddingColor = "red;";
+
+    public string TextStyle
+    {
+        get
+        {
+            return GetStyle("text-align") +
+            GetStyle("font-size") +
+            GetStyle("font-family") +
+            GetStyle("padding");
+
+        }
+    }
+    
+    private ElementReference cell;
+    public async Task GetDivSize()
+    {
+        // await Task.Delay(100);
+        // // JavaScript 함수 호출하여 div의 크기 가져오기
+        // var size = await JsRuntime.InvokeAsync<Size>("getDivSize", cell);
+
+        // // 결과 출력 또는 원하는 작업 수행
+        // Console.WriteLine($"Width: {size.Width}, Height: {size.Height}");
+
+        // this.Model.Width = (int)size.Width;
+        // this.Model.Height = (int)size.Height;
+    }
+
+    private bool isHovered = false;
+
+
     public int Height => Model.Height;
     public int Width => Model.Width;
     public bool Selected => Model.Selected;
     private bool isDbClicked = false;
-    ModificationArea modificationArea;
 
     RadzenTextArea textArea;
     [Parameter]
     public ReportComponentModel Model { get; set; }
 
 
+    [CascadingParameter]
+    public Table parent { get; set; }
     public bool HiddenEditMode
     {
         get
@@ -49,10 +191,33 @@
 
         }
     }
+    void OnResizeStart(MouseEventArgs e)
+    {
 
+    }
+    double dragStartX = 0;
+    double dragStartY = 0;
+
+    bool isDragging = false;
     void OnPointerDown(PointerEventArgs e, string value)
     {
-        Console.WriteLine("Control.razor - OnPointerDown");
+        Console.WriteLine("tablecell.razor - OnPointerDown");
+
+        if(value == "cell")
+        {
+            StateHasChanged();
+            SelectService.OnPointerDown(e, this.Model, this);
+            isDragging = true;
+            dragStartX = e.ClientX;
+            dragStartY = e.ClientY;
+            Console.WriteLine($"TableCell PointerDown: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {dragStartX} {dragStartY}");
+
+
+            //todo : 테이블셀일때 위치 속성 막기
+            //todo : 테이블셀일때 사이즈 변경에 따른 테이블 사이즈 변경처리? 필요할까?
+            return;
+        }
+
         if(value == "EditArea")
         {
             return; 
@@ -71,95 +236,45 @@
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
             //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
-            if (this.Model.Locked == false)
-            {
-                ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
+            // if (this.Model.Locked == false)
+            // {
+            //     ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
 
-                DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
-                //DragService.Hidden = false;
-                Options.State = DesignerOptionService.ActionState.Drag;
-            }
+            //     //DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
+            //     //DragService.Hidden = false;
+            //     Options.State = DesignerOptionService.ActionState.Drag;
+            // }
             Console.WriteLine("isDragAble = true;");
         }
     }
 
+    void OnMouseUp(PointerEventArgs args)
+    {
+        isDragging = false;
+        Console.WriteLine($"TableCell PointerUp: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {args.ClientX} {args.ClientY} {dragStartX} {dragStartY}");
+    }
     public string GetStyle(string type)
     {
-        string name = type.ToLower();
-        switch (name)
-        {
-            case "translate":
-                return "translate(" + this.Model.X + "px, " + this.Model.Y + "px);";
-            case "width":
-                return "width:" + (this.Model.Width) + "px;";
-            case "height":
-                return "height:" + (this.Model.Height) + "px;";
-            case "border":
-                if(this.Model.IsOverlap == false)
-                {
-                    if (this.Model.Border.Use)
-                    {
-                        if(this.Model.Border.UseIndividualBorders)
-                            return 
-                            $"{name}-top: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.TopColor};" +
-                            $"{name}-right: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.RightColor};" +
-                            $"{name}-bottom: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.BottomColor};" +
-                            $"{name}-left: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.LeftColor};";
-                        else
-                            return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} {this.Model.Border.Color};";
-                    }
-                    else
-                        return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} transparent;";
-                }
-                else
-                {
-                    return $"{name}: {this.Model.Border.Thickness}px {this.Model.Border.Style} red;";
-                }
-            case "padding":
-                return $"{type.ToLower()} : {CSS.DefaultPadding}px; ";
-            case "word-break":
-                return "word-break:break-all;";
-            case "background-color":
-                return $"{type.ToLower()} : {this.Model.BackColor}; ";
-            case "font-family":
-                return $"{type.ToLower()} : {this.Model.Font.FontFamily}; ";
-            case "font-size":
-                return $"{type.ToLower()} : {this.Model.Font.FontSize}px; ";
-            case "font-style":
-                return $"{this.Model.Font.FontStyle};";
-            case "align-items":
-                return $"{type.ToLower()} : {this.Model.Font.VerticlaAlignment}; ";
-            case "justify-content":
-                return $"{type.ToLower()} : {this.Model.Font.HorizontalAlignment}; ";
-            case "color":
-                return $"{type.ToLower()} : {this.Model.Font.FontColor}; ";
-            case "z-index":
-                return $"{type.ToLower()} : {this.Model.ZIndex}; ";
-            default:
-                return string.Empty;
-        }
+        var style = CSS.GetModelStyle(type, Model);
+        return style;
+      
     }
 
-    string GetClass()
-    {
-        if (this.Model.Font.HorizontalAlignment == "even")
-            return "justify";
-        else
-            return string.Empty;
-    }
+
 
     public async Task OnDbClick(MouseEventArgs args)
     {
-        Console.WriteLine("OnDoubleClick");
+        Console.WriteLine(this.GetType().ToString() + ":OnDoubleClick");
         if (this.Model.Locked is true)
         {
+            //todo : noti message
             Console.WriteLine("Locked!!");
             return;
         }
 
         this.Model.IsEditMode = true;
         Options.State = DesignerOptionService.ActionState.Edit;
-        DragService.Hidden = false;
+        //DragService.Hidden = false;
         while (this.textArea == null)
             await Task.Delay(10);
 
@@ -168,5 +283,19 @@
         this.StateHasChanged();
     }
 
+    //셀 테두리선택시 가상의 컨트롤이 보이고 드래그 가능하며,
+    //마우스 업에서 셀 사이즈를 변경한다. 
+    //테이블 외각에 사이즈변경 아이콘 추가
+    //테이블 테두리를 선택해서 테이블 이동
 
+    private void OnKeyUp(KeyboardEventArgs e)
+    {
+        var args = new PointerEventArgs();
+        //SelectService.OnPointerDown(args, parent.Model, parent);
+        parent.OnPointerDown(args, "");
+    }
+
+    //데이터 수정(입력)시 가로, 세로 정렬 옵션은 사용하지 않는다. 
+    //불가능 한 것은 아니지만 기본 컨트롤과 다른 방식을 사용해야 하기 때문에 일관성을 해치게 된다.
+    //C8 HTML 그지같다. 한번 업글하면서 싹 바꾸던가 하지.
 }

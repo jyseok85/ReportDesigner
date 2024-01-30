@@ -21,10 +21,6 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
         /// </summary>
         public string FontStyle { get; set; } = string.Empty;
 
-        public string VerticlaAlignment { get; set; } = "center";
-
-        public string HorizontalAlignment { get; set; } = "center";
-
         public object Clone()
         {
             return this.MemberwiseClone();

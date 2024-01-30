@@ -20,7 +20,7 @@
 @onpointermove:preventDefault="true"
 
      style=@("width:" + (ModificationService.Width) + "px;height:" + (ModificationService.Height) + "px;" +
-     GetTransform() + GetStyle("border")) hidden=@(parent.Selected == true ? false : true )>
+     GetTransform() + GetStyle("border")) hidden=@(parent.Model.Selected == true ? false : true )>
 
 
     <div class="ui-resize-handle ui-resizable-w" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
@@ -100,7 +100,7 @@
 
 @code {
     [CascadingParameter]
-    public Control parent { get; set; }
+    public ControlBase parent { get; set; }
 
 
     void OnResizePointerDown(PointerEventArgs e, string type)
@@ -112,6 +112,8 @@
 
     string GetTransform()
     {
+        if (parent == null)
+            return "";
         //부모컨트롤의 border에 따라서 위치를 변경시켜준다.
         return "transform:translate(" + (ModificationService.X - parent.Model.Border.Left) + "px, " + (ModificationService.Y- parent.Model.Border.Top) + "px);";
     }

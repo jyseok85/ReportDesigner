@@ -124,7 +124,7 @@
             if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
                 return textAlignHorizontal;
 
-            string horizontalAlign = SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment;
+            string horizontalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment;
             switch (horizontalAlign)
             {
                 case "start":
@@ -133,9 +133,9 @@
                     textAlignHorizontal = 4; break;
                 case "end":
                     textAlignHorizontal = 5; break;
-                case "even":
+                case "justify":
                     textAlignHorizontal = 6;
-                    SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+                    SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
                     fixVerticalAlign = true;
                     TextAlignVertical = 0;
                     break;
@@ -154,12 +154,16 @@
                 str = "end";
             else if (value == 6)
             {
-                str = "even";
-                SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = "start";
+                str = "justify";
+                SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
                 fixVerticalAlign = true;
                 TextAlignVertical = 0;
+
+                //양쪽맞춤 기능은 자동줄바꿈 속성이 있을 경우 동작하지 않는다. 
+                SelectedControlService.CurrentSelectedModel.Paragraph.AutoLineBreak = true;
+
             }
-            SelectedControlService.CurrentSelectedModel.Font.HorizontalAlignment = str;
+            SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment = str;
             Options.RefreshBody();
         }
     }
@@ -171,7 +175,7 @@
             if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
                 return textAlignVertical;
 
-            string verticalAlign = SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment;
+            string verticalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment;
             switch (verticalAlign)
             {
                 case "start":
@@ -192,7 +196,7 @@
                 case 1: str = "center";break;
                 case 2: str = "end"; break;
             }
-            SelectedControlService.CurrentSelectedModel.Font.VerticlaAlignment = str;
+            SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = str;
             Options.RefreshBody();
         }
     }
@@ -280,4 +284,56 @@
         fontList.Add(new FontModel("Courier New"));
         fontList.Add(new FontModel("Brush Script MT"));
     }
+
+    //todo : [고급]자동줄바꿈 사용안함 UI 추가 필요(white-space:pre)
+    //todo : [고급]말줄임표(...) 표시 기능(text-overflow: ellipsis) white-space:pre 개행있고 넘어가면 말줄임 nowrap 개행이 말줄임
+    //todo : [고급]장평조절기능 white-space:pre 나 nowrap 일때 적용가능. overflow : normal 로 변경
+    
+    #region 장평조절 예제. 테스트 결과 정상동작함.
+    //     <div class="parent-container">
+    //         <p class="dynamic-text">동적으로 조절되는 텍스트</p>
+    //     </div>
+
+    //     <style>
+    //         .parent-container {
+    //             width: 80vw;
+    //             border: 1px solid #ccc;
+    //             overflow: hidden;
+    //         }
+
+    //         .dynamic-text {
+    //             white-space: nowrap;
+    //             margin: 0;
+    //             transform-origin: left center; /* 글자의 확대/축소 기준을 왼쪽 가운데로 설정 */
+    //             transition: transform 0.2s ease; /* 부드러운 크기 전환을 위한 트랜지션 설정 */
+    //         }
+    //     </style>
+
+    //     <script>
+    //         const parentContainer = document.querySelector('.parent-container');
+    //         const dynamicText = document.querySelector('.dynamic-text');
+
+    //         function adjustTextScale() {
+    //             const parentWidth = parentContainer.clientWidth;
+    //             const textWidth = dynamicText.scrollWidth;
+
+    //             // 글자의 너비가 부모의 너비를 초과하는 경우에만 조절
+    //             if (textWidth > parentWidth) {
+    //                 const scale = parentWidth / textWidth;
+
+    //                 dynamicText.style.transform = `scale(${scale})`;
+    //             } else {
+    //                 dynamicText.style.transform = 'scale(1)';
+    //             }
+    //         }
+
+    //         // 페이지 로드 시 초기 조절
+    //         adjustTextScale();
+
+    //         // 창 크기가 변경될 때마다 조절
+    //         window.addEventListener('resize', adjustTextScale);
+    //     </script>
+    #endregion
 }
+
+

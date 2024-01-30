@@ -15,13 +15,17 @@
                         {
                             <Design @ref=design></Design>
 
-                            @if (SelectedControlService.CurrentSelectedModel.Type == ReportComponentModel.Control.Label)
+                            var model = SelectedControlService.CurrentSelectedModel;
+                            if(model.Type == ReportComponentModel.Control.Table)
+                                model = SelectedControlService.BeforeSelectedModel;
+
+                            @if (model.Type == ReportComponentModel.Control.Label || model.Type == ReportComponentModel.Control.TableCell)
                             {
                                 <Appearance @ref=appearance></Appearance>
                                 <FontProperty @ref=font></FontProperty>
                                 <DataSource @ref=datasource></DataSource>
                             }
-                            <Layout @ref=layout Type="SelectedControlService.CurrentSelectedModel.Type"></Layout>
+                            <Layout @ref=layout Type="model.Type"></Layout>
                         }
                         else if (this.currentRightPanel == RightPanelType.Settings)
                         {
