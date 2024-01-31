@@ -15,7 +15,7 @@
                             GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index"))
      >
      <CascadingValue Value="this">
-        @if(DragService.Hidden && !Model.Locked)
+        @if(DragService.Hidden && Model.Locked == false && this.Model.IsEditMode == false)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
         }
@@ -40,7 +40,8 @@
 </div>
 <style>
     .component{
-        box-sizing: border-box;
+
+        box-sizing: border-box; /* 테두리가 컨트롤 내부로 생성되도록 한다.  */
         outline:none; /* 포커스가 갔을때 기본 Outline 이 생성되는걸 막기위해서. 물론 이코드는 포커스일때만 아니라 그냥 다 막는다.  */
         line-height:1;
     }
@@ -212,7 +213,8 @@
 
         this.Model.IsEditMode = true;
         Options.State = DesignerOptionService.ActionState.Edit;
-        DragService.Hidden = false;
+        DragService.End();
+
         while (this.textArea == null)
             await Task.Delay(10);
 
