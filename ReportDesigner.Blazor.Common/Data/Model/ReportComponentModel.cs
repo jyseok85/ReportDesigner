@@ -125,13 +125,61 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public int RowCount { get; set; }
         public int ColCount { get; set; }   
 
-        public Dictionary<int, int> ColWidths { get; set; }
-        public Dictionary<int, int> RowHeights { get; set; }
+        public Dictionary<int, int> ColWidths { get; set; } = [];
+        public Dictionary<int, int> RowHeights { get; set; } = [];
+
+        public Dictionary<int, int> ColPositions { get; set; } = [];
+        public Dictionary<int, int> RowPositions { get; set; } = [];
+
+        public void UpdateCellSize(int tableWidth, int tableHeight)
+        {
+            ColWidths = GetCelSize(tableWidth, ColCount);
+            RowHeights = GetCelSize(tableHeight, RowCount);
+            ColPositions = GetCellPositions(ColWidths);
+            RowPositions = GetCellPositions(RowHeights);
+        }
+        private Dictionary<int, int> GetCelSize(int size, int count)
+        {
+            Dictionary<int, int> result = new Dictionary<int, int>();
+            //테두리 사이즈만큼 겹치기 때문에 변경해줌.
+            int targetSize = size + (count - 1);
+            int cellSize = (int)(targetSize / count);
+            int remainSize = targetSize;
+            for (int i = 0; i < count; i++)
+            {
+                if (i + 1 == count)
+                    result.Add(i, remainSize);
+                else
+                {
+                    result.Add(i, cellSize);
+                    remainSize -= cellSize;
+                }
+            }
+            return result;
+        }
+        private Dictionary<int, int> GetCellPositions(Dictionary<int, int> values)
+        {
+            Dictionary<int, int> result = new Dictionary<int, int>();
+            int nextPosition = 0;
+            for (int i = 0; i < values.Count; i++)
+            {
+                result.Add(i, nextPosition);
+
+                //-1을 하는 이유는 셀을 겹치기 위함
+                //그러나 이건 테두리가 1일 경우이며, 만약 2가 될경우에는 -2를 해줘야 한다..
+                //그러나! 필요없을것같다. 
+                //todo : [고급]테이블 테두리 기본값에 따른 로직을 넣어주는게 좋을것같긴하다.
+                //문서 기본옵션값이 테두리 2라면 아래 수치를 2로 변경하게
+                nextPosition += values[i] - 1;
+            }
+
+            return result;
+        }
     }
 
     public class TableCellInfo
     {
-        public TableCell RazorCellRef { get; set; }
+        //public TableCell RazorCellRef { get; set; }
         public int Row { get; set; } = 0;
         public int Col { get; set; } = 0;
         //세로 병합
