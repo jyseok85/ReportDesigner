@@ -26,24 +26,18 @@
         visibility : hidden
      </div>
      <CascadingValue Value="this">
-
-     <table class="table" style=@( GetStyle("width") + GetStyle("height") + "margin:0;" )>
-        @for(int r = 0; r < Model.TableInfo.RowCount; r++)
+     <div style="position:absolute;margin:0;top:0;">
+     @for(int r = 0; r < Model.TableInfo.RowCount; r++)
+     {
+        @for(int c = 0; c < Model.TableInfo.ColCount; c++)
         {
-            //line-height: 내부 컨트롤의 기본 간격을 설정한다. 
-            //별도의 입력컨트롤이 있어서 설정안할경우 문제가 발생하는듯하다.
-            <tr style=@("line-height:0;" + GetRowHeight(r) ) > <!-- 셀 내부 여백 제거-->
-                @for(int c = 0; c < Model.TableInfo.ColCount; c++)
-                {
-                    var childModel = Model.Children.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
+            var childModel = Model.Children.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
 
-                    <TableCell @ref=childModel.TableCellInfo.RazorCellRef Model=childModel></TableCell>     
-                }
-            </tr>    
+            <Cell Base=childModel></Cell>     
         }
-     </table>
+     }
+     </div>
      </CascadingValue>
-      
     @if(isDraging)
     {
         <div></div>
@@ -110,7 +104,7 @@
     }
 </style>
 @code {
-    public List<TableCell> children = new List<TableCell>();
+    //public List<TableCell> children = new List<TableCell>();
 
     private List<int> xPositionList = new List<int>();
     private List<int> yPositionList = new List<int>();

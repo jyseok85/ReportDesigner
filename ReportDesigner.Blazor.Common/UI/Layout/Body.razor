@@ -83,6 +83,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         ReportContextMenuService.ClipboardService = ClipboardService;
         SelectedControlService.CSS = CSS;
         SelectedControlService.JsRuntime = JsRuntime;
+        CreationService.CSS = CSS;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

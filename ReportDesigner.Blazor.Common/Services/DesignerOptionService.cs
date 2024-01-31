@@ -11,6 +11,7 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class DesignerOptionService
     {
+        public bool Debugging { get; set; } = true;
         [Inject]        
         public required SelectedControlService SelectedControl { get; set; }
 
@@ -226,6 +227,7 @@ namespace ReportDesigner.Blazor.Common.Services
             switch(type)
             { 
                 case ReportComponentModel.Control.Label:
+                case ReportComponentModel.Control.Table:
                 case ReportComponentModel.Control.None:
                     return true;
                 default:
