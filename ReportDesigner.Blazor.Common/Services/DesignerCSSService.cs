@@ -64,6 +64,9 @@ namespace ReportDesigner.Blazor.Common.Services
                         {
                             //todo : 디자이너 or 뷰어 모드에 따라서 보일지말지 처리
                             //return $"{name}: {model.Border.Thickness}px {model.Border.Style} transparent;";
+                            //테이블이면 그냥 투명해야하네..
+                            if(model.Type == ReportComponentModel.Control.TableCell)
+                                return $"{name}: {model.Border.Thickness}px {model.Border.Style} transparent;";
 
                             return $"{name}: {model.Border.Thickness}px dotted lightgray;";
                         }
@@ -77,7 +80,17 @@ namespace ReportDesigner.Blazor.Common.Services
                     return ""; //todo : 고급기능에서 해제가능하게 해야 한다. 
                                // return "word-break:break-all;";
                 case "background-color":
-                    return $"{type.ToLower()} : {model.BackColor}; ";
+                    {
+                        if (model.Type == ReportComponentModel.Control.TableCell)
+                        {
+                            if (model.Selected)
+                                return "background-color:#FAFAFA;";
+                            else
+                                return string.Empty;
+                        } 
+                        else
+                            return $"{type.ToLower()} : {model.BackColor}; ";
+                    }
                 case "font-family":
                     return $"{type.ToLower()} : {model.Font.FontFamily}; ";
                 case "font-size":
