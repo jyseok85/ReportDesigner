@@ -34,6 +34,7 @@
         @onpointerdown:stopPropagation="true"
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
+         @onkeyup=OnEditorKeyUp
         @bind-Value=@Model.Text
         class="w-100 component-text-input"
                     Style=@InputTextStyle hidden=@HiddenEditMode  />
@@ -243,6 +244,17 @@
         DragService.End();
         this.StateHasChanged();
     }
+    private void OnEditorKeyUp(KeyboardEventArgs e)
+    {
+        if(e.Key.Contains("Escape"))
+        {
+            Console.WriteLine("Editor - Escape");
+            
+        this.Model.IsEditMode = false;
+        Options.State = DesignerOptionService.ActionState.None;
+            this.StateHasChanged();            
 
+        }
+    }
     //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
 }

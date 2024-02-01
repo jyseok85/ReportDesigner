@@ -15,6 +15,7 @@
                             GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index"))
      >
      <CascadingValue Value="this">
+        @* 드래그나 잠겨있거나 텍스트 입력할때 수정영역이 안보이게 하기 위해서 *@
         @if(DragService.Hidden && Model.Locked == false && this.Model.IsEditMode == false)
         {
             <ModificationArea @ref=modificationArea></ModificationArea>
@@ -34,6 +35,7 @@
         @onpointerdown:stopPropagation="true"
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
+        @onkeyup=OnEditorKeyUp
         @bind-Value=@Model.Text
         class="w-100 component-text-input"
                     Style=@InputTextStyle hidden=@HiddenEditMode  />
@@ -223,5 +225,17 @@
         this.StateHasChanged();
     }
 
+    private void OnEditorKeyUp(KeyboardEventArgs e)
+    {
+        if(e.Key.Contains("Escape"))
+        {
+            Console.WriteLine("Editor - Escape");
+            
+        this.Model.IsEditMode = false;
+        Options.State = DesignerOptionService.ActionState.None;
+            this.StateHasChanged();            
+
+        }
+    }
     //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
 }
