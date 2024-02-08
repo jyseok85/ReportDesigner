@@ -152,9 +152,9 @@
    
     void OnPointerDown(PointerEventArgs e, string value)
     {
-        if (Options.EventObject != null)
-                return;                  
-        Options.EventObject = this;
+        if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
+            return;                  
+        Options.EventStartObject = this;
         Logger.Instance.Write("");
 
 

@@ -16,7 +16,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// <summary>
         /// 이벤트가 시작한 오브젝트
         /// </summary>
-        public object? EventObject { get; set; } = null;
+        public object? EventStartObject { get; set; } = null;
 
         public bool Debugging { get; set; } = true;
         [Inject]        

@@ -21,7 +21,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         [Inject]
         ControlResizeService ModificationServcie { get; set; }
         [Inject]
-        SelectedControlService Selectedservice { get; set; }
+        SelectedControlService SelectedService { get; set; }
 
         [Inject]
         DragAndDropService DragService { get; set; }
@@ -96,12 +96,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public void OnPointerDown(PointerEventArgs e, string value = null)
         {
-            if (Options.EventObject != null)
+            if (Options.EventStartObject != null)
                 return;                  
-            Options.EventObject = this;
+            Options.EventStartObject = this;
             Logger.Instance.Write("");
 
-            Selectedservice.CurrentBand = this;
+            SelectedService.CurrentBand = this;
 
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
             if (Options.State == DesignerOptionService.ActionState.Create)
@@ -115,11 +115,11 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             else if (Options.State == DesignerOptionService.ActionState.Drag)
             {
                 //todo 여기 안들어오는데??
-                if (Selectedservice.CurrentSelectedModel is not null)
-                    DragService.StartDrag(Selectedservice.CurrentSelectedModel, e.ClientX, e.ClientY);
+                if (SelectedService.CurrentSelectedModel is not null)
+                    DragService.StartDrag(SelectedService.CurrentSelectedModel, e.ClientX, e.ClientY);
             }
             else
-                Selectedservice.OnPointerDown(e, this.Model, this);
+                SelectedService.OnPointerDown(e, this.Model, this);
         }
 
 
@@ -207,7 +207,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
         public void RemoveSelectedControl()
         {
-            var uid = Selectedservice.CurrentSelectedModel.Uid;
+            var uid = SelectedService.CurrentSelectedModel.Uid;
             var control = controlBases.Find(x => x.Model.Uid == uid);
 
             if (control != null)

@@ -59,9 +59,9 @@
 
 	public void OnPointerDown(PointerEventArgs e)
 	{
-        if (Options.EventObject != null)
+        if (Options.EventStartObject != null)
             return;
-        Options.EventObject = this;
+        Options.EventStartObject = this;
 
         Logger.Instance.Write("");
         SelectedControlService.OnPointerDown(e, Model);		

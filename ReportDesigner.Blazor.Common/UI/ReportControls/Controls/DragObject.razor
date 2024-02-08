@@ -37,9 +37,9 @@
     public DragAndDropService DragService { get; set; } = new DragAndDropService();
     void OnPointerDown(PointerEventArgs e)
     {
-        if (Options.EventObject != null)
+        if (Options.EventStartObject != null)
             return;
-        Options.EventObject = this;
+        Options.EventStartObject = this;
 
         Logger.Instance.Write("");
         DragService.UpdatePos(e.ClientX, e.ClientY);

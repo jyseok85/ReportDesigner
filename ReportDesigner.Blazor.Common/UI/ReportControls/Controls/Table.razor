@@ -201,12 +201,17 @@
         StateHasChanged();
     }
     private ElementReference button;
-    public async Task OnPointerDown(PointerEventArgs e, string value)
+    public void OnPointerDown(PointerEventArgs e, string value)
     {
-        if (Options.EventObject != null)
+        if (Options.EventStartObject != null)
+        {
+            Logger.Instance.Write("Return " + Options.State.ToString());
             return;                  
-        Options.EventObject = this;
-        Logger.Instance.Write("");
+        }
+
+        Logger.Instance.Write(Options.State.ToString());
+        Options.EventStartObject = this;
+
 
 
         if(value == "EditArea")
@@ -214,15 +219,26 @@
             return; 
         }
 
+        StateHasChanged();
+
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
-            Logger.Instance.Write("isDragAble - false");
-            StateHasChanged();
+
+        }
+        else if(Options.State == DesignerOptionService.ActionState.Drag)
+        {
+            //todo : 테이블은 외각 라인을 잡고 드래그 해주는데, 테이블을 밷드 끝으로 붙일경우 마우스가 밴드를 벗어나서 이동이 취소되는 현상이 있다.
+            //큰 문제는 아니지만, 추후 개선이 필요할수도 있다.
+            if (this.Model.Locked == false)
+            {
+                ResizeService.UpdateSize(this.Model.Width, this.Model.Height);
+                Logger.Instance.Write($"DRAG START {e.ClientX}, {e.ClientY}");
+                DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
+                Options.State = DesignerOptionService.ActionState.Drag;
+            }  
         }
         else
         {
-            StateHasChanged();
-
             //테이블의경우 일반적으로 마우스 클릭해서 선택하지 않는다. 
             SelectService.OnPointerDown(e, this.Model, this);
             //ResizeArea.UpdateElementSize();
@@ -232,9 +248,6 @@
             if (this.Model.Locked == false)
             {
                 ResizeService.UpdateSize(this.Model.Width, this.Model.Height);
-                //DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
-                //DragService.Hidden = false;
-                //Options.State = DesignerOptionService.ActionState.Drag;
             }
         }
     }

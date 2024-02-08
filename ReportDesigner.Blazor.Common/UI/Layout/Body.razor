@@ -269,7 +269,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //컨트롤이 변경되었다고 이벤트를 보낸다. (변경안되도 호출되네?)
         Options.FireControlSelectionChangedEvent();
 
-        Options.EventObject = null;
+        Options.EventStartObject = null;
     }
 
 
@@ -282,9 +282,9 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         dragObjectSnapPoint.Add("bottom", (int)DragService.Bottom + Options.PaperMargin.Top);
 
         //절대값 수치로 계산한다.
-        Logger.Instance.Write($"Do  Sanp : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
+        //Logger.Instance.Write($"Do  Snap : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
         var snapPoint = Options.DoSnap(dragObjectSnapPoint, (int)DragService.Width, (int)DragService.Height);
-        Logger.Instance.Write($"snapPoint: {snapPoint.X} {snapPoint.Y}");
+        //Logger.Instance.Write($"snapPoint: {snapPoint.X} {snapPoint.Y}");
 
         if (snapPoint.X is not -999)
             DragService.PosX = snapPoint.X - Options.PaperMargin.Left;

@@ -80,9 +80,21 @@
     {
         if(Options.State == DesignerOptionService.ActionState.None)
         {
-            Options.State = DesignerOptionService.ActionState.GridResize;
-            Resizer.Model = parent.Model;
-            Resizer.StartAction(e, index, type);
+            if(Is테이블외각테두리(index,type) == true)
+            {
+                Options.State = DesignerOptionService.ActionState.Drag;
+                //버브링된 table OnPointerDown 이 호출될줄 알았는데 Options.EventStartObject 로 막아놨다. 
+                //그러므로  Options.EventStartObject 를 비워줘서 테이블의 이벤트가 타도록 한다. 
+                Options.EventStartObject = null;
+                Logger.Instance.Write("call bubbled event to Table");
+
+            }
+            else
+            {
+                Options.State = DesignerOptionService.ActionState.GridResize;
+                Resizer.Model = parent.Model;
+                Resizer.StartAction(e, index, type);
+            }
         }
         //todo : 테이블의 스냅라인이 이상함.
     }
@@ -132,10 +144,35 @@
             return false;
     }
 
+    private bool Is테이블외각테두리(int index , GridResizeService.Type type)
+    {
+        bool result = false;
+        if (index == 0)
+            result = true;
+        if (type == GridResizeService.Type.Row)
+        {
+            if (parent.Model.TableInfo.RowCount == index)
+                result = true;
+        }
+        else
+        {
+            if (parent.Model.TableInfo.ColCount == index)
+                result = true;
+        }
+
+        return result;
+    }
+
     private string GetCellSplitterStyle(int index, int xPos , int yPos, GridResizeService.Type type)
     {  
         string size = "100%";
         string cursor = "";
+        string backgroundColor = "#969696;";
+        //string backgroundColor = "#337ab7;";
+        //backgroundColor = "white";
+        //string outlineColor = "#969696";
+        string outlineColor = "#337ab7";
+        int thickness = 1;
 
         if (type == GridResizeService.Type.Row)
         {
@@ -153,9 +190,6 @@
                 else
                     return "display:none;";
             }
-
-            size = $"width:{size};height:1px;";
-            cursor = "cursor:row-resize;";
         }
         else if(type == GridResizeService.Type.Col)
         {
@@ -173,21 +207,37 @@
                 else
                     return "display:none;";      
             }
-
-            size = $"height:{size};width:1px;";
-            cursor = "cursor:col-resize;";
         }
-
         if (Resizer.IsChanged && Resizer.Index != index)
         {
             return "display:none;";
         }
 
 
-        string transform = $"transform:translate({xPos}px,{yPos}px);";
+        if(Is테이블외각테두리(index, type))
+        {
+            backgroundColor = outlineColor;     
+            thickness = 2;
+            cursor = "cursor:move;";
+        }
 
+        if (type == GridResizeService.Type.Row)
+        {
+            size = $"width:{size};height:{thickness}px;";
+            if(cursor == string.Empty)
+                cursor = "cursor:row-resize;";
+        }
+        else
+        {
+            size = $"height:{size};width:{thickness}px;";
+            if(cursor == string.Empty)
+                cursor = "cursor:col-resize;";
+        }
+
+
+        string transform = $"transform:translate({xPos}px,{yPos}px);";
         string style = transform + size + cursor + 
-                    "background-color:red;"+
+                    $"background-color:{backgroundColor};" + 
                     "position:absolute;";
         return style;
     }
