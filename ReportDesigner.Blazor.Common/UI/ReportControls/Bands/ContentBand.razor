@@ -9,10 +9,10 @@
 <div class="content-band"
      tabIndex = "1" 
      @onpointerup=OnPointerUp
-     @onpointerdown=OnPointerDown
+     @onpointerdown=@(e => OnPointerDown(e, "band"))
      @onpointerdown:stopPropagation="true"
      ondrag="event.preventDefault()"
-     ondragover="event.preventDefault()"
+     
      style=@("height:" + Model.Height + "px;" + (Options.State == DesignerOptionService.ActionState.Create ? "cursor:crosshair;" : "") +
      (Model.Selected == true ? "border: solid #0dcaf0 1px;" : "border: solid transparent 1px;"))>
 

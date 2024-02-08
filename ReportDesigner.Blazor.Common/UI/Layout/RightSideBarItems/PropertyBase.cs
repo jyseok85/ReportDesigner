@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ReportDesigner.Blazor.Common.Services;
+using ReportDesigner.Blazor.Common.Utils;
 
 namespace ReportDesigner.Blazor.Common.UI.Layout.RightSideBarItems
 {
@@ -16,7 +17,7 @@ namespace ReportDesigner.Blazor.Common.UI.Layout.RightSideBarItems
         internal void OnExpandedChange(string target, bool value)
         {
             Options.SetPanelMenuState(target,value);
-            Console.WriteLine(this.GetType().Name);
+            Logger.Instance.Write(this.GetType().Name);
         }
     }
 }

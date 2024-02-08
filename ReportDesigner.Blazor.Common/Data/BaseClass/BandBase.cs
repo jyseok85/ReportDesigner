@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Newtonsoft.Json.Linq;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
+using ReportDesigner.Blazor.Common.Utils;
 using System.Drawing;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
@@ -17,7 +19,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         ControlCreationService CreationService { get; set; }
 
         [Inject]
-        ControlModificationServcie ModificationServcie { get; set; }
+        ControlResizeService ModificationServcie { get; set; }
         [Inject]
         SelectedControlService Selectedservice { get; set; }
 
@@ -52,7 +54,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                 int mouseMoveDictanceY = (int)(e.ClientY - DragService.MouseY);
 
                 ControlBase control = controlBases.Find(x => x.Model.Uid == DragService.Uid);
-                Console.WriteLine("Band - OnPointerUp : " + DragService.Uid);
+                Logger.Instance.Write("Band - OnPointerUp : " + DragService.Uid);
 
                 if (control is not null)
                 {
@@ -91,13 +93,19 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             return;
         }
 
-        public void OnPointerDown(PointerEventArgs e)
+
+        public void OnPointerDown(PointerEventArgs e, string value = null)
         {
-            Console.WriteLine("Bandbase.cs - OnPointerDown");
+            if (Options.EventObject != null)
+                return;                  
+            Options.EventObject = this;
+            Logger.Instance.Write("");
+
+            Selectedservice.CurrentBand = this;
+
             //좌측 컨트롤을 클릭하면 생성모드로 진입한다.
             if (Options.State == DesignerOptionService.ActionState.Create)
             {
-                Selectedservice.CurrentBand = this;
                 //자식 컴포넌트가 선택되지 않았다면 선택된 모든 컴포넌트를 해제해준다.
                 DeselectAllControls();
 

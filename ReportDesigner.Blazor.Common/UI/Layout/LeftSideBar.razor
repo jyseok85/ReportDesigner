@@ -32,7 +32,7 @@
                 Options.CreateControlType = ReportComponentModel.Control.Table;
                 break;
             default:
-                Console.WriteLine($"이 컨트롤은 구현되지 않았습니다. {name}");
+                Logger.Instance.Write($"이 컨트롤은 구현되지 않았습니다. {name}");
                 return;
         }        
         Options.State = DesignerOptionService.ActionState.Create;

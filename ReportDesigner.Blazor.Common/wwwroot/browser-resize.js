@@ -1,7 +1,15 @@
 ﻿var GLOBAL = {};
 GLOBAL.DotNetReference = null;
+window.addEventListener("pointerdown", (event) => {
+    console.log("pointerdown:" + event.target.className);
+});
+window.addEventListener("dragenter", (event) => {
+    console.log("dragenter:" + event.target.className);
+});
 GLOBAL.SetDotnetReference = function (pDotNetReference) {
     GLOBAL.DotNetReference = pDotNetReference;
+
+    
 };
 
 window.browserResize = {
@@ -13,6 +21,7 @@ window.browserResize = {
     },
     registerResizeCallback: function () {
         window.addEventListener("resize", browserResize.resized);
+      
     },
     resized: function () {
         //1.Static 함수를 호출하는 방법
@@ -28,6 +37,12 @@ window.getDivSize = function (id) {
     var client = document.getElementById(id).getBoundingClientRect();
     return { width: client.width, height: client.height };
 }
+
+window.getEventTarget = (event) => {
+    return event.target.id;
+}
+
+
 //window.initResizeObserver = function (elementRef) {
 //    const element = elementRef.current;
 

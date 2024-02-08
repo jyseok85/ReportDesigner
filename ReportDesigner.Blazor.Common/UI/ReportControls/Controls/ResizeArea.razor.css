@@ -1,0 +1,65 @@
+﻿.ui-resizable-w {
+    top: 50%;
+    margin-top: -3px;
+    left: -8px;
+    cursor: w-resize;
+}
+
+.ui-resizable-e {
+    top: 50%;
+    margin-top: -3px;
+    right: -8px;
+    cursor: e-resize;
+}
+
+.ui-resizable-s {
+    left: 50%;
+    margin-left: -3px;
+    bottom: -8px;
+    cursor: s-resize;
+}
+
+.ui-resizable-n {
+    left: 50%;
+    margin-left: -3px;
+    top: -8px;
+    cursor: n-resize;
+}
+
+.ui-resizable-se {
+    bottom: -8px;
+    right: -8px;
+    cursor: se-resize;
+}
+
+.ui-resizable-sw {
+    bottom: -8px;
+    left: -8px;
+    cursor: sw-resize;
+}
+
+.ui-resizable-ne {
+    top: -8px;
+    right: -8px;
+    cursor: ne-resize;
+}
+
+.ui-resizable-nw {
+    top: -8px;
+    left: -8px;
+    cursor: nw-resize;
+}
+
+.ui-resize-handle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    font-size: 1px;
+    border: 1px solid #333;
+    background-color: transparent;
+    visibility: inherit;
+    z-index: 95;
+    display: block;
+}
+/* .resize-area{
+        display:contents; /* 동일한 레벨의 div 이벤트를 호출하기 위해(테이블 셀을 선택하기 위해서) */

@@ -135,8 +135,8 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         {
             ColWidths = GetCelSize(tableWidth, ColCount);
             RowHeights = GetCelSize(tableHeight, RowCount);
-            ColPositions = GetCellPositions(ColWidths);
-            RowPositions = GetCellPositions(RowHeights);
+            ColPositions = GetCellPositions(ColWidths, tableWidth);
+            RowPositions = GetCellPositions(RowHeights, tableHeight);
         }
         private Dictionary<int, int> GetCelSize(int size, int count)
         {
@@ -155,13 +155,16 @@ namespace ReportDesigner.Blazor.Common.Data.Model
                     remainSize -= cellSize;
                 }
             }
+
+
             return result;
         }
-        private Dictionary<int, int> GetCellPositions(Dictionary<int, int> values)
+        private Dictionary<int, int> GetCellPositions(Dictionary<int, int> values, int lastSize)
         {
             Dictionary<int, int> result = new Dictionary<int, int>();
             int nextPosition = 0;
-            for (int i = 0; i < values.Count; i++)
+            int i = 0;
+            for (i = 0; i < values.Count; i++)
             {
                 result.Add(i, nextPosition);
 
@@ -173,6 +176,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
                 nextPosition += values[i] - 1;
             }
 
+            result.Add(i, lastSize - 1);
             return result;
         }
     }

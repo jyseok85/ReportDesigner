@@ -1,6 +1,6 @@
 ﻿@inherits PropertyBase
 @inject DesignerOptionService Options
-@inject ControlModificationServcie ModificationService
+@inject ControlResizeService ResizeService
 @inject SelectedControlService SelectedControlService
 
 <div class="side-panel-contents-background">
@@ -113,14 +113,14 @@
          //컨트롤의 포인트 다운로직. 
         Options.SelectedControl.OnPointerDown(new PointerEventArgs(), model);
         //드래그 로직은 필요없을듯..
-        ModificationService.UpdateSize(model.Width, model.Height);
+        ResizeService.UpdateSize(model.Width, model.Height);
         //밴드의 포인트 업 또한 드래그 때문에 있는것
 
         //바디의 포인트 업 또한 실질적으로 우측 컨트롤 업데이트 하는것 빼고 필요 없음.
         Options.FireControlSelectionChangedEvent();
         Options.RefreshBody();
 
-        Console.WriteLine("Change", $"Item Text: {args.Text}");
+        Logger.Instance.Write($"Item Text: {args.Text}");
     }
 
 }

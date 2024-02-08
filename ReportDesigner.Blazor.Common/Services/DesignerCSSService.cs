@@ -22,8 +22,15 @@ namespace ReportDesigner.Blazor.Common.Services
         public bool ShowColors { get; set; } = false;
         public bool ShowButton { get; set; } = true;
 
+        /// <summary>
+        /// 전역 컨트롤 패딩 
+        /// </summary>
         public int DefaultPadding { get; set; } = 10;
 
+        /// <summary>
+        /// 테이블 셀의 최소 간격
+        /// </summary>
+        public int GridCellMinimumSize => DefaultPadding * 2;
         public string GetDynamicTableTextInner(ReportComponentModel model)
         {
             return GetModelStyle("textarea.width", model) +

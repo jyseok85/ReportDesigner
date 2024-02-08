@@ -1,0 +1,39 @@
+﻿.cell {
+    box-sizing: border-box;
+    outline: none; /* 포커스가 갔을때 기본 Outline 이 생성되는걸 막기위해서. 물론 이코드는 포커스일때만 아니라 그냥 다 막는다.  */
+    line-height: 1;
+}
+
+
+.cell-text {
+    display: flex;
+    top: 0;
+    height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
+    width: 100%;
+    position: absolute;
+    pointer-events: none;
+}
+
+.cell-text-inner {
+    overflow: hidden;
+    display: block;
+}
+/* 우측상단에 표시할 텍스트 */
+.overlay-text {
+    top: 0;
+    right: 0;
+    position: absolute;
+    pointer-events: none;
+    padding: 3px;
+    font-size: x-small;
+    font-style: italic;
+    color: lightgray;
+}
+
+.cell-text-input {
+    top: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    border-radius: 0px;
+}

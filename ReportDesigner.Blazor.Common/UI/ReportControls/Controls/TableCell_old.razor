@@ -2,7 +2,7 @@
 @inject IJSRuntime JsRuntime
 
 @inject SelectedControlService SelectService
-@inject ControlModificationServcie ModificationService
+@inject ControlResizeService ResizeService
 
 @inject DragAndDropService DragService
 @inject DesignerOptionService Options
@@ -148,7 +148,7 @@
         // var size = await JsRuntime.InvokeAsync<Size>("getDivSize", cell);
 
         // // 결과 출력 또는 원하는 작업 수행
-        // Console.WriteLine($"Width: {size.Width}, Height: {size.Height}");
+        // Logger.Instance.Write($"Width: {size.Width}, Height: {size.Height}");
 
         // this.Model.Width = (int)size.Width;
         // this.Model.Height = (int)size.Height;
@@ -201,7 +201,11 @@
     bool isDragging = false;
     void OnPointerDown(PointerEventArgs e, string value)
     {
-        Console.WriteLine("tablecell.razor - OnPointerDown");
+        if (Options.EventObject != null)
+            return;
+        Options.EventObject = this;
+
+        Logger.Instance.Write("");
 
         if(value == "cell")
         {
@@ -210,7 +214,7 @@
             isDragging = true;
             dragStartX = e.ClientX;
             dragStartY = e.ClientY;
-            Console.WriteLine($"TableCell PointerDown: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {dragStartX} {dragStartY}");
+            Logger.Instance.Write($"TableCell PointerDown: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {dragStartX} {dragStartY}");
 
 
             //todo : 테이블셀일때 위치 속성 막기
@@ -225,33 +229,33 @@
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
-            Console.WriteLine("isDragAble - false");
+            Logger.Instance.Write("isDragAble - false");
             StateHasChanged();
         }
         else
         {
             StateHasChanged();
             SelectService.OnPointerDown(e, this.Model, this);
-            //modificationArea.UpdateElementSize();
+            //ResizeArea.UpdateElementSize();
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
             //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
             // if (this.Model.Locked == false)
             // {
-            //     ModificationService.UpdateSize(this.Model.Width, this.Model.Height);
+            //     ResizeService.UpdateSize(this.Model.Width, this.Model.Height);
 
             //     //DragService.StartDrag(Model.Uid, Model.X, Model.Y, Model.Width, Model.Height, e.ClientX, e.ClientY);
             //     //DragService.Hidden = false;
             //     Options.State = DesignerOptionService.ActionState.Drag;
             // }
-            Console.WriteLine("isDragAble = true;");
+            Logger.Instance.Write("isDragAble = true;");
         }
     }
 
     void OnMouseUp(PointerEventArgs args)
     {
         isDragging = false;
-        Console.WriteLine($"TableCell PointerUp: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {args.ClientX} {args.ClientY} {dragStartX} {dragStartY}");
+        Logger.Instance.Write($"TableCell PointerUp: [COL:{this.Model.TableCellInfo.Col}][ROW:{this.Model.TableCellInfo.Row}] {args.ClientX} {args.ClientY} {dragStartX} {dragStartY}");
     }
     public string GetStyle(string type)
     {
@@ -264,11 +268,11 @@
 
     public async Task OnDbClick(MouseEventArgs args)
     {
-        Console.WriteLine(this.GetType().ToString() + ":OnDoubleClick");
+        Logger.Instance.Write(this.GetType().ToString() + ":OnDoubleClick");
         if (this.Model.Locked is true)
         {
             //todo : noti message
-            Console.WriteLine("Locked!!");
+            Logger.Instance.Write("Locked!!");
             return;
         }
 

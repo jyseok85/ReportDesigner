@@ -5,6 +5,8 @@ using Radzen;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
+using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
+using ReportDesigner.Blazor.Common.Utils;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -32,15 +34,15 @@ namespace ReportDesigner.Blazor.Common.Services
             lastMouseX = (int)args.ClientX - Options.PaperMargin.Left - (int)reportLocation.X;
             lastMouseY = (int)args.ClientY - Options.PaperMargin.Top - (int)reportLocation.Y;
             //마우스위치는 
-            Console.WriteLine($"{args.ClientX} {args.ClientY}");
-            Console.WriteLine($"{lastMouseX} {lastMouseY}");
+            Logger.Instance.Write($"{args.ClientX} {args.ClientY}");
+            Logger.Instance.Write($"{lastMouseX} {lastMouseY}");
             if (SelectedControlService == null)
             {
-                Console.WriteLine("선택된 컨트롤이 없습니다.");
+                Logger.Instance.Write("선택된 컨트롤이 없습니다.");
                 return;
             }
             var type = SelectedControlService.CurrentSelectedModel.Type;
-            Console.WriteLine($"ShowContextMenuWithItems {type}");
+            Logger.Instance.Write($"ShowContextMenuWithItems {type}");
             var menuList = new List<ContextMenuItem>();
 
             int index = 1;
@@ -99,7 +101,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void DuplicateControl()
         {
-            Console.WriteLine("Duplicat Control");
+            Logger.Instance.Write("Duplicat Control");
             //컨트롤을 복사하고.
             SelectedControlService.CopyControl();
 
@@ -116,7 +118,7 @@ namespace ReportDesigner.Blazor.Common.Services
         {
             if (SelectedControlService.CopiedModel == null)
             {
-                Console.WriteLine("복사된 컨트롤이 없습니다.");
+                Logger.Instance.Write("복사된 컨트롤이 없습니다.");
                 return;
             }
             var band = SelectedControlService.CurrentBand;
@@ -174,7 +176,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 //클립보드를 복사하기 전에는 Document 에 포커스가 있어야 하기 때문에 컨텍스트 메뉴 팝업을 먼저 닫아 버린다. 
                 ContextMenuService.Close();
                 await ClipboardService.CopyTextToClipboardAsync(text);
-                Console.WriteLine($"Clipboard Copied : {text}");
+                Logger.Instance.Write($"Clipboard Copied : {text}");
             }
             else if (action == "paste") //부모밴드가 왜 Null?
             {
@@ -215,12 +217,12 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
                     else
                     {
-                        Console.WriteLine("현재 컨트롤이 제일 아래에 있습니다.");
+                        Logger.Instance.Write("현재 컨트롤이 제일 아래에 있습니다.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("교체할 컨트롤이 없습니다.");
+                    Logger.Instance.Write("교체할 컨트롤이 없습니다.");
 
                 }
             }
@@ -250,18 +252,23 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
                     else
                     {
-                        Console.WriteLine("현재 컨트롤이 제일 위에 있습니다.");
+                        Logger.Instance.Write("현재 컨트롤이 제일 위에 있습니다.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("교체할 컨트롤이 없습니다.");
+                    Logger.Instance.Write("교체할 컨트롤이 없습니다.");
                 }
             }
             else if(action.Contains("lock"))
             {
                 SelectedControlService.CurrentSelectedModel.Locked = !SelectedControlService.CurrentSelectedModel.Locked;
                 Options.FireControlSelectionChangedEvent();
+            }
+            else if(action == "select table")
+            {
+                ((Table)SelectedControlService.RazorComponent).OnPointerDown(new PointerEventArgs(), "esc");
+
             }
             Options.RefreshBody();
 

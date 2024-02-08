@@ -7,6 +7,7 @@ using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
+using ReportDesigner.Blazor.Common.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +76,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
             Width = (int)(x - X) - 1;
             Height = (int)(y - Y) - 1;
-            Console.WriteLine($"ActionMove {x} {X} {Width},{Height}");
+            Logger.Instance.Write($"ActionMove {x} {X} {Width},{Height}");
         }
         public void ActionExit()
         {
@@ -133,7 +134,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         private void CreateTableControl(ControlBase control, int rowCount, int colCount, int value)
         {
-            if (value > 1)
+            if (value > 1) //todo : 이렇게 인덱스로 해버리면 나중에 값을 이해하기 어렵다. 문자열로 바꾸자.
             {
                 control.Model.X = 0;
                 control.Model.Width = SelectedControlService.CurrentBand.Model.Width;

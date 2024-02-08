@@ -20,7 +20,7 @@
     
     @if(Options.Debugging)
     {
-        <div style="font-size:xx-small">debug:drag-object</div>
+        <div style="font-size:xx-small;">debug:drag-object</div>
     }
 </div>
 <style>
@@ -37,7 +37,11 @@
     public DragAndDropService DragService { get; set; } = new DragAndDropService();
     void OnPointerDown(PointerEventArgs e)
     {
-        Console.WriteLine("DragObejct - OnPointerDown");
+        if (Options.EventObject != null)
+            return;
+        Options.EventObject = this;
+
+        Logger.Instance.Write("");
         DragService.UpdatePos(e.ClientX, e.ClientY);
     }
 }

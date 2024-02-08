@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.ObjectPool;
 using ReportDesigner.Blazor.Common.Data.Model;
+using ReportDesigner.Blazor.Common.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,7 +77,7 @@ namespace ReportDesigner.Blazor.Common.Services
             PosX = pointerClientX - diffX;
             PosY = pointerClientY - diffY;
 
-            Console.WriteLine($"{PosX} {PosY}");
+            Logger.Instance.Write($"{PosX} {PosY}");
 
         }
 

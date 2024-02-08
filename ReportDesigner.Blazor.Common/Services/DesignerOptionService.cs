@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.UI.ReportControls;
+using ReportDesigner.Blazor.Common.Utils;
 using System.Drawing;
 using System.Reflection;
 
@@ -11,6 +12,12 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class DesignerOptionService
     {
+
+        /// <summary>
+        /// 이벤트가 시작한 오브젝트
+        /// </summary>
+        public object? EventObject { get; set; } = null;
+
         public bool Debugging { get; set; } = true;
         [Inject]        
         public required SelectedControlService SelectedControl { get; set; }
@@ -66,6 +73,7 @@ namespace ReportDesigner.Blazor.Common.Services
         {
             Create,
             Resize,
+            GridResize,
             None,
             Edit,
             Drag
@@ -82,7 +90,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public List<ReportComponentModel> ComponentList = new List<ReportComponentModel>();
         public void AddControl(string uid, ReportComponentModel model)
         {
-            Console.WriteLine(uid);
+            Logger.Instance.Write(uid);
 
             if (model.Type != ReportComponentModel.Control.Report)
             {
@@ -130,7 +138,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public void UpdateAllControlOffset()
         {
-            Console.WriteLine($"{this.GetType().Name} : UpdateAllControlOffset");
+            Logger.Instance.Write($"{this.GetType().Name} : UpdateAllControlOffset");
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 if(model.Type == ReportComponentModel.Control.Report)
@@ -320,7 +328,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// </summary>
         public void TurnOffEditModeForAllControls()
         {
-            Console.WriteLine("TurnOffEditModeForAllControls");
+            Logger.Instance.Write("TurnOffEditModeForAllControls");
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 model.IsEditMode = false;
@@ -341,7 +349,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// <param name="key">방향키</param>
         public void SetSnapPoint(string key)
         {
-            Console.WriteLine($"{key} {string.Join(",", snapAbsoluteX)}");
+            Logger.Instance.Write($"{key} {string.Join(",", snapAbsoluteX)}");
             List<int> movement = new List<int>();
 
             string uid = SelectedControl.CurrentSelectedModel.ParentUid;
@@ -398,7 +406,7 @@ namespace ReportDesigner.Blazor.Common.Services
                                 SelectedControl.CurrentSelectedModel.Y += nextMovement;
                             else
                                 SelectedControl.CurrentSelectedModel.Y = bandModel.Height - SelectedControl.CurrentSelectedModel.Height;
-                            Console.WriteLine(SelectedControl.CurrentSelectedModel.Y);
+                            Logger.Instance.Write(SelectedControl.CurrentSelectedModel.Y);
                         }
                     }
                     break;

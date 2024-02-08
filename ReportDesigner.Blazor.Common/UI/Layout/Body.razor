@@ -3,7 +3,8 @@
 @inject DesignerOptionService Options
 @inject ControlCreationService CreationService
 @inject SelectedControlService SelectedControlService
-@inject ControlModificationServcie ModificationService
+@inject ControlResizeService ResizeService
+@inject GridResizeService GridResizeService
 @inject DragAndDropService DragService
 @inject ReportContextMenuService ReportContextMenuService
 @inject ContextMenuService ContextMenuService
@@ -106,7 +107,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     {
         if (key.Equals("body"))
         {
-            Console.WriteLine("RefreshBody");
+            Logger.Instance.Write("RefreshBody");
             this.StateHasChanged();
         }
     }
@@ -132,7 +133,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             }
             else
             {
-                Console.WriteLine("[PaperSizeChanged] - Sender is Null");
+                Logger.Instance.Write("[PaperSizeChanged] - Sender is Null");
             }
         });        
     }
@@ -150,30 +151,38 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     }
     public void OnPointerMove(PointerEventArgs e)
     {
-        if (Options.State == DesignerOptionService.ActionState.Create)
-            CreationService.ActionMove(e);
-        else if (Options.State == DesignerOptionService.ActionState.Resize)
+        switch(Options.State)
         {
-            ModificationService.ActionMove(e);
-            StateHasChanged();
-        }
-        else
-        {
-            if (SelectedControlService.CurrentSelectedModel is not null && Options.State == DesignerOptionService.ActionState.Drag)
-            {
-                //todo 이동가능한 컨트롤일때로 변경해야함.
-                if (SelectedControlService.CurrentSelectedModel.Type != ReportComponentModel.Control.Band)
-                { 
-                    DragService.Hidden = false;
-                    DragService.Move(e.ClientX, e.ClientY);
-                    DoSnap();
+            case DesignerOptionService.ActionState.Create:
+                CreationService.ActionMove(e);
+                break;
+            case DesignerOptionService.ActionState.Resize:
+                ResizeService.ActionMove(e);
+                StateHasChanged();
+                break;
+            case DesignerOptionService.ActionState.GridResize:
+                GridResizeService.ActionMove(e);
+                StateHasChanged(); 
+                break;
+            default:
+                if (SelectedControlService.CurrentSelectedModel is not null && Options.State == DesignerOptionService.ActionState.Drag)
+                {
+                    //todo 이동가능한 컨트롤일때로 변경해야함.
+                    if (SelectedControlService.CurrentSelectedModel.Type != ReportComponentModel.Control.Band)
+                    { 
+                        DragService.Hidden = false;
+                        DragService.Move(e.ClientX, e.ClientY);
+                        DoSnap();
+                    }
                 }
-            }
+                break;
         }
     }
 
     public async void OnPointerUp(PointerEventArgs e)
     {
+        Logger.Instance.Write($"Options.State : {Options.State}");
+
         // var control = controlBases.Find(x => x.Selected == true);
         if (Options.State == DesignerOptionService.ActionState.Create)
         {
@@ -207,32 +216,18 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         }
         else if (Options.State == DesignerOptionService.ActionState.Resize)
         {            
-            if (ModificationService.IsChanged)
-            {
-                if (ModificationService.Id == SelectedControlService.LastSelectModel.Uid)
-                {
-                    string uid = SelectedControlService.LastSelectModel.ParentUid;
-                    var bandModel = Options.ControlDictionary[uid];
-
-                    //기본 마진 * 2 이하로는 만들지 않는다. 
-                    
-                    SelectedControlService.ApplyResize(ModificationService.X, ModificationService.Y, ModificationService.Width, ModificationService.Height, bandModel);
-
-                    //선택된 컨트롤이 부모밴드보다 커질경우 부모밴드 또한 늘려준다.
-
-                    ModificationService.X = SelectedControlService.LastSelectModel.X;
-                    ModificationService.Y = SelectedControlService.LastSelectModel.Y;
-                    ModificationService.Width = SelectedControlService.LastSelectModel.Width;
-                    ModificationService.Height = SelectedControlService.LastSelectModel.Height;
-
-                    if (SelectedControlService.LastSelectModel.Bottom > bandModel.Height)
-                        bandModel.Height = SelectedControlService.LastSelectModel.Bottom;
-
-                    StateHasChanged();
-
-                }
-            }
-            ModificationService.ActionEnd();
+            //todo : 컨트롤을 2개이상 선택한 순간, 사이즈조절 컨트롤을 안보이게 한다. 
+            //선택컨트롤,
+            //사이즈조절 컨트롤 구분필요.
+            ResizeService.ActionEnd();
+            StateHasChanged();
+        }
+        else if(Options.State == DesignerOptionService.ActionState.GridResize)
+        {
+            GridResizeService.ActionEnd();  
+            ResizeService.Width = SelectedControlService.LastSelectModel.Width;
+            ResizeService.Height = SelectedControlService.LastSelectModel.Height;
+            StateHasChanged();
         }
 
         // if (control is not null)
@@ -241,7 +236,6 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //     //control.IsDragAble = false;
         // }
 
-        Console.WriteLine("Body - OnPointerUp");
 
 
         ReleaseState();
@@ -249,7 +243,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private void OnPointerLeave()
     {
-        Console.WriteLine("Body - OnPointerLeave");
+        Logger.Instance.Write("Body - OnPointerLeave");
         //todo : 항상타서 성능잡아먹음. 아무작업없이 마우스 움직일때 어떻게 할지 고민필요.
         ReleaseState();
     }
@@ -258,13 +252,15 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     {
         Options.State = DesignerOptionService.ActionState.None;
-        Console.WriteLine("Body - ReleaseState");
+        Logger.Instance.Write("Body - ReleaseState");
 
         Options.UpdateAllControlOffset();
         Options.HideSnap();
 
 
         DragService.End();
+        GridResizeService.ActionExit();
+        ResizeService.ActionExit();
         //SelectedControlService.CurrentSelectedModel = null;
 
         //todo 모든컨트롤 편집모드 해제
@@ -272,6 +268,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
         //컨트롤이 변경되었다고 이벤트를 보낸다. (변경안되도 호출되네?)
         Options.FireControlSelectionChangedEvent();
+
+        Options.EventObject = null;
     }
 
 
@@ -284,9 +282,9 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         dragObjectSnapPoint.Add("bottom", (int)DragService.Bottom + Options.PaperMargin.Top);
 
         //절대값 수치로 계산한다.
-        Console.WriteLine($"Do  Sanp : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
+        Logger.Instance.Write($"Do  Sanp : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
         var snapPoint = Options.DoSnap(dragObjectSnapPoint, (int)DragService.Width, (int)DragService.Height);
-        Console.WriteLine($"snapPoint: {snapPoint.X} {snapPoint.Y}");
+        Logger.Instance.Write($"snapPoint: {snapPoint.X} {snapPoint.Y}");
 
         if (snapPoint.X is not -999)
             DragService.PosX = snapPoint.X - Options.PaperMargin.Left;
@@ -302,7 +300,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             //컨트롤 키와 같이 누른경우
             if (e.CtrlKey)
             {
-                Console.WriteLine(e.Key);
+                Logger.Instance.Write(e.Key);
 
                 //컨트롤 방향키 스냅포인트로 이동. 연속 누르기 금지
                 if (keyReleased == false)
@@ -339,7 +337,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             }
             else
             {
-                Console.WriteLine(e.Key);
+                Logger.Instance.Write(e.Key);
 
                 switch (e.Key)
                 {

@@ -12,13 +12,14 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DesignerOptionService>();
 builder.Services.AddScoped<DesignerCSSService>();
 builder.Services.AddScoped<ControlCreationService>();
-builder.Services.AddScoped<ControlModificationServcie>();
+builder.Services.AddScoped<ControlResizeService>();
 builder.Services.AddScoped<SelectedControlService>();
 builder.Services.AddScoped<DragAndDropService>();
 builder.Services.AddScoped<MultiLanguageService>();
 builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddScoped<ReportContextMenuService>();
 builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<GridResizeService>();
 builder.Services.AddClipboard();
 builder.Services.AddRazorComponents();
 

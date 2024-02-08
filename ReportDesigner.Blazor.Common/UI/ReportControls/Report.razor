@@ -2,8 +2,8 @@
 @inject SelectedControlService SelectedControlService
 @inherits ReportBase
 
+     @* ondragover="event.preventDefault()"  *@
 <div class=@("report") id="report"
-     ondragover="event.preventDefault()" 
      @onpointerdown=OnPointerDown
      style=@("width:" + Model.Width + "px;Height:" + Model.Height + "px;")>
     <SnapLiner Model="@Options.SnapLinerModel"></SnapLiner>
@@ -59,7 +59,11 @@
 
 	public void OnPointerDown(PointerEventArgs e)
 	{
-		Console.WriteLine("Report.cs - OnPointerDown");		
+        if (Options.EventObject != null)
+            return;
+        Options.EventObject = this;
+
+        Logger.Instance.Write("");
         SelectedControlService.OnPointerDown(e, Model);		
 	}
 }

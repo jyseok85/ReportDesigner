@@ -15,8 +15,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="UI\ReportControls\Controls\ResizeArea.razor.css" />
     <None Remove="UI\RulerX.razor.css" />
     <None Remove="UI\RulerY.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="UI\ReportControls\Controls\ResizeArea.razor.css" />
   </ItemGroup>
 
 
