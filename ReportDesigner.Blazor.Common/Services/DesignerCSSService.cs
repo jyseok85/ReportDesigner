@@ -1,5 +1,6 @@
 ﻿using Radzen;
 using ReportDesigner.Blazor.Common.Data.Model;
+using System.Drawing;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -58,14 +59,41 @@ namespace ReportDesigner.Blazor.Common.Services
                     {
                         if (model.Border.Use)
                         {
-                            if (model.Border.UseIndividualBorders)
-                                return
-                                $"{name}-top: {model.Border.Thickness}px {model.Border.Style} {model.Border.TopColor};" +
-                                $"{name}-right: {model.Border.Thickness}px {model.Border.Style} {model.Border.RightColor};" +
-                                $"{name}-bottom: {model.Border.Thickness}px {model.Border.Style} {model.Border.BottomColor};" +
-                                $"{name}-left: {model.Border.Thickness}px {model.Border.Style} {model.Border.LeftColor};";
+                            if (model.Type == ReportComponentModel.Control.TableCell)
+                            {
+                                //모델이 선택했는지에 따라서 테두리 색상을 변경한다.
+                                if (model.Selected)
+                                {
+                                    string border =
+                                        $"{name}-top: {model.Border.Thickness}px {model.Border.Style} red;" +
+                                        $"{name}-right: {model.Border.Thickness}px {model.Border.Style} red;" +
+                                        $"{name}-bottom: {model.Border.Thickness}px {model.Border.Style} red;" +
+                                        $"{name}-left: {model.Border.Thickness}px {model.Border.Style} red;";
+                                    return border;
+                                }                                   
+                                else
+                                {
+                                    if (model.Border.UseIndividualBorders)
+                                        return
+                                        $"{name}-top: {model.Border.Thickness}px {model.Border.Style} {model.Border.TopColor};" +
+                                        $"{name}-right: {model.Border.Thickness}px {model.Border.Style} {model.Border.RightColor};" +
+                                        $"{name}-bottom: {model.Border.Thickness}px {model.Border.Style} {model.Border.BottomColor};" +
+                                        $"{name}-left: {model.Border.Thickness}px {model.Border.Style} {model.Border.LeftColor};";
+                                    else
+                                        return $"{name}: {model.Border.Thickness}px {model.Border.Style} {model.Border.Color};";
+                                }
+                            }
                             else
-                                return $"{name}: {model.Border.Thickness}px {model.Border.Style} {model.Border.Color};";
+                            {
+                                if (model.Border.UseIndividualBorders)
+                                    return
+                                    $"{name}-top: {model.Border.Thickness}px {model.Border.Style} {model.Border.TopColor};" +
+                                    $"{name}-right: {model.Border.Thickness}px {model.Border.Style} {model.Border.RightColor};" +
+                                    $"{name}-bottom: {model.Border.Thickness}px {model.Border.Style} {model.Border.BottomColor};" +
+                                    $"{name}-left: {model.Border.Thickness}px {model.Border.Style} {model.Border.LeftColor};";
+                                else
+                                    return $"{name}: {model.Border.Thickness}px {model.Border.Style} {model.Border.Color};";
+                            }
                         }
                         else
                         {
@@ -82,18 +110,15 @@ namespace ReportDesigner.Blazor.Common.Services
                     {
                         return $"{name}: {model.Border.Thickness}px {model.Border.Style} red;";
                     }
-                
+                    break;
                 case "word-break":
                     return ""; //todo : 고급기능에서 해제가능하게 해야 한다. 
                                // return "word-break:break-all;";
                 case "background-color":
                     {
                         if (model.Type == ReportComponentModel.Control.TableCell)
-                        {
-                            if (model.Selected)
-                                return "background-color:#FAFAFA;";
-                            else
-                                return string.Empty;
+                        {    
+                            return $"{type.ToLower()} : {model.BackColor}; ";
                         } 
                         else
                             return $"{type.ToLower()} : {model.BackColor}; ";
@@ -114,7 +139,12 @@ namespace ReportDesigner.Blazor.Common.Services
                 case "color":
                     return $"{type.ToLower()} : {model.Font.FontColor}; ";
                 case "z-index":
-                    return $"{type.ToLower()} : {model.ZIndex}; ";
+                    if (model.Type == ReportComponentModel.Control.TableCell && model.Selected)
+                    {
+                        return $"{type.ToLower()} : {model.ZIndex + 1000}; ";
+                    }
+                    else
+                        return $"{type.ToLower()} : {model.ZIndex}; ";
                
 
                 case "textarea.width":
