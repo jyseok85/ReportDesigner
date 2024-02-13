@@ -24,15 +24,15 @@
         }
      </CascadingValue> *@
     <div class="overlay-text" hidden=@HiddenControl>
-        visiblity : hidden
+        visibility : hidden
      </div>
 
-@*      <div class="component-text"
-     style=@(OuterTextStyle)>
-        <div class="component-text-inner" style=@(InnerTextStyle)>
+        
+     <div class="cell-text"  style=@(OuterTextStyle) hidden=@this.Model.IsEditMode >
+        <div class="cell-text-inner" style=@(InnerTextStyle)>
             @Model.Text
          </div>
-     </div> *@
+     </div>
      <RadzenTextArea @ref=textArea
         @ondrag:stopPropagation="true"
         @onpointerdown:stopPropagation="true"
@@ -84,6 +84,7 @@
                            GetStyle("font-size") +
                            GetStyle("font-family") +
                            GetStyle("color") +
+                           GetStyle("line-height") +
                            GetStyle("white-space")
                            //todo : [고급] overflow:visible 하면 좌우 셀로 넘어가서 텍스트 표시가능
                            //visible 처리시 좌측 or 우측정렬만 활성화 시킴 
@@ -102,7 +103,12 @@
                            GetStyle("font-family") +
                            //포커스일때 기본컨트롤 스타일 삭제
                            "border:0px;"  +          
-                           "box-shadow:none;" + 
+                           "box-shadow:none;" +
+                           //칸이 전부 안차서 변경
+                           "height:100%;" +
+                           //일반 텍스트컨트롤과 라인높이를 맞춰줌.
+                           GetStyle("line-height") +
+                           
                            //리사이즈 컨트롤 삭제
                            "resize:none;";      
             return style;
