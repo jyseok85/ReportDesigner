@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ReportDesigner.Blazor.Common.Data.EtcComponents
+﻿namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 {
     public class Border : ICloneable
     {
@@ -17,8 +10,9 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
         public string Style { get; set; } = "solid";
 
         private string color = "Black";
-        public string Color { 
-            get { return color; } 
+        public string Color
+        {
+            get { return color; }
             set
             {
                 SetAllBorderColor(value);
@@ -26,7 +20,8 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
             }
         }
 
-        public int Thickness { 
+        public int Thickness
+        {
             get { return Left; }
             set { SetBorderThickness(value); }
         }
@@ -65,21 +60,21 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 
         public void SetAllBorderColor(string color)
         {
-            if(UseTopBorder)
+            if (UseTopBorder)
                 this.TopColor = color;
             else
                 this.TopColor = "transparent";
-            if(UseRightBorder)
+            if (UseRightBorder)
                 this.RightColor = color;
             else
                 this.RightColor = "transparent";
 
-            if(UseBottomBorder) 
+            if (UseBottomBorder)
                 this.BottomColor = color;
             else
                 this.BottomColor = "transparent";
 
-            if(UseLeftBorder) 
+            if (UseLeftBorder)
                 this.LeftColor = color;
             else
                 this.LeftColor = "transparent";
@@ -88,23 +83,23 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
 
         public void UpdateBorderColor()
         {
-            
+
             if (UseTopBorder)
                 this.TopColor = this.color;
             else
                 this.TopColor = "transparent";
             if (UseRightBorder)
-                this.RightColor = this.color; 
+                this.RightColor = this.color;
             else
                 this.RightColor = "transparent";
 
             if (UseBottomBorder)
-                this.BottomColor = this.color; 
+                this.BottomColor = this.color;
             else
                 this.BottomColor = "transparent";
 
             if (UseLeftBorder)
-                this.LeftColor = this.color; 
+                this.LeftColor = this.color;
             else
                 this.LeftColor = "transparent";
         }

@@ -1,15 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Newtonsoft.Json.Linq;
-using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Services;
 using ReportDesigner.Blazor.Common.Utils;
-using System.Drawing;
-using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
-using static ReportDesigner.Blazor.Common.Data.Model.BandModel;
 
 namespace ReportDesigner.Blazor.Common.Data.BaseClass
 {
@@ -48,7 +42,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             //포인트 업은 바디에서 사용.
             //포인트 다운은 밴드 내에서 시작.
             if (Options.State == DesignerOptionService.ActionState.Drag)
-            {               
+            {
 
                 int mouseMoveDictanceX = (int)(e.ClientX - DragService.MouseX);
                 int mouseMoveDictanceY = (int)(e.ClientY - DragService.MouseY);
@@ -72,8 +66,8 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                     int bandHeight = Options.PaperSize.Width - Options.PaperMargin.Left - Options.PaperMargin.Right;
 
                     if (targetX + control.Model.Width > bandWidth)
-                    { 
-                        targetX = bandWidth - control.Model.Width; 
+                    {
+                        targetX = bandWidth - control.Model.Width;
                     }
 
                     if (targetY + control.Model.Height > Model.Bottom)
@@ -86,8 +80,8 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
 
 
                     //부모 밴드를 가져온다.
-                    
-                }   
+
+                }
             }
 
             return;
@@ -97,7 +91,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         public void OnPointerDown(PointerEventArgs e, string value = null)
         {
             if (Options.EventStartObject != null)
-                return;                  
+                return;
             Options.EventStartObject = this;
             Logger.Instance.Write("");
 
@@ -158,7 +152,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                 tabIndex = controlBases.Max(x => x.Model.TabIndex) + 1;
             return tabIndex;
         }
-        
+
         public void AddControl(ControlBase control)
         {
             int tabIndex = GetNextTabIndex();
@@ -178,7 +172,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         /// </summary>
         public void AddControl(ControlBase control, Location location = null)
         {
- 
+
             control.Model.TabIndex = GetNextTabIndex();
             control.Model.ZIndex = control.Model.TabIndex;
 
