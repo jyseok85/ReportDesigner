@@ -1,5 +1,8 @@
 ﻿using Radzen;
+using Radzen.Blazor;
+using ReportDesigner.Blazor.Common.Data;
 using ReportDesigner.Blazor.Common.Data.Model;
+using ReportDesigner.Blazor.Common.Utils;
 using System.Drawing;
 
 namespace ReportDesigner.Blazor.Common.Services
@@ -111,9 +114,7 @@ namespace ReportDesigner.Blazor.Common.Services
                         return $"{name}: {model.Border.Thickness}px {model.Border.Style} red;";
                     }
                     break;
-                case "word-break":
-                    return ""; //todo : 고급기능에서 해제가능하게 해야 한다. 
-                               // return "word-break:break-all;";
+             
                 case "background-color":
                     {
                         if (model.Type == ReportComponentModel.Control.TableCell)
@@ -134,6 +135,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 case "vertical-align":
                     return $"{type.ToLower()} : {model.Paragraph.VerticalAlignment.Replace("start", "top").Replace("center", "middle").Replace("end", "bottom")}; ";
                 case "justify-content": //수평정렬
+                    return $"{type.ToLower()} : {model.Paragraph.HorizontalAlignment.Replace("justify","normal")}; ";
                 case "text-align":
                     return $"{type.ToLower()} : {model.Paragraph.HorizontalAlignment}; ";
                 case "color":
@@ -153,14 +155,104 @@ namespace ReportDesigner.Blazor.Common.Services
                     return "height:" + (model.Height - 1) + "px;";
 
                 case "padding":
+                case "margin":
                     return $"{type.ToLower()} : {this.DefaultPadding}px; ";
                 case "textarea.padding":
                     return $"padding : {this.DefaultPadding}px; ";
 
-                case "white-space":
-                    return $"{type.ToLower()} : {(model.Paragraph.AutoLineBreak ? "normal" : "pre")}; ";
+      
                 case "line-height":
                     return $"{type.ToLower()} : {model.Paragraph.LineHeight}; ";
+                case "transform-origin":
+                    {
+                        if (model.Paragraph.AutoFitText)
+                        {
+                            var style = $"{type.ToLower()} : {model.Paragraph.HorizontalAlignment.Replace("start", "left").Replace("end", "right")}; ";
+                            return style;
+                        }
+                        else
+                            return "";
+                    }
+                case "transform":
+                    {
+                        if (model.Paragraph.AutoFitText)
+                        {
+                            var scaleX = model.Paragraph.CurrentScale * 0.01f;
+                            return $"{type.ToLower()} : scaleX({scaleX}); ";
+                        }
+                        else
+                            return "";
+                    }
+                //case "overflow":
+                //    {
+                //        if (model.Paragraph.AutoFitText == false)
+                //        {
+                //            return $"{type.ToLower()} : hidden; ";
+                //        }
+                //        else
+                //        {
+                //            //텍스트 스케일을 조절한 경우에 전부 표시하지 않으면
+                //            return $"{type.ToLower()} : visible; ";
+                //        }
+                //    }
+               
+
+                case "overflow-text":
+                    {
+                        var style = string.Empty;
+                        switch(model.Paragraph.OverFlowText)
+                        {
+                            case OverFlowText.Visible:
+                                style= "overflow: visible;";
+                                break;
+                            case OverFlowText.Clip:
+                                style = "overflow: hidden;";
+                                break;
+                            case OverFlowText.Ellipsis:
+                                style = "overflow: hidden; text-overflow: ellipsis;";
+                                break;
+                            case OverFlowText.WordWrap:
+                                style = "overflow: hidden; white-space: normal; overflow-wrap: break-word;";
+                                break;
+                        }
+                        if (model.Paragraph.OverFlowText == OverFlowText.WordWrap)
+                        {
+                            if (model.Paragraph.MultiLine)
+                                style += "white-space:pre-wrap;";
+                        }
+                        else
+                        {
+                            if (model.Paragraph.MultiLine)
+                            {
+                                style += "white-space: pre;";
+                            }
+                            else
+                            {
+                                style += "white-space: nowrap;";
+                            }
+                        }
+
+                        return style;
+
+                       
+
+                        //보이기 1
+                        //overflow visible
+
+                        //전부 자르기 2,3
+                        //white-space: normal;
+                        //overflow-wrap: normal;  
+                        //text-overflow: clip or ellipsis
+
+                        //4 word-wrap 하기 
+
+                        //멀티라인 적용시
+                        //좌우는 자르고 상하만 보이기
+                        //multiline + ellipsis or multiline + clip
+
+                    }
+                case "letter-spacing":
+                    return $"{type.ToLower()} :{model.Paragraph.CharacterSpacing}px; ";
                 default:
                     return string.Empty;
             }

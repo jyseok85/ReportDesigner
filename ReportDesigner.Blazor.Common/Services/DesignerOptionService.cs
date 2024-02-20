@@ -19,6 +19,12 @@ namespace ReportDesigner.Blazor.Common.Services
         public object? EventStartObject { get; set; } = null;
 
         public bool Debugging { get; set; } = true;
+
+        /// <summary>
+        /// 전문가 기능
+        /// </summary>
+        public bool ExpertiseMode { get; set; } = true;
+
         [Inject]        
         public required SelectedControlService SelectedControl { get; set; }
 

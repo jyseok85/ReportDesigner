@@ -23,6 +23,7 @@
                             {
                                 <Appearance @ref=appearance></Appearance>
                                 <FontProperty @ref=font></FontProperty>
+                                <ParagraphSetting @ref=paragraph></ParagraphSetting>
                                 <DataSource @ref=datasource></DataSource>
                             }
                             <Layout @ref=layout Type="model.Type"></Layout>
@@ -145,6 +146,7 @@
     DataSource? datasource;
     Appearance? appearance;
     ControlView? treeview;
+    ParagraphSetting? paragraph;
 
     bool showSidePanel = false;
 
@@ -259,6 +261,7 @@
             appearance?.RefreshState();
             datasource?.RefreshState();
             layout.RefreshState();
+            paragraph?.RefreshState();
             //treeview?.RefreshState();
 
         }

@@ -20,7 +20,7 @@
 @onpointerdown:preventDefault="true"
 @onpointermove:preventDefault="true"
 
-     style=@GetAreaStyle() hidden=@(parent.Model.Selected == true ? false : true )>
+     style=@GetAreaStyle() hidden=@Hidden>
 
      <div class="point-spot">
         <div class="ui-resize-handle ui-resizable-w" @onpointerdown='e=>OnResizePointerDown(e,"w")' />
@@ -67,6 +67,9 @@
 @code {
     [CascadingParameter]
     public ControlBase parent { get; set; }
+
+    [Parameter]
+    public bool Hidden { get; set; } = false;
 
     void OnResizePointerDown(PointerEventArgs e, string type)
     {

@@ -2,6 +2,7 @@
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 @inject SelectedControlService SelectedControlService
+@inject MultiLanguageService DD
 
 
 <RadzenPanelMenuItem Text="Font" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
@@ -10,7 +11,7 @@
             <RadzenText class="property-displayName">Font Name</RadzenText>
             <RadzenDropDown class="property-item property-dropdown" AllowClear="false" AllowFiltering="false" @bind-Value=@FontName Data=@fontList ValueProperty="Name" PopupStyle=@CSS.DropDownPopupStyle Disabled=Locked>
                 <Template>
-                    @(context.Name)
+                    @(DD.DD(context.Name))
                 </Template>
             </RadzenDropDown>
         </RadzenStack>
@@ -22,7 +23,7 @@
             <RadzenText class="property-displayName">Font Size</RadzenText>
             <RadzenNumeric class="property-item" Min="6" Max="72" TValue="int" @bind-Value=@FontSize Disabled=Locked />
         </RadzenStack>
-        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap" >
             <RadzenText class="property-displayName">Font Style</RadzenText>
             <RadzenSelectBar @bind-Value=@FontStyle TValue="IEnumerable<int>" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Multiple="true" Disabled=Locked>
                 <Items>
@@ -32,34 +33,6 @@
                     <RadzenSelectBarItem Icon="format_strikethrough" Value="3" Style="padding:0.2rem;" />
                 </Items>
             </RadzenSelectBar>
-        </RadzenStack>
-        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-            <RadzenText class="property-displayName">Text Alignment</RadzenText>
-            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-                <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
-                <RadzenSelectBar @bind-Value=@TextAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
-                    <Items>
-                        <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
-                        <RadzenSelectBarItem Icon="vertical_align_bottom" Value="2" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
-                    </Items>
-                </RadzenSelectBar>
-            </RadzenStack>
-        </RadzenStack>
-        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-            <RadzenText class="property-displayName"></RadzenText>
-            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-                <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
-                <RadzenSelectBar @bind-Value=@TextAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
-                    <Items>
-                        <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="format_align_right" Value="5" Style="padding:0.2rem;" />
-                        <RadzenSelectBarItem Icon="format_align_justify" Value="6" Style="padding:0.2rem;" />
-
-                    </Items>
-                </RadzenSelectBar>
-            </RadzenStack>
         </RadzenStack>
     </div>
 </RadzenPanelMenuItem>
@@ -117,89 +90,6 @@
             Options.RefreshBody();
         }
     }
-    private int TextAlignHorizontal
-    {
-        get { 
-            int textAlignHorizontal = 3;
-            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
-                return textAlignHorizontal;
-
-            string horizontalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment;
-            switch (horizontalAlign)
-            {
-                case "start":
-                    textAlignHorizontal = 3; break;
-                case "center":
-                    textAlignHorizontal = 4; break;
-                case "end":
-                    textAlignHorizontal = 5; break;
-                case "justify":
-                    textAlignHorizontal = 6;
-                    SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
-                    fixVerticalAlign = true;
-                    TextAlignVertical = 0;
-                    break;
-            }
-            return textAlignHorizontal; 
-        }
-        set
-        {
-            string str = string.Empty;
-            fixVerticalAlign = false;
-            if (value == 3)
-                str = "start";
-            else if (value == 4)
-                str = "center";
-            else if (value == 5)
-                str = "end";
-            else if (value == 6)
-            {
-                str = "justify";
-                SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
-                fixVerticalAlign = true;
-                TextAlignVertical = 0;
-
-                //양쪽맞춤 기능은 자동줄바꿈 속성이 있을 경우 동작하지 않는다. 
-                SelectedControlService.CurrentSelectedModel.Paragraph.AutoLineBreak = true;
-
-            }
-            SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment = str;
-            Options.RefreshBody();
-        }
-    }
-    private int TextAlignVertical
-    {
-        get
-        {
-            int textAlignVertical = 1;
-            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
-                return textAlignVertical;
-
-            string verticalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment;
-            switch (verticalAlign)
-            {
-                case "start":
-                    textAlignVertical = 0; break;
-                case "center":
-                    textAlignVertical = 1; break;
-                case "end":
-                    textAlignVertical = 2; break;
-            }
-            return textAlignVertical;
-        }
-        set
-        {
-            string str = string.Empty;
-            switch(value)
-            {
-                case 0: str = "start";break;
-                case 1: str = "center";break;
-                case 2: str = "end"; break;
-            }
-            SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = str;
-            Options.RefreshBody();
-        }
-    }
     private IEnumerable<int> FontStyle
     {
         get
@@ -229,6 +119,7 @@
 
             string style = string.Empty;
             if (nums.Contains(0))
+
                 style += "font-weight: bold;";
             if (nums.Contains(1))
                 style += "font-style : italic;";

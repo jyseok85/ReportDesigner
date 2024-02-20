@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -13,12 +9,14 @@ namespace ReportDesigner.Blazor.Common.Services
     {
         private readonly SelectedControlService? selectedControlService;
         private readonly DesignerCSSService? css;
+        private readonly IJSRuntime JsRuntime;
 
         public ControlResizeService(
-            SelectedControlService? selectedControlService, DesignerCSSService? css)
+            SelectedControlService? selectedControlService, DesignerCSSService? css, IJSRuntime jSRuntime)
         {
             this.selectedControlService = selectedControlService;
             this.css = css;
+            this.JsRuntime = jSRuntime;
         }
 
         public string Id { get; set; } = string.Empty;
@@ -142,16 +140,16 @@ namespace ReportDesigner.Blazor.Common.Services
         }
 
 
-      
 
 
-        public void ActionEnd()
+
+        public async void ActionEnd()
         {
             //마지막 선택된 컨트롤의 사이즈를 변경해준다.
-            if(IsChanged)
+            if (IsChanged)
             {
                 UpdateLastSelectedControlSize();
-
+                await selectedControlService.UpdateInnerTextControlScale();
             }
             ActionExit();
         }
@@ -236,14 +234,15 @@ namespace ReportDesigner.Blazor.Common.Services
 
             if (minimumHeight > height)
                 height = minimumHeight;
-            
+
 
             //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
             //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
             if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
             {
                 lastSelectedModel.TableInfo.UpdateCellSize(width, height);
-            }           
+            }
+
 
 
             this.Width = lastSelectedModel.Width = width;
@@ -254,19 +253,22 @@ namespace ReportDesigner.Blazor.Common.Services
                 currentBand.Height = lastSelectedModel.Bottom;
         }
 
+       
 
         public void ActionExit()
         {
+  
             this.IsChanged = false;
             this.X = 0;
             this.Y = 0;
         }
         public void UpdateSize(int width, int height)
-        {           
+        {
             this.Width = width;
             this.Height = height;
             ActionExit();
         }
 
     }
+
 }

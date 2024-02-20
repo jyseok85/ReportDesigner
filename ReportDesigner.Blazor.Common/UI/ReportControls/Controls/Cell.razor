@@ -9,7 +9,9 @@
      @* @onpointerdown:stopPropagation="true" *@
 <div class="cell"
      tabindex="@Model.TabIndex"
-     @onpointerdown=@(e => OnPointerDown(e, "Control"))
+     @onpointerdown=@(e => OnPointerDown(e))
+        @onpointerup:stopPropagation="true"
+
      @ondrag:preventDefault=true
      @ondragenter:preventDefault=true
      @ondragover:preventDefault=true
@@ -27,21 +29,25 @@
         visibility : hidden
      </div>
 
-        
-     <div class="cell-text"  style=@(OuterTextStyle) hidden=@this.Model.IsEditMode >
-        <div class="cell-text-inner" style=@(InnerTextStyle)>
-            @Model.Text
-         </div>
-     </div>
-     <RadzenTextArea @ref=textArea
-        @ondrag:stopPropagation="true"
+
+
+           <div class="cell-text"  
+      @ondrag:stopPropagation="true"
         @onpointerdown:stopPropagation="true"
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
          @onkeyup=OnEditorKeyUp
+         style=@(OuterTextStyle) >
+        <div class="cell-text-inner" style=@(InnerTextStyle) hidden=@this.Model.IsEditMode>
+            @Model.Text
+         </div>
+        
+      <RadzenTextArea @ref=textArea
+       
         @bind-Value=@Model.Text
         class="w-100 cell-text-input"
                     Style=@InputTextStyle hidden=@HiddenEditMode  />
+     </div> 
 </div>
 
 @code {
@@ -68,6 +74,7 @@
         get
         {
             string style =
+                GetStyle("padding") +
                 GetStyle("align-items") + 
                 GetStyle("justify-content");
             return style;
@@ -77,17 +84,27 @@
     {
         get
         {
-            string style = GetStyle("padding") + //장평조절 기능때문에 여기서 사용
-                           GetStyle("text-align") +
-                           GetStyle("word-break") +
+            string style =
+                           // GetStyle("padding") + //장평조절 기능때문에 여기서 사용(이해안됨..  다시 위에서 사용)
+
                            GetStyle("font-style") +
                            GetStyle("font-size") +
                            GetStyle("font-family") +
+
+                           GetStyle("text-align") +
                            GetStyle("color") +
                            GetStyle("line-height") +
-                           GetStyle("white-space")
+                             GetStyle("transform") +
+
+                           GetStyle("transform-origin") +
+                           GetStyle("overflow") +
+                           GetStyle("multi-line&word-wrap")
                            //todo : [고급] overflow:visible 하면 좌우 셀로 넘어가서 텍스트 표시가능
                            //visible 처리시 좌측 or 우측정렬만 활성화 시킴 
+                           // + "Width:100%;height:100%;"
+                           //letter-spacing : 글자간의 간격 조절
+                           // word-spacing : 단어간의 간격 조절
+                           // transform : scale(1.5,1.5) -> 글자크기 조절
                            ;
             return style;
         }
@@ -97,18 +114,22 @@
     {
         get
         {
-            string style = GetStyle("padding") +
+            string style = 
+                           //GetStyle("text-align") +
                            GetStyle("font-size") +
-                           GetStyle("font-style") +
-                           GetStyle("font-family") +
+                           //GetStyle("font-style") +
+                           //GetStyle("font-family") +
                            //포커스일때 기본컨트롤 스타일 삭제
                            "border:0px;"  +          
                            "box-shadow:none;" +
                            //칸이 전부 안차서 변경
                            "height:100%;" +
+                           "padding:0px;" + 
                            //일반 텍스트컨트롤과 라인높이를 맞춰줌.
                            GetStyle("line-height") +
-                           
+                           "background-color:transparent;"+
+                           "background-color:white;"+
+                           "border-radius:0px;"+
                            //리사이즈 컨트롤 삭제
                            "resize:none;";      
             return style;
@@ -155,19 +176,28 @@
 
         }
     }
-   
-    void OnPointerDown(PointerEventArgs e, string value)
+
+    async Task OnPointerDown(PointerEventArgs e)
     {
-        if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
-            return;                  
-        Options.EventStartObject = this;
         Logger.Instance.Write("");
-
-
-        if(value == "EditArea")
+        // 1. NULL 일경우
+        // 2. 부모에서 전파된게 아닐 경우
+        // 3. 같은 셀일 경우는 예외
+        if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
         {
-            return; 
+            if(Options.EventStartObject is Cell)
+            {
+                var cell = Options.EventStartObject as Cell;
+                cell.Model.IsEditMode = false;
+            }
+            else
+            {
+                return;
+            }
         }
+        Options.EventStartObject = this;
+        Logger.Instance.Write("EventStartObject");
+
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
@@ -211,12 +241,41 @@
         if(e.Key.Contains("Escape"))
         {
             Logger.Instance.Write("Editor - Escape");
-            
-        this.Model.IsEditMode = false;
-        Options.State = DesignerOptionService.ActionState.None;
-            this.StateHasChanged();            
 
+            this.Model.IsEditMode = false;
+            Options.State = DesignerOptionService.ActionState.None;
+            this.StateHasChanged();
+            parent.CallRazorComponent("SelectControl");
         }
     }
-    //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
+
+
+
+
+
+
+
+
+    private async Task SetEditMode()
+    {
+        
+    Logger.Instance.Write("");
+        if (this.Model.Locked is true)
+        {
+            Logger.Instance.Write("Locked!!");
+            return;
+        }
+
+        this.Model.IsEditMode = true;
+        Options.State = DesignerOptionService.ActionState.Edit;
+        DragService.Hidden = true;
+        while (this.textArea == null)
+            await Task.Delay(10);
+
+        await this.textArea.Element.FocusAsync();
+        await this.textArea.Element.FocusAsync();
+        DragService.End();
+        this.StateHasChanged();
+            Logger.Instance.Write("");
+    }
 }

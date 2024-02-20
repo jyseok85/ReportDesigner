@@ -9,24 +9,25 @@
      @* @onpointerdown:stopPropagation="true" *@
 <div class="component"
      tabindex="@Model.TabIndex"
+     id = "@Model.Uid"
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @ondblclick="@( (x) => OnDbClick(x))"
-     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
-                            GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index"))
-     >
+     @onkeydown="@( (x) => OnKeyDown(x))"
+     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") +
+     GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index") + "ime-mode:active;")>
      <CascadingValue Value="this">
         @* 드래그나 잠겨있거나 텍스트 입력할때 수정영역이 안보이게 하기 위해서 *@
         @if(DragService.Hidden && Model.Locked == false && this.Model.IsEditMode == false)
         {
-            <ResizeArea @ref=ResizeArea></ResizeArea>
+            <ResizeArea @ref=ResizeArea Hidden=@(Model.Selected == true ? false : true )></ResizeArea>
         }
      </CascadingValue>
     <div class="overlay-text" hidden=@HiddenControl>
-        visiblity : hidden
+        visibility : hidden
      </div>
 
      <div class="component-text" style=@(OuterTextStyle)>
-        <div class="component-text-inner" style=@(InnerTextStyle)>
+        <div @ref=innerText class ="component-text-inner" style=@(InnerTextStyle)>
             @Model.Text
          </div>
      </div>
@@ -78,16 +79,18 @@
         width: 100%;
         position: absolute;
         border-radius: 0px;
+        line-height:1;
     }
 </style>
 @code {
-
+    ElementReference innerText;
     public string OuterTextStyle
     {
         get
         {
             string style =
-                GetStyle("align-items") + 
+                GetStyle("align-items") +
+                GetStyle("padding") + 
                 GetStyle("justify-content");
             return style;
         }
@@ -96,14 +99,22 @@
     {
         get
         {
-            string style = GetStyle("padding") + //장평조절 기능때문에 여기서 사용
-                           GetStyle("text-align") +
-                           GetStyle("word-break") +
+            string style =
                            GetStyle("font-style") +
                            GetStyle("font-size") +
                            GetStyle("font-family") +
+                           GetStyle("text-align") +
                            GetStyle("color") +
-                           GetStyle("white-space")
+                           GetStyle("line-height") +
+                           GetStyle("transform") +
+                           GetStyle("letter-spacing") + 
+                           GetStyle("transform-origin") + 
+                           //GetStyle("overflow") +
+                           GetStyle("overflow-text") +
+                           //letter-spacing : 글자간의 간격 조절
+                           //debug
+                           "background-color:green;" + 
+                           "ime-mode:active;"
                            ;
             return style;
         }
@@ -234,12 +245,32 @@
         if(e.Key.Contains("Escape"))
         {
             Logger.Instance.Write("Editor - Escape");
-            
-        this.Model.IsEditMode = false;
-        Options.State = DesignerOptionService.ActionState.None;
+
+            this.Model.IsEditMode = false;
+            Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();            
 
         }
     }
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+
+    }
+
+    private void OnResized()
+    {
+        if(this.Model.Paragraph.AutoFitText)
+        {
+            //this.Model.
+        }
+        this.StateHasChanged();
+    }
     //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
+
+
+    //현재 컨트롤의 사이즈와 component-text-inner 자식 컨트롤의 크기를 비교하는 함수
+
+  
+
+
 }

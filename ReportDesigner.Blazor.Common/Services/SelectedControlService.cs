@@ -157,6 +157,51 @@ namespace ReportDesigner.Blazor.Common.Services
             Logger.Instance.Write("Control Copied");
 
         }
-        
+
+
+        public async Task UpdateInnerTextControlScale()
+        {
+
+            //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
+            var value = await JsRuntime.InvokeAsync<float>("GetInnerTextWidth", this.LastSelectModel.Uid);
+
+            int scale = (int)(LastSelectModel.Width / value * 100);
+
+            var paragraph = this.LastSelectModel.Paragraph;
+
+            int targetScale = scale;
+            if (paragraph.MaxScale > scale && paragraph.MinScale < scale)
+            {
+                targetScale = scale;
+            }
+            else if (paragraph.MaxScale < scale)
+            {
+                targetScale = paragraph.MaxScale;
+            }
+            else if (paragraph.MinScale > scale)
+            {
+                targetScale = paragraph.MinScale;
+            }
+
+            if(targetScale < paragraph.MinScale)
+            {
+                targetScale = paragraph.MinScale;
+            }   
+
+            if(targetScale > paragraph.MaxScale)
+            {
+                targetScale = paragraph.MaxScale;
+            }   
+
+            paragraph.CurrentScale = targetScale;
+
+            Console.WriteLine($"Ratio : {paragraph.CurrentScale}");
+
+
+            //this.selectedControlService.LastSelectModel.Paragraph.CurrentScale = (int)(this.Width / value * 100);
+
+        }
+
+
     }
 }

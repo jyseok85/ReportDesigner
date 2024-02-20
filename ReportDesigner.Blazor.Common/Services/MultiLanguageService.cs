@@ -12,6 +12,7 @@ namespace ReportDesigner.Blazor.Common.Services
         {
             // if (this.initialized)
             //     text = LanguageManager.Instance.DD(text);
+
             return text;
         }
     }

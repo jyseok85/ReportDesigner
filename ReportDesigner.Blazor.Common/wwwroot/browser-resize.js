@@ -42,6 +42,11 @@ window.getEventTarget = (event) => {
     return event.target.id;
 }
 
+window.GetInnerTextWidth = function (parentId) {
+    var parent = document.getElementById(parentId);
+    var childWidth = parent.querySelector('.component-text-inner').offsetWidth;
+    return childWidth;
+}
 
 //window.initResizeObserver = function (elementRef) {
 //    const element = elementRef.current;

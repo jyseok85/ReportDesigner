@@ -1,0 +1,531 @@
+﻿
+
+@inherits PropertyBase
+@inject DesignerCSSService CSS
+@inject DesignerOptionService Options
+@inject SelectedControlService SelectedControlService
+@inject MultiLanguageService DD
+
+<RadzenPanelMenuItem Text="Paragraph" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
+    <div class="side-panel-contents-background">
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName">Text Alignment</RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-2nd">Vertical </RadzenText>
+                <RadzenSelectBar @bind-Value=@TextAlignVertical TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
+                    <Items>
+                        <RadzenSelectBarItem Icon="vertical_align_top" Value="0" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="vertical_align_center" Value="1" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
+                        <RadzenSelectBarItem Icon="vertical_align_bottom" Value="2" Style="padding:0.2rem;" Disabled=@fixVerticalAlign />
+                    </Items>
+                </RadzenSelectBar>
+            </RadzenStack>
+        </RadzenStack>
+        <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+            <RadzenText class="property-displayName"></RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName-2nd">Horizontal </RadzenText>
+                <RadzenSelectBar @bind-Value=@TextAlignHorizontal TValue="int" class="d-flex selectbar-icon-only" Size="ButtonSize.ExtraSmall" Disabled=Locked>
+                    <Items>
+                        <RadzenSelectBarItem Icon="format_align_left" Value="3" Style="padding:0.2rem;" />
+                        <RadzenSelectBarItem Icon="format_align_center" Value="4" Style="padding:0.2rem;" Disabled=@fixHorizontalAlign />
+                        <RadzenSelectBarItem Icon="format_align_right" Value="5" Style="padding:0.2rem;"  Disabled=@fixHorizontalAlign/>
+                        <RadzenSelectBarItem Icon="format_align_justify" Value="6" Style="padding:0.2rem;" Disabled=@(fixHorizontalAlign || IsDisabledHorizontalAlignControlState())/>
+
+                    </Items>
+                </RadzenSelectBar>
+            </RadzenStack>
+        </RadzenStack>
+        
+        @if (Options.ExpertiseMode)
+        { 
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">@DD.DD("Line Height")</RadzenText>
+                <div style="background-color:#fafafa; border-radius:0.3rem;">
+                    <RadzenText Style="min-width:2rem;text-align:center;margin:0.2rem;">@LineHeight</RadzenText>
+                </div>
+                <RadzenSlider @bind-Value=@LineHeight TValue="double" Step="0.1" Min="1" Max="3" Style="margin:0 0.5rem 0 0.5rem;"/>            
+            </RadzenStack>
+
+             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">@DD.DD("Character Spacing")</RadzenText>
+                <div class="d-flex" style="background-color:#fafafa; border-radius:0.3rem;">
+                    <RadzenText Style="min-width:1rem;text-align:right;margin:0.2rem;">@CharacterSpacing</RadzenText>
+                <RadzenText Style="min-width:1rem;max-width:1rem;text-align:left;margin:0.2rem 0 0.2rem 0;">px</RadzenText>
+                </div>
+                <RadzenSlider @bind-Value=@CharacterSpacing TValue="double" Step="1" Min="-2" Max="2" Style="margin:0 0.5rem 0 0.5rem;" />
+            </RadzenStack>
+
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="@CSS.JustifyContent" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">@DD.DD("Overflow Text")</RadzenText>
+                <RadzenDropDown class="property-item property-dropdown" 
+                                AllowClear="false" AllowFiltering="false" @bind-Value=@OverFlowText Data="@(Enum.GetValues(typeof(OverFlowText)).Cast<Enum>())" 
+                                PopupStyle=@CSS.DropDownPopupStyle Disabled=@(Locked || IsDisabledOverFlowTextControlState())>
+                    <Template>
+                        @(DD.DD(context.ToString()))
+                    </Template>
+                </RadzenDropDown>
+            </RadzenStack>
+
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">@DD.DD("Multi Line")</RadzenText>
+                <RadzenCheckBox @bind-Value=MultiLine Name="Multi Line" Disabled=Locked />
+            </RadzenStack>
+
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">@DD.DD("Auto Fit Text")</RadzenText>
+                <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenSelectBar @bind-Value=@AutoFitText TValue="bool" class="d-flex" Size="ButtonSize.ExtraSmall" Disabled=Locked>
+                        <Items>
+                            <RadzenSelectBarItem Text="On" Value="true" Style="min-width:3rem;text-align:center;"/>
+                            <RadzenSelectBarItem Text="Off" Value="false" Style="min-width:3rem;text-align:center;" />
+                        </Items>
+                    </RadzenSelectBar>
+                </RadzenStack>
+            </RadzenStack>
+            @if(AutoFitText)
+            {
+                <div style="background-color:#fafafa; border-radius:0.5rem; padding:0.2rem 0 0.2rem 0;">
+                    <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                        <RadzenText class="property-displayName property-sub">@DD.DD("Maximum Scale") </RadzenText>
+                        <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" @bind-Value=@MaximumScale Change=@(args => OnScaleChanged("max", args))></RadzenNumeric>
+                    </RadzenStack>
+
+                    <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                        <RadzenText class="property-displayName property-sub">@DD.DD("Minimum Scale") </RadzenText>
+                        <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" @bind-Value=@MinimumScale Change=@(args => OnScaleChanged("min", args))></RadzenNumeric>
+                    </RadzenStack>
+                </div>
+            }
+        }
+    </div>
+</RadzenPanelMenuItem>
+
+
+@code {
+    /// <summary>
+    /// 조건이 많이 복잡하다. 조건이 걸린이유는 당연히 지원하지 않기 때문이다. 
+    /// </summary>
+
+    //자동 폰트크기 조절(줄어듬)(안씀)  
+    //문자 간격 = 0(매우좁게 , 좁게 , 보통 , 넓게 , 매우넓게, 수동)
+    //줄 간격 = (1, 1.5, 2, 2.5, 3, 수동)
+    //자동 줄바꿈(기본 사용 안함)(DR 기본 값)
+    //멀티 라인(enter 개행사용)(DR 기본 값)
+    //자동 비율 줄어듬 : On, Off
+    //기본 비율 : 100
+    //최소 비율 : 50
+    //각도 조절(라벨전용)(모양에 있어야 할듯.)
+
+    bool fixVerticalAlign = false;
+    bool fixOverFlowText = false;
+    bool fixHorizontalAlign = false;
+    List<FontModel> fontList = new List<FontModel>();
+    List<string> lineHeightList = new List<string>();
+    List<string> characterSpacingList = new List<string>();
+    private OverFlowText beforeOverFlowTextState = OverFlowText.Visible;
+
+
+    private bool AutoFitText
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.AutoFitText;
+            else
+                return false;
+        }
+        set
+        {
+            if(value == true)
+            {
+                OverFlowText = OverFlowText.Visible;
+
+                if(TextAlignHorizontal == 6)
+                {
+                    TextAlignHorizontal = 3;
+                }
+            }
+
+            SelectedControlService.CurrentSelectedModel.Paragraph.AutoFitText = value;
+            Options.RefreshBody();
+        }
+    }
+    private double LineHeight
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                return SelectedControlService.CurrentSelectedModel.Paragraph.LineHeight;
+            }
+            else
+                return 1;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Paragraph.LineHeight = value;
+            Options.RefreshBody();
+
+        }
+    }
+
+    private double CharacterSpacing
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+            {
+                return SelectedControlService.CurrentSelectedModel.Paragraph.CharacterSpacing;
+            }
+            else
+                return 0;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Paragraph.CharacterSpacing = value;
+            Options.RefreshBody();
+
+        }
+    }
+    private bool Locked
+    {
+        get { return SelectedControlService.CurrentSelectedModel.Locked; }
+    }
+    private bool WordWrap
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.WordWrap;
+            else
+                return false;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Paragraph.WordWrap= value;
+            Options.RefreshBody();
+        }
+    }
+    private bool MultiLine
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.MultiLine;
+            else
+                return false;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Paragraph.MultiLine = value;
+            RefreshUIState();
+            Options.RefreshBody();
+        }
+    }
+    //todo : enum 값으로 변경할 필요가 있다. 
+    private int TextAlignHorizontal
+    {
+        get
+        {
+            int textAlignHorizontal = 3;
+            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
+                return textAlignHorizontal;
+
+            string horizontalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment;
+            switch (horizontalAlign)
+            {
+                case "start":
+                    textAlignHorizontal = 3; break;
+                case "center":
+                    textAlignHorizontal = 4; break;
+                case "end":
+                    textAlignHorizontal = 5; break;
+                case "justify":
+                    textAlignHorizontal = 6;
+                    SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
+                    fixVerticalAlign = true;
+                    TextAlignVertical = 0;
+                    break;
+            }
+            return textAlignHorizontal;
+        }
+        set
+        {
+
+
+            var currentAlign = SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment;
+            //동일한 값이라면 리턴
+            if(currentAlign == "justify" && value == 6)
+            {
+                return;
+            }
+
+            if(currentAlign == "justify" && value != 6)
+            {   //이전값으로 되돌려준다. 
+                OverFlowText = beforeOverFlowTextState;
+            }
+
+            string str = string.Empty;
+            fixVerticalAlign = false;
+            if (value == 3)
+                str = "start";
+            else if (value == 4)
+                str = "center";
+            else if (value == 5)
+                str = "end";
+            else if (value == 6)
+            {
+                beforeOverFlowTextState = OverFlowText;
+
+                str = "justify";
+                SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = "start";
+
+                TextAlignVertical = 0;
+
+                //양쪽맞춤 기능은 자동줄바꿈 속성이 있을 경우 동작하지 않는다.
+                SelectedControlService.CurrentSelectedModel.Paragraph.WordWrap = true;
+                OverFlowText = OverFlowText.WordWrap;
+            }
+            SelectedControlService.CurrentSelectedModel.Paragraph.HorizontalAlignment = str;
+            Options.RefreshBody();
+        }
+    }
+    private int TextAlignVertical
+    {
+        get
+        {
+            int textAlignVertical = 1;
+            if (SelectedControlService is null || SelectedControlService.CurrentSelectedModel is null)
+                return textAlignVertical;
+
+            string verticalAlign = SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment;
+            switch (verticalAlign)
+            {
+                case "start":
+                    textAlignVertical = 0; break;
+                case "center":
+                    textAlignVertical = 1; break;
+                case "end":
+                    textAlignVertical = 2; break;
+            }
+            return textAlignVertical;
+        }
+        set
+        {
+            string str = string.Empty;
+            switch (value)
+            {
+                case 0: str = "start"; break;
+                case 1: str = "center"; break;
+                case 2: str = "end"; break;
+            }
+            SelectedControlService.CurrentSelectedModel.Paragraph.VerticalAlignment = str;
+            Options.RefreshBody();
+        }
+    }
+    public async void OnScaleChanged(string target, int value)
+    {
+        if(target == "max")
+        {
+            int scale = (int)value;
+
+            if (scale < MinimumScale)
+                scale = MinimumScale;
+
+            SelectedControlService.CurrentSelectedModel.Paragraph.MaxScale = scale;
+        }
+        else
+        {
+            int scale = (int)value;
+
+            if (scale > MaximumScale)
+                scale = MaximumScale;
+
+            SelectedControlService.CurrentSelectedModel.Paragraph.MinScale = scale;
+        }
+
+        await SelectedControlService.UpdateInnerTextControlScale();
+        Options.RefreshBody();
+    }
+    private int MaximumScale
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.MaxScale;
+            else
+                return 100;
+        }
+        set
+        {
+            // int maxScale = (int)value;
+            // SelectedControlService.CurrentSelectedModel.Paragraph.MaxScale = maxScale;
+            // //SelectedControlService.CurrentSelectedModel.Paragraph.CurrentScale = maxScale;
+            // Task a = Task.Factory.StartNew(async () =>            
+            // {
+                
+            // });
+
+            // a.Wait();
+            // Console.WriteLine($"Ratio2 : {SelectedControlService.CurrentSelectedModel.Paragraph.CurrentScale}");
+            // Options.RefreshBody();
+
+
+
+
+            //헷깔리네
+        }
+    }
+    private int MinimumScale
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.MinScale;
+            else
+                return 50;
+        }
+        set
+        {
+            int minScale = (int)value;
+            SelectedControlService.CurrentSelectedModel.Paragraph.MinScale = minScale;
+
+
+
+                // await SelectedControlService.UpdateInnerTextControlScale();
+            Options.RefreshBody();
+        }
+    }
+
+    private OverFlowText OverFlowText
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.Paragraph.OverFlowText;
+            else
+                return OverFlowText.Visible;
+        }
+        set
+        {
+            SelectedControlService.CurrentSelectedModel.Paragraph.OverFlowText = value;
+
+            RefreshUIState();
+            Options.RefreshBody();
+        }
+    }
+
+    private bool IsDisabledOverFlowTextControlState()
+    {
+        if (TextAlignHorizontal == 6 || AutoFitText)
+            return true;
+        else
+            return false;
+    }
+
+
+    private bool IsDisabledHorizontalAlignControlState()
+    {
+        if (AutoFitText)
+            return true;
+        else
+            return false;
+    }
+    private void RefreshUIState()
+    {
+        fixHorizontalAlign = false;
+
+        if (OverFlowText == OverFlowText.Clip || OverFlowText == OverFlowText.Ellipsis)
+        {
+            if(MultiLine == false)
+            {
+                fixHorizontalAlign = true;
+                TextAlignHorizontal = 0;
+            }
+        }
+        this.StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();    
+    }
+
+
+    #region 장평조절 예제. 테스트 결과 정상동작함.
+    //     <div class="parent-container">
+    //         <p class="dynamic-text">동적으로 조절되는 텍스트</p>
+    //     </div>
+
+    //     <style>
+    //         .parent-container {
+    //             width: 80vw;
+    //             border: 1px solid #ccc;
+    //             overflow: hidden;
+    //         }
+
+    //         .dynamic-text {
+    //             white-space: nowrap;
+    //             margin: 0;
+    //             transform-origin: left center; /* 글자의 확대/축소 기준을 왼쪽 가운데로 설정 */
+    //             transition: transform 0.2s ease; /* 부드러운 크기 전환을 위한 트랜지션 설정 */
+    //         }
+    //     </style>
+
+    //     <script>
+    //         const parentContainer = document.querySelector('.parent-container');
+    //         const dynamicText = document.querySelector('.dynamic-text');
+
+    //         function adjustTextScale() {
+    //             const parentWidth = parentContainer.clientWidth;
+    //             const textWidth = dynamicText.scrollWidth;
+
+    //             // 글자의 너비가 부모의 너비를 초과하는 경우에만 조절
+    //             if (textWidth > parentWidth) {
+    //                 const scale = parentWidth / textWidth;
+
+    //                 dynamicText.style.transform = `scale(${scale})`;
+    //             } else {
+    //                 dynamicText.style.transform = 'scale(1)';
+    //             }
+    //         }
+
+    //         // 페이지 로드 시 초기 조절
+    //         adjustTextScale();
+
+    //         // 창 크기가 변경될 때마다 조절
+    //         window.addEventListener('resize', adjustTextScale);
+    //     </script>
+    #endregion
+
+
+    //todo : 실제 컨트롤의 사이즈가 부모의 사이즈보다 클 경우 조절해준다.
+
+    //
+    /// <summary>
+    /// 실제 텍스트 영역 사이즈가 부모사이즈보다 클 경우 비율을 계산하는 함수
+    /// </summary>
+    private void AdjustTextScale()
+    {
+        //모델 사이즈에서 마진을 빼고
+
+        // //현재 클라이언트 를 가져와서 그 길이 로 나눈값을 스케일로 조절해주면 된다.
+        // var a = document.getElementById("f1dfe062-0e89-4653-aa7d-6325e301bbd2")
+        // a.querySelector('.component-text-inner').offsetWidth
+        // // const parentWidth = parentContainer.clientWidth;
+        // const textWidth = dynamicText.scrollWidth;
+
+        // // 글자의 너비가 부모의 너비를 초과하는 경우에만 조절
+        // if (textWidth > parentWidth) {
+        //    const scale = parentWidth / textWidth;
+
+        //    dynamicText.style.transform = `scale(${scale})`;
+        // } else {
+        //    dynamicText.style.transform = 'scale(1)';
+        // }
+    }
+
+}
+
+
+

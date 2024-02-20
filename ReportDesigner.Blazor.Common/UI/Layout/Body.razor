@@ -87,14 +87,17 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         CreationService.CSS = CSS;
     }
 
+    bool firstRendered = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+
         //자바스크립트에서 .Net을 호출하기 위한 객체 전달
         var lDotNetReference = DotNetObjectReference.Create(this);
         await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
 
         //브라우저 사이즈시 콜백 추가
         await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
+        firstRendered = true;
     }
 
     [JSInvokable]
@@ -114,6 +117,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private void PaperSizeChanged(object? sender, int delay = 0)
     {
+
         Task.Factory.StartNew(async () =>
         {
             if(sender is not null)
@@ -221,6 +225,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             //사이즈조절 컨트롤 구분필요.
             ResizeService.ActionEnd();
             StateHasChanged();
+            ResizeService.ActionExit();
         }
         else if(Options.State == DesignerOptionService.ActionState.GridResize)
         {
