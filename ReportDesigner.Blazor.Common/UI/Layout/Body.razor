@@ -87,17 +87,21 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         CreationService.CSS = CSS;
     }
 
-    bool firstRendered = false;
+    /// <summary>
+    /// 마우스를 움직일때마다 매번 호출되고 있다. 
+    /// </summary>
+    /// <param name="firstRender"></param>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            //자바스크립트에서 .Net을 호출하기 위한 객체 전달
+            var lDotNetReference = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
 
-        //자바스크립트에서 .Net을 호출하기 위한 객체 전달
-        var lDotNetReference = DotNetObjectReference.Create(this);
-        await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
-
-        //브라우저 사이즈시 콜백 추가
-        await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
-        firstRendered = true;
+            //브라우저 사이즈시 콜백 추가
+            await JsRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
+        }
     }
 
     [JSInvokable]

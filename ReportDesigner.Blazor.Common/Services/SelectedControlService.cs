@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.Model;
@@ -165,7 +166,8 @@ namespace ReportDesigner.Blazor.Common.Services
             //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
             var value = await JsRuntime.InvokeAsync<float>("GetInnerTextWidth", this.LastSelectModel.Uid);
 
-            int scale = (int)(LastSelectModel.Width / value * 100);
+            int targetWidth = (LastSelectModel.Width - (CSS.DefaultPadding * 2));
+            int scale = (int)( targetWidth / value * 100);
 
             var paragraph = this.LastSelectModel.Paragraph;
 
