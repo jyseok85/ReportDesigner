@@ -1,8 +1,8 @@
 ﻿@inject DesignerOptionService Options
 @inject DesignerCSSService CSS
-@inject MultiLanguageService DD
-@inject ControlResizeService ResizeService
-@inject SelectedControlService SelectedControlService
+@inject LanguageService DD
+@inject ResizingService ResizeService
+@inject SelectionService SelectedControlService
 
 <RadzenSidebar class="rz-right-sidebar" @bind-Expanded="@showSidePanel" Style="border-left:solid 1px lightgray;user-select: none">
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Stretch" JustifyContent="JustifyContent.SpaceBetween" Style="height:100%;gap:0;">

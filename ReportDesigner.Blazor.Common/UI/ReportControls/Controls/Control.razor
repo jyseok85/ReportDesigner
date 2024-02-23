@@ -1,6 +1,6 @@
 ﻿@inherits ControlBase
-@inject SelectedControlService SelectedControlService
-@inject ControlResizeService ResizeService
+@inject SelectionService SelectionService
+@inject ResizingService ResizeService
 @inject DragAndDropService DragService
 @inject DesignerOptionService Options
 @inject DesignerCSSService CSS
@@ -154,7 +154,7 @@
         else
         {
             StateHasChanged();
-            SelectedControlService.OnPointerDown(e, this.Model, this);
+            SelectionService.OnPointerDown(e, this.Model, this);
             //ResizeArea.UpdateElementSize();
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?

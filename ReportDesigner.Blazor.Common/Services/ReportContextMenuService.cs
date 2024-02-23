@@ -13,13 +13,13 @@ namespace ReportDesigner.Blazor.Common.Services
     public class ReportContextMenuService
     {
         [Inject]
-        public required SelectedControlService SelectedControlService { get; set; }
+        public required SelectionService SelectedControlService { get; set; }
 
         [Inject]
         public required ContextMenuService ContextMenuService { get; set; }
 
         [Inject]
-        public required ControlCreationService ControlCreationService { get; set; }
+        public required CreationService ControlCreationService { get; set; }
 
         [Inject]
         public required DesignerOptionService Options { get; set; }

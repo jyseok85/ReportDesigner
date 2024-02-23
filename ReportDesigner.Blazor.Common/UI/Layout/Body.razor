@@ -1,13 +1,13 @@
 ﻿@page "/body"
 @using Microsoft.JSInterop;
 @inject DesignerOptionService Options
-@inject ControlCreationService CreationService
-@inject SelectedControlService SelectedControlService
-@inject ControlResizeService ResizeService
-@inject GridResizeService GridResizeService
+@inject CreationService CreationService
+@inject SelectionService SelectedControlService
+@inject ResizingService ResizeService
+@inject GridResizingService GridResizeService
 @inject DragAndDropService DragService
-@inject ReportContextMenuService ReportContextMenuService
-@inject ContextMenuService ContextMenuService
+@inject             Services.ReportContextMenuService ReportContextMenuService
+@inject             Radzen.ContextMenuService ContextMenuService
 @inject DialogService DialogService
 @inject DesignerCSSService CSS
 @inject IClipboardService ClipboardService

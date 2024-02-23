@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
-    public class MultiLanguageService
+    public class LanguageService
     {
         public string DD(string text)
         {

@@ -10,12 +10,12 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
     public class BandBase : ComponentBase
     {
         [Inject]
-        ControlCreationService CreationService { get; set; }
+        CreationService CreationService { get; set; }
 
         [Inject]
-        ControlResizeService ModificationServcie { get; set; }
+        ResizingService ModificationServcie { get; set; }
         [Inject]
-        SelectedControlService SelectedService { get; set; }
+        SelectionService SelectedService { get; set; }
 
         [Inject]
         DragAndDropService DragService { get; set; }

@@ -1,6 +1,6 @@
 ﻿@inherits PropertyBase
 @inject DesignerOptionService Options
-@inject SelectedControlService SelectedControlService
+@inject SelectionService SelectedControlService
 @inject DesignerCSSService CSS
 
 <RadzenPanelMenuItem Text="Layout" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">

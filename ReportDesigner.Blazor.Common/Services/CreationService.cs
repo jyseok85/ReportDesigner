@@ -17,10 +17,10 @@ using static ReportDesigner.Blazor.Common.Data.BaseClass.BandBase;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
-    public class ControlCreationService
+    public class CreationService
     {
         [Inject]
-        public required SelectedControlService SelectedControlService { get; set; }
+        public required SelectionService SelectedControlService { get; set; }
         [Inject]
         public required DesignerCSSService CSS { get; set; }
         public int Width { get; set; } = 100;

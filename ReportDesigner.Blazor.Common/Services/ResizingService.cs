@@ -5,14 +5,14 @@ using ReportDesigner.Blazor.Common.Utils;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
-    public class ControlResizeService
+    public class ResizingService
     {
-        private readonly SelectedControlService selectedControlService;
+        private readonly SelectionService selectedControlService;
         private readonly DesignerCSSService? css;
         private readonly IJSRuntime JsRuntime;
 
-        public ControlResizeService(
-            SelectedControlService selectedControlService, DesignerCSSService? css, IJSRuntime jSRuntime)
+        public ResizingService(
+            SelectionService selectedControlService, DesignerCSSService? css, IJSRuntime jSRuntime)
         {
             this.selectedControlService = selectedControlService;
             this.css = css;

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace ReportDesigner.Blazor.Common.Services
 {
 
-    public class SelectedControlService
+    public class SelectionService
     {
         [Inject]
         public required DesignerOptionService Options { get; set; }
@@ -20,7 +20,7 @@ namespace ReportDesigner.Blazor.Common.Services
         [Inject]
         public required IJSRuntime JsRuntime { get; set; }
 
-        public SelectedControlService(DesignerOptionService optionService, DesignerCSSService css, IJSRuntime jsRuntime)
+        public SelectionService(DesignerOptionService optionService, DesignerCSSService css, IJSRuntime jsRuntime)
         {
             this.Options = optionService;
             this.CSS = css;

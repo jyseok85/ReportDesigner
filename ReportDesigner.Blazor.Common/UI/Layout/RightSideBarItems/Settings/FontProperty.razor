@@ -1,8 +1,8 @@
 ﻿@inherits PropertyBase
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
-@inject SelectedControlService SelectedControlService
-@inject MultiLanguageService DD
+@inject SelectionService SelectedControlService
+@inject LanguageService DD
 
 
 <RadzenPanelMenuItem Text="Font" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">

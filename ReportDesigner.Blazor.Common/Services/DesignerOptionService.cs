@@ -27,7 +27,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public bool ExpertiseMode { get; set; } = true;
 
         [Inject]        
-        public required SelectedControlService SelectedControl { get; set; }
+        public required SelectionService SelectedControl { get; set; }
 
         public Margin PaperMargin { get; set; } = new Margin(38,38,38,38);
 

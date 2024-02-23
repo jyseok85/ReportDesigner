@@ -16,13 +16,13 @@ namespace ReportDesigner.Blazor.Common.Services
     /// 워드, PPT를 보면 가로 셀 간격을 조절할경우 사이즈 추가 없이 각 셀의 영역이 변경되지만
     /// 세로 셀 간격을 조절할경우 현재 셀의 크기를 변경하고, 다른 Row는 영향이 없다. 
     /// </summary>
-    public class GridResizeService
+    public class GridResizingService
     {
-        private readonly SelectedControlService selectedControlService;
+        private readonly SelectionService selectedControlService;
         private readonly DesignerCSSService css;
 
-        public GridResizeService(
-            SelectedControlService selectedControlService, DesignerCSSService css)
+        public GridResizingService(
+            SelectionService selectedControlService, DesignerCSSService css)
         {
             this.selectedControlService = selectedControlService;
             this.css = css;

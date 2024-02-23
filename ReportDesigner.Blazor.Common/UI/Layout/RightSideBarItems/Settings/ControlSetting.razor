@@ -1,6 +1,6 @@
 ﻿@inherits PropertyBase
 @inject DesignerCSSService CSS
-@inject MultiLanguageService DD
+@inject LanguageService DD
 @inject DesignerOptionService Options
 <RadzenPanelMenuItem Text="Control" Icon="description" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
     <div class="side-panel-contents-background">
