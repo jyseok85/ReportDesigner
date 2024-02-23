@@ -8,100 +8,37 @@
 
 <div class="component"
      tabindex="@Model.TabIndex"
-     id = "@Model.Uid"
+     id="@Model.Uid"
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @ondblclick="@( (x) => OnDbClick(x))"
      @onkeydown="@( (x) => OnKeyDown(x))"
-     style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") +
-     GetStyle("border")+ GetStyle("background-color") + GetStyle("z-index") + "ime-mode:active;")>
-     <CascadingValue Value="this">
-        @* 드래그나 잠겨있거나 텍스트 입력할때 수정영역이 안보이게 하기 위해서 *@
-        @if(DragService.Hidden && Model.Locked == false && this.Model.IsEditMode == false)
-        {
-            <ResizeArea @ref=ResizeArea Hidden=@(Model.Selected == true ? false : true )></ResizeArea>
-        }
-     </CascadingValue>
-    <div class="overlay-text" hidden=@HiddenControl>
-        visibility : hidden
-     </div>
+     style=@GetComponentStyle()>
 
-     <div class="component-text" style=@(OuterTextStyle)>
-        <div @ref=innerText class ="component-text-inner" style=@(InnerTextStyle) >
+    @if (IsShowResizeArea())
+    {
+        <CascadingValue Value="this">
+            <ResizeArea Hidden=@(Model.Selected == true ? false : true )></ResizeArea>
+        </CascadingValue>
+    }
+    <div class="overlay-text" hidden=@(this.Model.Hidden == true ? false : true)>visibility : hidden</div>
+
+    <div class="component-text" style=@GetDisplayTextStyle(true)>
+        <div class="component-text-inner" style=@GetDisplayTextStyle(false)>
             @Model.Text
-         </div>
-     </div>
-     <RadzenTextArea @ref=textArea
-        @ondrag:stopPropagation="true"
-        @onpointerdown:stopPropagation="true"
-        @onpointerup:stopPropagation="true"
-        @onkeydown:stopPropagation="true"
-        @onkeyup=OnEditorKeyUp
-        class="w-100 component-text-input"
-                    Style=@InputTextStyle hidden=@HiddenEditMode  
+        </div>
+    </div>
+    <RadzenTextArea @ref=textArea
+                    @ondrag:stopPropagation="true"
+                    @onpointerdown:stopPropagation="true"
+                    @onpointerup:stopPropagation="true"
+                    @onkeydown:stopPropagation="true"
+                    @onkeyup=OnEditorKeyUp 
+                    class="w-100"
+                    Style=@GetInputTextStyle() hidden=@(this.Model.IsEditMode == true ? false : true)
                     Change=@(args => OnChange(args, "TextArea with 3 rows and 30 columns")) />
 </div>
 
 @code {
-    ElementReference innerText;
-    public string OuterTextStyle
-    {
-        get
-        {
-            string style =
-                GetStyle("align-items") +
-                GetStyle("padding") + 
-                GetStyle("justify-content");
-            return style;
-        }
-    }
-    public string InnerTextStyle
-    {
-        // //패딩 변경해야함.
-        get
-        {
-            string style =
-                           GetStyle("font-style") +
-                           GetStyle("font-size") +
-                           GetStyle("font-family") +
-                           GetStyle("text-align") +
-                           GetStyle("color") +
-                           GetStyle("line-height") +
-                           GetStyle("transform") +
-                           GetStyle("transform-origin") + 
-                           GetStyle("letter-spacing") + 
-                           //GetStyle("overflow") +
-                           GetStyle("overflow-text") +
-                           //letter-spacing : 글자간의 간격 조절
-                           //debug
-                           "background-color:green;" 
-                           ;
-            return style;
-        }
-    }
-
-    public string InputTextStyle
-    {
-        get
-        {
-            string style = GetStyle("padding") +
-                           GetStyle("font-size") +
-                           GetStyle("font-style") +
-                           GetStyle("font-family") +
-                           //포커스일때 기본컨트롤 스타일 삭제
-                           "border:0px;"  +          
-                           "box-shadow:none;" + 
-                           //리사이즈 컨트롤 삭제
-                           "resize:none;";      
-            return style;
-        }
-    }
-
-    public int Height => Model.Height;
-    public int Width => Model.Width;
-    private bool isDbClicked = false;
-    ResizeArea ResizeArea;
-
-    RadzenTextArea textArea;
     [Parameter]
     public ControlBase Base
     {
@@ -111,55 +48,197 @@
         }
     }
 
-    public bool HiddenEditMode
+    [Parameter]
+    public ReportComponentModel BaseModel
     {
-        get
+        set
         {
-            if (this.Model.IsEditMode)
-                return false;
-            else
-                return true;
-
-        }
-    }
-    public bool HiddenControl
-    {
-        get
-        {
-            if (this.Model.Hidden)
-                return false;
-            else
-                return true;
-
+            this.Model = value;
         }
     }
 
-    void OnPointerDown(PointerEventArgs e, string value)
+    [CascadingParameter]
+    public ControlBase? parent { get; set; }
+
+
+
+
+    RadzenTextArea? textArea;
+    private bool isCanceled = false;
+    private string preText = "";
+
+
+
+
+
+    /// <summary>
+    /// 내부 텍스트 사이즈 변경 이벤트 등록
+    /// </summary>
+    /// <param name="firstRender"></param>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Options.EventStartObject != null)
-            return;                  
+        if (firstRender)
+        {
+            await JsRuntime.InvokeAsync<object>("RegisterInnerTextResizeCallback", Model.Uid);
+        }
+    }
+    /// <summary>
+    /// 드래그나 잠겨있거나 텍스트 입력할때 수정영역이 안보이게 하기 위해서
+    /// </summary>
+    public bool IsShowResizeArea()
+    {
+        List<bool> conditions = new List<bool>();
+        //아래 조건중 하나라도 만족할 경우에 리사이즈 영역을 숨긴다.
+        conditions.Add(DragService.Hidden == false);
+        conditions.Add(Model.Locked == true);
+        conditions.Add(this.Model.IsEditMode == true);
+        conditions.Add(this.Model.Type == ReportComponentModel.Control.TableCell);
+
+        var isContainTrue = conditions.Find(x => x == true);
+
+        if (isContainTrue)
+            return false;
+        else
+            return true;
+    }
+    private string GetComponentStyle()
+    {
+        string style = "transform:" + GetTranslate() +
+                        GetWidthHeight() +
+                        GetStyle("border") +
+                        GetStyle("background-color") +
+                        GetStyle("z-index") +
+                       "position:absolute;" +
+                       "ime-mode:active;";
+        return style;
+
+        string GetTranslate()
+        {
+            string translate = "";
+            if (Model.Type == ReportComponentModel.Control.TableCell)
+            {
+                int row = this.Model.TableCellInfo.Row;
+                int col = this.Model.TableCellInfo.Col;
+                translate = $"translate({this.parent.Model.TableInfo.ColPositions[col]}px,{this.parent.Model.TableInfo.RowPositions[row]}px);";
+            }
+            else
+            {
+                translate = GetStyle("translate");
+            }
+            return translate;
+        }
+
+        string GetWidthHeight()
+        {
+            string size = "";
+            if (Model.Type == ReportComponentModel.Control.TableCell)
+            {
+                int row = this.Model.TableCellInfo.Row;
+                int col = this.Model.TableCellInfo.Col;
+                int width = this.parent.Model.TableInfo.ColWidths[col];
+                int height = this.parent.Model.TableInfo.RowHeights[row];
+                size = $"width:{width}px;height:{height}px;";
+            }
+            else
+            {
+                size = GetStyle("width") + GetStyle("height");
+            }
+            return size;
+        }
+    }
+    private string GetDisplayTextStyle(bool outer)
+    {
+        if (outer)
+        {
+            string style =
+                    GetStyle("align-items") +
+                    GetStyle("padding") +
+                    GetStyle("justify-content");
+            return style;
+
+        }
+        else
+        {
+            string style =
+                    GetStyle("font-style") +
+                    GetStyle("font-size") +
+                    GetStyle("font-family") +
+                    //폰트컬러
+                    GetStyle("color") +
+                    GetStyle("text-align") +
+                    GetStyle("line-height") +
+                    GetStyle("transform") +
+                    GetStyle("transform-origin") +
+                    GetStyle("letter-spacing") +
+                    GetStyle("overflow-text")
+                    //debug
+
+                    + (Options.Debugging == true ? $"background-color:{CSS.DebugStyleColor.Background}" : "")
+                    ;
+            return style;
+        }
+    }
+    private string GetInputTextStyle()
+    {
+        string style = GetStyle("padding") +
+                       GetStyle("font-size") +
+                       GetStyle("font-style") +
+                       GetStyle("font-family") +
+                       //포커스일때 기본컨트롤 스타일 삭제
+                       "border:0px;" +
+                       "border-radius:0px;" +
+                       "line-height:1;" +
+                       "position:absolute;" +
+                       "height:100%;" +
+                       "top:0;" +
+                       "box-shadow:none;" +
+                       //리사이즈 컨트롤 삭제
+                       "resize:none;";
+        return style;
+    }
+
+    private void OnPointerDown(PointerEventArgs e, string value)
+    {
+        Logger.Instance.Write("");
+        if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
+        {
+            if (Options.EventStartObject is Control)
+            {
+                var obj = Options.EventStartObject as Control;
+                obj.Model.IsEditMode = false;
+            }
+            else
+            {
+                return;
+            }
+        }
+
         Options.EventStartObject = this;
 
-        Logger.Instance.Write("");
-        if(value == "EditArea")
-        {
-            return; 
-        }
+        Logger.Instance.Write("EventStartObject");
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
-            Logger.Instance.Write("isDragAble - false");
             StateHasChanged();
         }
         else
         {
             StateHasChanged();
-            SelectionService.OnPointerDown(e, this.Model, this);
-            //ResizeArea.UpdateElementSize();
+
+            if(Model.Type == ReportComponentModel.Control.TableCell)
+            {
+                SelectionService.OnPointerDown(e, this.Model, this.parent);
+            }
+            else
+            {
+                SelectionService.OnPointerDown(e, this.Model, this);
+                
+            }
+
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
             //드래그 오브젝트에서는 마우스 이벤트를 막지 않기 때문에 거기서 부모로 이동되는듯 하네.?? 근데 아니네??
-            if (this.Model.Locked == false)
+            if (this.Model.Locked == false && this.parent is not Table)
             {
                 ResizeService.UpdateSize(this.Model.Width, this.Model.Height);
 
@@ -167,21 +246,19 @@
                 //DragService.Hidden = false;
                 Options.State = DesignerOptionService.ActionState.Drag;
             }
-            Logger.Instance.Write("isDragAble = true;");
         }
     }
 
-    public string GetStyle(string type)
+    private string GetStyle(string type)
     {
-        var style= CSS.GetModelStyle(type, this.Model);
+        var style = CSS.GetModelStyle(type, this.Model);
         return style;
     }
 
-    private bool isCanceled = false;
-    private string preText = "";
+    
     public async Task OnDbClick(MouseEventArgs args)
     {
-        Logger.Instance.Write("OnDoubleClick");
+        Logger.Instance.Write("");
         if (this.Model.Locked is true)
         {
             Logger.Instance.Write("Locked!!");
@@ -218,6 +295,10 @@
             Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();
 
+            if(this.parent is Table)
+            {
+                this.parent.CallRazorComponent("SelectControl");
+            }
         }
         if (e.CtrlKey && e.Key == "Enter")
         {
@@ -230,10 +311,10 @@
     {
 
     }
-    async void OnChange(string value, string name)
-    {        
+    private async void OnChange(string value, string name)
+    {
         Logger.Instance.Write(value);
-        if(isCanceled == true)
+        if (isCanceled == true)
             this.Model.Text = preText;
         else
             this.Model.Text = value;
@@ -242,24 +323,8 @@
         StateHasChanged();
     }
 
-    /// <summary>
-    /// 내부 텍스트 사이즈 변경 이벤트 등록
-    /// </summary>
-    /// <param name="firstRender"></param>
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JsRuntime.InvokeAsync<object>("RegisterInnerTextResizeCallback", Model.Uid);
-        }
-    }
-  
+   
+
     //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
-
-
-    //현재 컨트롤의 사이즈와 component-text-inner 자식 컨트롤의 크기를 비교하는 함수
-
-  
-
 
 }

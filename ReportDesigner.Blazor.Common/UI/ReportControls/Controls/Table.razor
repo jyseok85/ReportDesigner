@@ -31,7 +31,7 @@
         {
             var childModel = Model.Children.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
 
-            <Cell Base=childModel></Cell>     
+            <Control BaseModel=childModel></Control>     
         }
      }
      </div>

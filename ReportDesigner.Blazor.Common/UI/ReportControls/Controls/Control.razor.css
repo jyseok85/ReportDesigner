@@ -29,12 +29,3 @@
     font-style: italic;
     color: lightgray;
 }
-
-.component-text-input {
-    top: 0;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    border-radius: 0px;
-    line-height: 1;
-}

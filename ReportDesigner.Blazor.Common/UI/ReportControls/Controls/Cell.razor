@@ -253,34 +253,4 @@
             parent.CallRazorComponent("SelectControl");
         }
     }
-
-
-
-
-
-
-
-
-    private async Task SetEditMode()
-    {
-        
-    Logger.Instance.Write("");
-        if (this.Model.Locked is true)
-        {
-            Logger.Instance.Write("Locked!!");
-            return;
-        }
-
-        this.Model.IsEditMode = true;
-        Options.State = DesignerOptionService.ActionState.Edit;
-        DragService.Hidden = true;
-        while (this.textArea == null)
-            await Task.Delay(10);
-
-        await this.textArea.Element.FocusAsync();
-        await this.textArea.Element.FocusAsync();
-        DragService.End();
-        this.StateHasChanged();
-            Logger.Instance.Write("");
-    }
 }
