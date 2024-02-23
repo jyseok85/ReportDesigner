@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
+using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
 using ReportDesigner.Blazor.Common.Utils;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -193,42 +195,65 @@ namespace ReportDesigner.Blazor.Common.Services
         public async Task UpdateInnerTextControlScale(int width = 0)
         {
             var target = this.currentSelectedModel;
+            if(target.Type == ReportComponentModel.Control.None)
+            {
+                Logger.Instance.Write("Type is None");
+                return;
+            }
+
+
             //todo : 현재 밴드만 되어 있지만 추후 다른 컨트롤 예외처리 할 수도 있음.
             if (target.Type == ReportComponentModel.Control.Band)
             {
                 Logger.Instance.Write("Type is Band. Select Before Control.");
                 target = BeforeSelectedModel;
             }
-            Logger.Instance.Write($"Uid : {target.Uid}");
 
+            //테이블일 경우에는 텍스트가 당연히 없다. 그래도 혹시 모르니 추가한다. 
+            if (target.Type == ReportComponentModel.Control.Table)
+            {
+                //자식 오브젝트를 전부 업데이트 해줘야 한다....
+                foreach (var child in target.Children)
+                {
+                    if (child.Paragraph.AutoFitText)
+                    {
+                        await UpdateScale(child);
+                    }
+                }
+            }
+            else
+            {
+                if (target.Paragraph.AutoFitText)
+                {
+                    Logger.Instance.Write($"Uid : {target.Uid}");
+                    await UpdateScale(target, width);
+                }
+            }    
 
+            Options.RefreshBody();
+
+        }
+
+        public async Task UpdateScale(ReportComponentModel target, int width = 0)
+        {
             //선택한 오브젝트에 텍스트가 없는 경우
             if (target.Text == string.Empty)
             {
                 Logger.Instance.Write("Text is Empty");
                 return;
             }
-
-            //테이블일 경우에는 텍스트가 당연히 없다. 그래도 혹시 모르니 추가한다. 
-            if (target.Type == ReportComponentModel.Control.Table)
-            {
-                Logger.Instance.Write("Type is Table");
-                return;
-            }
-
-            //텍스트가 자동조절이 아닐경우에는 하지말자.
-            if (target.Paragraph.AutoFitText == false)
-            {
-                Logger.Instance.Write("AutoFitText is False");
-                return;
-            }
-
-
             //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
-            var value = await JsRuntime.InvokeAsync<float>("GetInnerTextWidth", target.Uid);
+            var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextWidth", target.Uid);
+            if (value == null)
+            {
+                Logger.Instance.Write("value is null");
+                return;
+            }
 
+            var outer = (int)value.outer;
+            var inner = (int)value.inner;
             //내부 텍스트 사이즈가 0인 경우는 무시한다.
-            if (value == 0)
+            if (inner == 0)
             {
                 Logger.Instance.Write("InnerTextWidth is 0");
                 return;
@@ -240,10 +265,14 @@ namespace ReportDesigner.Blazor.Common.Services
                 width = target.Width;
             }
 
+            if (target.Type == ReportComponentModel.Control.TableCell)
+            {
+                width = outer;
+
+            }
 
             var targetWidth = (width - (CSS.GlobalPadding * 2));
-            var scale = (int)(targetWidth / value * 100);
-
+            var scale = (int)((targetWidth * 100) / inner);
             var paragraph = target.Paragraph;
 
             var targetScale = scale;
@@ -272,14 +301,17 @@ namespace ReportDesigner.Blazor.Common.Services
 
             paragraph.CurrentScale = targetScale;
 
-            Logger.Instance.Write($"Ratio : {paragraph.CurrentScale}");
+            Logger.Instance.Write($"{target.Type} - R:{target.TableCellInfo.Row} C:{target.TableCellInfo.Col} Ratio: {paragraph.CurrentScale}");
 
-
-            //this.selectedControlService.LastSelectModel.Paragraph.CurrentScale = (int)(this.Width / value * 100);
-
-            Options.RefreshBody();
 
         }
-    
+
     }
+
+    public class ComponentTextSize
+    {
+        public double outer { get; set; }
+        public double inner { get; set; }
+    }
+
 }

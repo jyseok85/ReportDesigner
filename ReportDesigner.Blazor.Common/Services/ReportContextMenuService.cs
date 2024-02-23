@@ -267,7 +267,10 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             else if(action == "select table")
             {
-                ((Table)SelectedControlService.RazorComponent).OnPointerDown(new PointerEventArgs(), "esc");
+                if (SelectedControlService.RazorComponent is not null)
+                {
+                    ((Table)SelectedControlService.RazorComponent).SelectControl();
+                }
 
             }
             Options.RefreshBody();

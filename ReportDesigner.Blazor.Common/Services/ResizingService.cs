@@ -153,7 +153,14 @@ namespace ReportDesigner.Blazor.Common.Services
 
 
                 var size = GetModifiedControlSize();
-                await selectedControlService.UpdateInnerTextControlScale(size.Item1);
+                //if (selectedControlService.CurrentSelectedModel.Type == ReportComponentModel.Control.Table)
+                //{
+
+                //}
+                //else
+                //{
+                //    await selectedControlService.UpdateInnerTextControlScale(size.Item1);
+                //}
                 this.Width = size.Item1;
                 this.Height = size.Item2;
                 var control = this.selectedControlService.LastSelectModel;

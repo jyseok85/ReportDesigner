@@ -166,6 +166,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     model.TableCellInfo.Col = c;
                     model.TableCellInfo.Row = r;
                     model.Type = ReportComponentModel.Control.TableCell;
+                    model.ParentUid = control.Model.Uid;
                     control.Model.Children.Add(model);
                 }
             }

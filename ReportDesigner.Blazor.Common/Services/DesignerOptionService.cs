@@ -101,7 +101,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public List<ReportComponentModel> ComponentList = new List<ReportComponentModel>();
         public void AddControl(string uid, ReportComponentModel model)
         {
-            Logger.Instance.Write(uid);
+            Logger.Instance.Write($"{uid} {model.Type}");
 
             if (model.Type != ReportComponentModel.Control.Report)
             {
@@ -505,6 +505,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 case ReportComponentModel.Control.Report:
                 case ReportComponentModel.Control.Band:
                 case ReportComponentModel.Control.Layer:
+                case ReportComponentModel.Control.None:
                     return false;
                 case ReportComponentModel.Control.Label:
                     return true;

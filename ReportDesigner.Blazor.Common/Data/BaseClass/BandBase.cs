@@ -208,6 +208,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             {
                 this.controlBases.Remove(control);
                 Options.RemoveControl(uid);
+                SelectedService.CurrentSelectedModel = new();
             }
         }
     }

@@ -64,8 +64,26 @@ window.GetInnerTextWidth = function (parentId) {
     if (target == null) {
         console.log("target is null");
 		return;
-	}
-    return target.offsetWidth;
+    }
+    return {
+        outer: parent.offsetWidth,
+        inner: target.offsetWidth,
+    }
+}
+
+window.GetControlRatio = function (parentId) {
+    var parent = document.getElementById(parentId);
+    if (parent == null) {
+        console.log("parent is null");
+        return;
+    }
+    var target = parent.querySelector('.component-text-inner');
+    if (target == null) {
+        console.log("target is null");
+        return;
+    }
+
+    return parent.offsetWidth / target.offsetWidth * 100;
 }
 window.RegisterInnerTextResizeCallback = function (parentId) {
     var parent = document.getElementById(parentId);
@@ -78,6 +96,7 @@ window.RegisterInnerTextResizeCallback = function (parentId) {
         console.log("target is null");
         return;
     }
+    observer.observe(parent);
     observer.observe(target);
 }
 //window.initResizeObserver = function (elementRef) {

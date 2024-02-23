@@ -1,4 +1,5 @@
-﻿using Radzen;
+﻿using Microsoft.AspNetCore.Components;
+using Radzen;
 using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data;
 using ReportDesigner.Blazor.Common.Data.Model;
@@ -9,6 +10,14 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class DesignerCSSService
     {
+        public DebugStyleColor DebugStyleColor { get; set; } = new DebugStyleColor();
+
+        [Inject]
+        public required DesignerOptionService Options { get; set; }
+        public DesignerCSSService(DesignerOptionService optionService)
+        {
+            this.Options = optionService;
+        }
         public Orientation Orientation { get; set; } =Orientation.Horizontal;
         public AlignItems AlignItems { get; set; } = AlignItems.End;
         public JustifyContent JustifyContent { get; set; } = JustifyContent.SpaceBetween;
@@ -116,13 +125,14 @@ namespace ReportDesigner.Blazor.Common.Services
                     break;
              
                 case "background-color":
-                    {
+                    {                       
                         if (model.Type == ReportComponentModel.Control.TableCell)
-                        {    
+                        {
                             return $"{type.ToLower()} : {model.BackColor}; ";
-                        } 
+                        }
                         else
                             return $"{type.ToLower()} : {model.BackColor}; ";
+                        
                     }
                 case "font-family":
                     return $"{type.ToLower()} : {model.Font.FontFamily}; ";
@@ -257,5 +267,14 @@ namespace ReportDesigner.Blazor.Common.Services
                     return string.Empty;
             }
         }
+
     }
+
+    public class DebugStyleColor
+    {
+        public string Margin => "#B08354";
+        public string Padding => "#B8C480";
+        public string Background => "#88B2BD";
+    }
+
 }
