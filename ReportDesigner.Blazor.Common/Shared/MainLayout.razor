@@ -1,7 +1,10 @@
 ﻿@inherits LayoutComponentBase
 
 <div tabindex ="1"
-     id="designer">
+     id="designer"
+     
+     @onkeydown:preventDefault="true">
+     @* 키보드로 컨트롤 이동시 스크롤도 이동된느 문제로 인하여 키다운을 막음 *@
 <Designer></Designer>
 </div>
 <RadzenContextMenu></RadzenContextMenu>

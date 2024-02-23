@@ -29,12 +29,12 @@ namespace ReportDesigner.Blazor.Common.Services
         /// <summary>
         /// 전역 컨트롤 패딩 
         /// </summary>
-        public int DefaultPadding { get; set; } = 10;
+        public int GlobalPadding { get; set; } = 10;
 
         /// <summary>
         /// 테이블 셀의 최소 간격
         /// </summary>
-        public int GridCellMinimumSize => DefaultPadding * 2;
+        public int GridCellMinimumSize => GlobalPadding * 2;
         public string GetDynamicTableTextInner(ReportComponentModel model)
         {
             return GetModelStyle("textarea.width", model) +
@@ -156,9 +156,9 @@ namespace ReportDesigner.Blazor.Common.Services
 
                 case "padding":
                 case "margin":
-                    return $"{type.ToLower()} : {this.DefaultPadding}px; ";
+                    return $"{type.ToLower()} : {this.GlobalPadding}px; ";
                 case "textarea.padding":
-                    return $"padding : {this.DefaultPadding}px; ";
+                    return $"padding : {this.GlobalPadding}px; ";
 
       
                 case "line-height":

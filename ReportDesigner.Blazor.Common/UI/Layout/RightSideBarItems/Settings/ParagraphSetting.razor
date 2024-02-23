@@ -148,6 +148,7 @@
             }
 
             SelectedControlService.CurrentSelectedModel.Paragraph.AutoFitText = value;
+            SelectedControlService.UpdateInnerTextControlScale();
             Options.RefreshBody();
         }
     }

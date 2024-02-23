@@ -60,7 +60,7 @@ namespace ReportDesigner.Blazor.Common.Data.EtcComponents
         /// <summary>
         /// [고급] 최소배율 텍스트가 짤리더라도 이 값 이하로 줄어들지 않음
         /// </summary>
-        public int MinScale { get; set; } = 50;
+        public int MinScale { get; set; } = 20;
 
         /// <summary>
         /// [고급] 현재 표시할 배율

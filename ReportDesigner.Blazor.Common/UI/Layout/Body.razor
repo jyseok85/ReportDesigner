@@ -20,6 +20,7 @@
 @onkeydown="OnKeyDown"
 @onkeyup=OnKeyUp
 @ondrag:preventDefault="true"
+
 ContextMenu=@(args => ShowContextMenu(args))
 Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy;" : "")>
     <div class="report-background" id="report-background"
@@ -82,8 +83,6 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         ReportContextMenuService.ControlCreationService = CreationService;
         ReportContextMenuService.Options = Options;
         ReportContextMenuService.ClipboardService = ClipboardService;
-        SelectedControlService.CSS = CSS;
-        SelectedControlService.JsRuntime = JsRuntime;
         CreationService.CSS = CSS;
     }
 
@@ -105,18 +104,50 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     }
 
     [JSInvokable]
+    /// <summary>
+    /// 브라우저 사이즈가 변경되었을때 호출되는 콜백
+    /// </summary>
     public void OnBrowserResize()
     {
         PaperSizeChanged(Options.PaperSize.Width);
     }
-
+    [JSInvokable]
+    /// <summary>
+    /// 컨트롤의 크기가 변경되었을때 호출되는 콜백
+    /// </summary>
+    public async void OnInnerTextControlResized()
+    {
+        //실제 DIV의 사이즈가 변경되고 호출 되기 때문에 UI에서 깜박임이 나타난다. 
+        //근데 텍스트를 아예 투명으로 처리하고 바꿔주면 될것 같기도 하다. 
+        //TODO : 세로사이즈가 변경될 경우는 호출하지 않도록 해야 할 듯 하다. 
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Logger.Instance.Write("");
+        Console.ForegroundColor = ConsoleColor.White;
+        await SelectedControlService.UpdateInnerTextControlScale();
+        this.StateHasChanged();
+    }
     private void RefreshBody(object? sender, string key)
     {
+        Logger.Instance.Write(key);
+        StateHasChanged();
         if (key.Equals("body"))
         {
-            Logger.Instance.Write("RefreshBody");
-            this.StateHasChanged();
+
         }
+        else if(key.Equals("autofit"))
+        {
+            // Logger.Instance.Write("1");
+
+            // Task.Factory.StartNew( async () =>
+            // {
+            //     Logger.Instance.Write("2");
+
+            //     StateHasChanged();
+            //     Logger.Instance.Write("end");
+            // });
+        }
+        Logger.Instance.Write("StateHasChanged");
+        StateHasChanged();
     }
 
     private void PaperSizeChanged(object? sender, int delay = 0)
@@ -227,9 +258,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
             //todo : 컨트롤을 2개이상 선택한 순간, 사이즈조절 컨트롤을 안보이게 한다. 
             //선택컨트롤,
             //사이즈조절 컨트롤 구분필요.
-            ResizeService.ActionEnd();
+            await ResizeService.ActionEnd();
             StateHasChanged();
-            ResizeService.ActionExit();
         }
         else if(Options.State == DesignerOptionService.ActionState.GridResize)
         {
@@ -372,7 +402,11 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private void OnKeyUp(KeyboardEventArgs e)
     {
-        Options.UpdateAllControlOffset();
+        //방향키 입력시 스냅포인트로 이동
+        if(e.Key == "ArrowRight" || e.Key == "ArrowDown" || e.Key == "ArrowLeft" || e.Key == "ArrowUp")
+        {
+            Options.UpdateAllControlOffset();
+        }
         keyReleased = true;
     }
 

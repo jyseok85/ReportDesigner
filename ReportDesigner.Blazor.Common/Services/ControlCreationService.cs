@@ -93,8 +93,8 @@ namespace ReportDesigner.Blazor.Common.Services
         public void CreateControl(ReportComponentModel.Control type = ReportComponentModel.Control.Label, object result = null)
         {
             //최소 사이즈 이상 드래그 된 경우만 진행한다. ?? 아니면 작게 그리면 최소사이즈만큼 그려준다?
-            int minimumWidth = CSS.DefaultPadding * 2;
-            int minimumHeight = CSS.DefaultPadding * 2;
+            int minimumWidth = CSS.GlobalPadding * 2;
+            int minimumHeight = CSS.GlobalPadding * 2;
 
             if (this.Width <= minimumWidth || this.Height <= minimumHeight)
                 return;

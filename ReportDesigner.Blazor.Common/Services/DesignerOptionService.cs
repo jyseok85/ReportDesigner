@@ -20,6 +20,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public bool Debugging { get; set; } = true;
 
+        public bool GlobalPadding { get; set; } = true;
         /// <summary>
         /// 전문가 기능
         /// </summary>
@@ -58,6 +59,10 @@ namespace ReportDesigner.Blazor.Common.Services
         public void RefreshBody()
         {
             Refresh?.Invoke(null, "body");
+        }
+        public void RefreshBody(string target)
+        {
+            Refresh?.Invoke(null, target);
         }
 
         public void RefreshRightPanel()
@@ -144,7 +149,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public void UpdateAllControlOffset()
         {
-            Logger.Instance.Write($"{this.GetType().Name} : UpdateAllControlOffset");
+            Logger.Instance.Write("");
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 if(model.Type == ReportComponentModel.Control.Report)

@@ -7,10 +7,22 @@ window.addEventListener("dragenter", (event) => {
     console.log("dragenter:" + event.target.className);
 });
 GLOBAL.SetDotnetReference = function (pDotNetReference) {
-    GLOBAL.DotNetReference = pDotNetReference;
-
-    
+    GLOBAL.DotNetReference = pDotNetReference;    
 };
+
+const observer = new ResizeObserver(entries => {
+    var isFired = false;
+    for (let entry of entries) {
+        isFired = true;
+    }
+
+    if (isFired) {
+        GLOBAL.DotNetReference.invokeMethodAsync('OnInnerTextControlResized');
+    }
+    //todo : 한번 호출되는건 확인했다. 저 루프 안으로 넣어서 바로 사이즈 넘기면 좀더 깔끔하게 동작할듯 한데..
+
+}
+);
 
 window.browserResize = {
     getInnerHeight: function () {
@@ -44,10 +56,30 @@ window.getEventTarget = (event) => {
 
 window.GetInnerTextWidth = function (parentId) {
     var parent = document.getElementById(parentId);
-    var childWidth = parent.querySelector('.component-text-inner').offsetWidth;
-    return childWidth;
+    if (parent == null) {
+        console.log("parent is null");
+        return;
+    }
+    var target = parent.querySelector('.component-text-inner');
+    if (target == null) {
+        console.log("target is null");
+		return;
+	}
+    return target.offsetWidth;
 }
-
+window.RegisterInnerTextResizeCallback = function (parentId) {
+    var parent = document.getElementById(parentId);
+    if (parent == null) {
+        console.log("parent is null");
+        return;
+    }
+    var target = parent.querySelector('.component-text-inner');
+    if (target == null) {
+        console.log("target is null");
+        return;
+    }
+    observer.observe(target);
+}
 //window.initResizeObserver = function (elementRef) {
 //    const element = elementRef.current;
 

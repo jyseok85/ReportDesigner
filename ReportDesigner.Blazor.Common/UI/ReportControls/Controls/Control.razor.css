@@ -1,11 +1,11 @@
-﻿.cell {
-    box-sizing: border-box;
+﻿.component {
+    box-sizing: border-box; /* 테두리가 컨트롤 내부로 생성되도록 한다.  */
     outline: none; /* 포커스가 갔을때 기본 Outline 이 생성되는걸 막기위해서. 물론 이코드는 포커스일때만 아니라 그냥 다 막는다.  */
     line-height: 1;
 }
 
 
-.cell-text {
+.component-text {
     display: flex;
     top: 0;
     height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
@@ -14,10 +14,10 @@
     pointer-events: none;
 }
 
-/*.component-text-inner {
+.component-text-inner {
     overflow: hidden;
     display: block;
-}*/
+}
 /* 우측상단에 표시할 텍스트 */
 .overlay-text {
     top: 0;
@@ -30,10 +30,11 @@
     color: lightgray;
 }
 
-.cell-text-input {
+.component-text-input {
     top: 0;
     height: 100%;
     width: 100%;
     position: absolute;
     border-radius: 0px;
+    line-height: 1;
 }

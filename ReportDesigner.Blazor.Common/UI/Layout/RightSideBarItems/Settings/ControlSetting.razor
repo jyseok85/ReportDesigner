@@ -1,24 +1,41 @@
 ﻿@inherits PropertyBase
 @inject DesignerCSSService CSS
+@inject MultiLanguageService DD
 @inject DesignerOptionService Options
 <RadzenPanelMenuItem Text="Control" Icon="description" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
     <div class="side-panel-contents-background">
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-            <RadzenText class="property-displayName">Default Margin</RadzenText>
-            <RadzenNumeric Min="0" Max="10" TValue="int" @bind-Value=DefaultMargin ShowUpDown="false" Style="min-width:2rem;max-width:3.5rem; height:inherit;" />
-            <RadzenSlider  Min="0" Max="10" TValue="int" @bind-Value=DefaultMargin Style="margin:1rem;"></RadzenSlider>
+            <RadzenText class="property-displayName">@DD.DD("Padding Setting")</RadzenText>
+            <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenSelectBar @bind-Value=@Options.GlobalPadding TValue="bool" class="d-flex" Size="ButtonSize.Small">
+                    <Items>
+                        <RadzenSelectBarItem Text=@DD.DD("Global") Value="true" Style="min-width:3rem;text-align:center;" />
+                        <RadzenSelectBarItem Text=@DD.DD("Individual") Value="false" Style="min-width:3rem;text-align:center;" />
+                    </Items>
+                </RadzenSelectBar>
+            </RadzenStack>
         </RadzenStack>
+        @if (Options.GlobalPadding)
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName">Global Padding</RadzenText>
+            <RadzenNumeric Min="0" Max="10" TValue="int" @bind-Value=GlobalPadding ShowUpDown="false" Style="min-width:2rem;max-width:3.5rem; height:inherit;" />
+            <RadzenSlider  Min="0" Max="10" TValue="int" @bind-Value=GlobalPadding Style="margin:1rem;"></RadzenSlider>
+            </RadzenStack>
+        }
+        
     </div>
 </RadzenPanelMenuItem>
 @code {
-    private int DefaultMargin
+
+    private int GlobalPadding
     {
-        get { return CSS.DefaultPadding; }
+        get { return CSS.GlobalPadding; }
         set
         {
-            CSS.DefaultPadding = value;
+            CSS.GlobalPadding = value;
             Options.RefreshBody();            
-            Options.SaveBrowserCache("defaultMargin", value);
+            Options.SaveBrowserCache("GlobalPadding", value);
         }
     }
 }

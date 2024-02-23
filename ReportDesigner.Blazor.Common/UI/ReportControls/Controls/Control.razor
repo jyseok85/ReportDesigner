@@ -1,12 +1,11 @@
 ﻿@inherits ControlBase
-@inject SelectedControlService SelectService
+@inject SelectedControlService SelectedControlService
 @inject ControlResizeService ResizeService
-
 @inject DragAndDropService DragService
 @inject DesignerOptionService Options
 @inject DesignerCSSService CSS
+@inject IJSRuntime JsRuntime
 
-     @* @onpointerdown:stopPropagation="true" *@
 <div class="component"
      tabindex="@Model.TabIndex"
      id = "@Model.Uid"
@@ -27,7 +26,7 @@
      </div>
 
      <div class="component-text" style=@(OuterTextStyle)>
-        <div @ref=innerText class ="component-text-inner" style=@(InnerTextStyle)>
+        <div @ref=innerText class ="component-text-inner" style=@(InnerTextStyle) >
             @Model.Text
          </div>
      </div>
@@ -37,51 +36,11 @@
         @onpointerup:stopPropagation="true"
         @onkeydown:stopPropagation="true"
         @onkeyup=OnEditorKeyUp
-        @bind-Value=@Model.Text
         class="w-100 component-text-input"
-                    Style=@InputTextStyle hidden=@HiddenEditMode  />
+                    Style=@InputTextStyle hidden=@HiddenEditMode  
+                    Change=@(args => OnChange(args, "TextArea with 3 rows and 30 columns")) />
 </div>
-<style>
-    .component{
 
-        box-sizing: border-box; /* 테두리가 컨트롤 내부로 생성되도록 한다.  */
-        outline:none; /* 포커스가 갔을때 기본 Outline 이 생성되는걸 막기위해서. 물론 이코드는 포커스일때만 아니라 그냥 다 막는다.  */
-        line-height:1;
-    }
-
-
-    .component-text{
-        display:flex;
-        top: 0;
-        height: 100%; /*inherit는 부모사이즈를 가져오고, 100%는 변경된 부모사이즈를 가져온다. */
-        width: 100%;
-        position: absolute;
-        pointer-events: none;
-    }
-    .component-text-inner{      
-        overflow: hidden;
-        display:block;
-    }
-    /* 우측상단에 표시할 텍스트 */
-    .overlay-text{
-        top:0;
-        right:0;
-        position:absolute;
-        pointer-events:none;
-        padding:3px;
-        font-size:x-small;
-        font-style:italic;
-        color:lightgray;
-    }
-    .component-text-input {
-        top: 0;
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        border-radius: 0px;
-        line-height:1;
-    }
-</style>
 @code {
     ElementReference innerText;
     public string OuterTextStyle
@@ -97,6 +56,7 @@
     }
     public string InnerTextStyle
     {
+        // //패딩 변경해야함.
         get
         {
             string style =
@@ -107,14 +67,13 @@
                            GetStyle("color") +
                            GetStyle("line-height") +
                            GetStyle("transform") +
-                           GetStyle("letter-spacing") + 
                            GetStyle("transform-origin") + 
+                           GetStyle("letter-spacing") + 
                            //GetStyle("overflow") +
                            GetStyle("overflow-text") +
                            //letter-spacing : 글자간의 간격 조절
                            //debug
-                           "background-color:green;" + 
-                           "ime-mode:active;"
+                           "background-color:green;" 
                            ;
             return style;
         }
@@ -195,7 +154,7 @@
         else
         {
             StateHasChanged();
-            SelectService.OnPointerDown(e, this.Model, this);
+            SelectedControlService.OnPointerDown(e, this.Model, this);
             //ResizeArea.UpdateElementSize();
 
             //이거랑 부모쪽으로 이벤트 가는거랑 뭔 상관이냐?
@@ -218,7 +177,8 @@
         return style;
     }
 
-
+    private bool isCanceled = false;
+    private string preText = "";
     public async Task OnDbClick(MouseEventArgs args)
     {
         Logger.Instance.Write("OnDoubleClick");
@@ -229,42 +189,71 @@
         }
 
         this.Model.IsEditMode = true;
+        this.preText = this.Model.Text;
+        this.isCanceled = false;
         Options.State = DesignerOptionService.ActionState.Edit;
         DragService.End();
 
         while (this.textArea == null)
             await Task.Delay(10);
 
+        this.textArea.Value = this.Model.Text;
         await this.textArea.Element.FocusAsync();
         await this.textArea.Element.FocusAsync();
         this.StateHasChanged();
     }
 
-    private void OnEditorKeyUp(KeyboardEventArgs e)
+    private async Task OnEditorKeyUp(KeyboardEventArgs e)
     {
-        if(e.Key.Contains("Escape"))
+        //기능정의 : esc키를 누르면 입력을 취소한다.
+        //기능정의 : ctrl + enter키를 누르면 입력을 완료한다.
+
+        if (e.Key.Contains("Escape"))
         {
             Logger.Instance.Write("Editor - Escape");
 
             this.Model.IsEditMode = false;
-            Options.State = DesignerOptionService.ActionState.None;
-            this.StateHasChanged();            
 
+            this.isCanceled = true;
+            Options.State = DesignerOptionService.ActionState.None;
+            this.StateHasChanged();
+
+        }
+        if (e.CtrlKey && e.Key == "Enter")
+        {
+            this.Model.IsEditMode = false;
+            Options.State = DesignerOptionService.ActionState.None;
+            this.StateHasChanged();
         }
     }
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
 
     }
+    async void OnChange(string value, string name)
+    {        
+        Logger.Instance.Write(value);
+        if(isCanceled == true)
+            this.Model.Text = preText;
+        else
+            this.Model.Text = value;
 
-    private void OnResized()
-    {
-        if(this.Model.Paragraph.AutoFitText)
-        {
-            //this.Model.
-        }
-        this.StateHasChanged();
+
+        StateHasChanged();
     }
+
+    /// <summary>
+    /// 내부 텍스트 사이즈 변경 이벤트 등록
+    /// </summary>
+    /// <param name="firstRender"></param>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeAsync<object>("RegisterInnerTextResizeCallback", Model.Uid);
+        }
+    }
+  
     //todo : 컨트롤 사이즈를 변경할때 밴드 영역을 벗어나서 이벤트 끊어질때 먹통됨.
 
 
