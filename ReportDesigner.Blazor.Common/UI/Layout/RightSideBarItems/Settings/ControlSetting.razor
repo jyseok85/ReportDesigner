@@ -7,7 +7,7 @@
         <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
             <RadzenText class="property-displayName">@DD.DD("Padding Setting")</RadzenText>
             <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
-                <RadzenSelectBar @bind-Value=@Options.GlobalPadding TValue="bool" class="d-flex" Size="ButtonSize.Small">
+                <RadzenSelectBar @bind-Value=@UseGlobalPadding TValue="bool" class="d-flex" Size="ButtonSize.Small">
                     <Items>
                         <RadzenSelectBarItem Text=@DD.DD("Global") Value="true" Style="min-width:3rem;text-align:center;" />
                         <RadzenSelectBarItem Text=@DD.DD("Individual") Value="false" Style="min-width:3rem;text-align:center;" />
@@ -15,7 +15,7 @@
                 </RadzenSelectBar>
             </RadzenStack>
         </RadzenStack>
-        @if (Options.GlobalPadding)
+        @if (UseGlobalPadding)
         {
             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
                 <RadzenText class="property-displayName">Global Padding</RadzenText>
@@ -36,6 +36,17 @@
             CSS.GlobalPadding = value;
             Options.RefreshBody();            
             Options.SaveBrowserCache("GlobalPadding", value);
+        }
+    }
+
+    private bool UseGlobalPadding
+    {
+        get { return Options.UseGlobalPadding; }
+        set
+        {
+            Options.UseGlobalPadding = value;
+            Options.RefreshBody();
+            Options.SaveBrowserCache("UseGlobalPadding", value);
         }
     }
 }

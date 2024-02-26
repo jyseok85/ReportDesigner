@@ -166,7 +166,16 @@ namespace ReportDesigner.Blazor.Common.Services
 
                 case "padding":
                 case "margin":
-                    return $"{type.ToLower()} : {this.GlobalPadding}px; ";
+                    if (Options.UseGlobalPadding)
+                        return $"{type.ToLower()} : {this.GlobalPadding}px; ";
+                    else
+                    {
+                        var top = $"{model.Margin.Top}px";
+                        var right = $"{model.Margin.Right}px";
+                        var bottom = $"{model.Margin.Bottom}px";
+                        var left = $"{model.Margin.Left}px";
+                        return $"{type.ToLower()} : {top} {right} {bottom} {left};";
+                    }
                 case "textarea.padding":
                     return $"padding : {this.GlobalPadding}px; ";
 

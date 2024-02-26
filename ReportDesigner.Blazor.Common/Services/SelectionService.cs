@@ -301,7 +301,8 @@ namespace ReportDesigner.Blazor.Common.Services
 
             paragraph.CurrentScale = targetScale;
 
-            Logger.Instance.Write($"{target.Type} - R:{target.TableCellInfo.Row} C:{target.TableCellInfo.Col} Ratio: {paragraph.CurrentScale}");
+            if (target.Type == ReportComponentModel.Control.TableCell)
+                Logger.Instance.Write($"{target.Type} - R:{target.TableCellInfo.Row} C:{target.TableCellInfo.Col} Ratio: {paragraph.CurrentScale}");
 
 
         }

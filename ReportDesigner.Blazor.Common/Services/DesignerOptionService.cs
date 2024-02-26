@@ -20,7 +20,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public bool Debugging { get; set; } = true;
 
-        public bool GlobalPadding { get; set; } = true;
+        public bool UseGlobalPadding { get; set; } = true;
         /// <summary>
         /// 전문가 기능
         /// </summary>

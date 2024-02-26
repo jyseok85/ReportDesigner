@@ -98,6 +98,26 @@
                 </div>
             }
         }
+
+        @if (Options.UseGlobalPadding == false)
+        {
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName property-sub">@DD.DD("Top Padding") </RadzenText>
+                <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" Value=@GetPadding("top") Change=@(args => OnPaddingChanged("top", args))></RadzenNumeric>
+            </RadzenStack>
+             <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                        <RadzenText class="property-displayName property-sub">@DD.DD("Right Padding") </RadzenText>
+                <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" Value=@GetPadding("right") Change=@(args => OnPaddingChanged("right", args))></RadzenNumeric>
+                    </RadzenStack>
+                     <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                        <RadzenText class="property-displayName property-sub">@DD.DD("Bottom Padding") </RadzenText>
+                        <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" Value=@GetPadding("bottom") Change=@(args => OnPaddingChanged("bottom", args))></RadzenNumeric>
+                    </RadzenStack>
+            <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                <RadzenText class="property-displayName property-sub">@DD.DD("Left Padding") </RadzenText>
+                <RadzenNumeric class="property-item" Min="0" Max="100" ShowUpDown="false" TValue="int" Value=@GetPadding("left") Change=@(args => OnPaddingChanged("left", args))></RadzenNumeric>
+            </RadzenStack>
+        }
     </div>
 </RadzenPanelMenuItem>
 
@@ -347,6 +367,49 @@
         }
 
         await SelectedControlService.UpdateInnerTextControlScale();
+        Options.RefreshBody();
+    }
+
+    private int GetPadding(string target)
+    {
+        int padding = 0;
+        if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+        {
+            switch (target.ToLower())
+            {
+                case "top":
+                    padding = SelectedControlService.CurrentSelectedModel.Margin.Top;
+                    break;
+                case "right":
+                    padding = SelectedControlService.CurrentSelectedModel.Margin.Right;
+                    break;
+                case "bottom":
+                    padding = SelectedControlService.CurrentSelectedModel.Margin.Bottom;
+                    break;
+                case "left":
+                    padding = SelectedControlService.CurrentSelectedModel.Margin.Left;
+                    break;
+            }
+        }
+        return padding;
+    }
+    public async void OnPaddingChanged(string target, int value)
+    {
+        switch (target.ToLower())
+        {
+            case "top":
+                SelectedControlService.CurrentSelectedModel.Margin.Top = value;
+                break;
+            case "right":
+                SelectedControlService.CurrentSelectedModel.Margin.Right = value;
+                break;
+            case "bottom":
+                SelectedControlService.CurrentSelectedModel.Margin.Bottom = value;
+                break;
+            case "left":
+                SelectedControlService.CurrentSelectedModel.Margin.Left = value;
+                break;
+        }
         Options.RefreshBody();
     }
     private int MaximumScale
