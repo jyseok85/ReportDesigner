@@ -6,6 +6,7 @@
 @inject DesignerCSSService CSS
 @inject IJSRuntime JsRuntime
 
+@* keydown 에 pagenation을 막으면 컨트롤 이동을 할 수 없음. *@
 <div class="component"
      tabindex="@Model.TabIndex"
      id="@Model.Uid"
@@ -199,7 +200,9 @@
 
     private void OnPointerDown(PointerEventArgs e, string value)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
         Logger.Instance.Write("");
+        Console.ForegroundColor = ConsoleColor.White;
         if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
         {
             if (Options.EventStartObject is Control)
@@ -295,10 +298,11 @@
             Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();
 
-            if(this.parent is Table)
-            {
-                this.parent.CallRazorComponent("SelectControl");
-            }
+            // if(this.parent is Table)
+            // {
+            //     //todo : 구리다.. 방법이..
+            //     this.parent.CallRazorComponent("SelectControl");
+            // }
         }
         if (e.CtrlKey && e.Key == "Enter")
         {
@@ -309,7 +313,8 @@
     }
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-
+        //셀에서 키다운 되는것이 어디까지 가는지도 봐야함..
+        //점점 꼬여가네.
     }
     private async void OnChange(string value, string name)
     {

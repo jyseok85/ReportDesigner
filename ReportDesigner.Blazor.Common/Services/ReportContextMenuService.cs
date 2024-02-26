@@ -269,6 +269,7 @@ namespace ReportDesigner.Blazor.Common.Services
             {
                 if (SelectedControlService.RazorComponent is not null)
                 {
+                    //todo : 구리다.. 방법이..
                     ((Table)SelectedControlService.RazorComponent).SelectControl();
                 }
 
