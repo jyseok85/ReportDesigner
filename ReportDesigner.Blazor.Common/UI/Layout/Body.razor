@@ -128,30 +128,28 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         Logger.Instance.Write("");
         Console.ForegroundColor = ConsoleColor.White;
         await SelectedControlService.UpdateInnerTextControlScale();
+
+        await SelectedControlService.UpdateTableRowHeight();
+
         this.StateHasChanged();
     }
-    private void RefreshBody(object? sender, string key)
+    private async void RefreshBody(object? sender, string key)
     {
-        Logger.Instance.Write(key);
-        StateHasChanged();
-        if (key.Equals("body"))
+        try
         {
-
+            Logger.Instance.Write($"{key} StateHasChanged");
+            //비동기로 상태변경
+            //동기일 경우에는 그냥 StateHasChanged() 호출해도 상관없지만, 비동기일 경우 다음과 같은 오류가 발생한다.
+            //The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
         }
-        else if(key.Equals("autofit"))
+        catch(Exception e)
         {
-            // Logger.Instance.Write("1");
-
-            // Task.Factory.StartNew( async () =>
-            // {
-            //     Logger.Instance.Write("2");
-
-            //     StateHasChanged();
-            //     Logger.Instance.Write("end");
-            // });
+            Logger.Instance.Write(e.Message, LogLevel.Warning);
         }
-        Logger.Instance.Write("StateHasChanged");
-        StateHasChanged();
     }
 
     private void PaperSizeChanged(object? sender, int delay = 0)

@@ -12,7 +12,6 @@
 <div class="component"
      tabindex="@Model.TabIndex"
      id = "@Model.Uid"
-     @ref=button
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @onpointermove="OnPointerMove"
      @onkeydown="OnKeyDown"
@@ -23,39 +22,25 @@
      <div class="component-hidden-text" hidden=@HiddenControl>
         visibility : hidden
      </div>
-     <CascadingValue Value="this">
-     <div style="position:absolute;margin:0;top:0;">
-     @for(int r = 0; r < Model.TableInfo.RowCount; r++)
-     {
-        @for(int c = 0; c < Model.TableInfo.ColCount; c++)
-        {
-            var childModel = Model.Children.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
 
-            <Control BaseModel=childModel></Control>     
-        }
-     }
-     </div>
-     </CascadingValue>
-       <CascadingValue Value="this">
-        @* @if(DragService.Hidden && Model.Locked == false) *@
-        
+     <CascadingValue Value="this">
+         <div style="position:absolute;margin:0;top:0;">
+             @for(int r = 0; r < Model.TableInfo.RowCount; r++)
+             {
+                @for(int c = 0; c < Model.TableInfo.ColCount; c++)
+                {
+                    var childModel = Model.Children?.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
+
+                    <Control BaseModel=childModel></Control>     
+                }
+             }
+         </div>
+
         @* 테이블의 경우 esc 키를 누를대만 테이블을 선택할 수 있기 때문에 일반적인 예외체크가 없다. *@
-            <ResizeArea @ref=ResizeArea Hidden=@(Model.Selected == true ? false : true )></ResizeArea>
-        @* <GridResizer></GridResizer> *@
+         <ResizeArea @ref=ResizeArea Hidden=@(Model.Selected == true ? false : true )></ResizeArea>
      </CascadingValue>
-    @if(isDraging)
-    {
-        <div></div>
-    }
 </div>
 <style>
-  @*   table, th,td{
-        border: 1px solid black;
-        
-    } *@
-    .component{
-        box-sizing: border-box;
-    }
 
     .leftborder{
         border:1px solid red;
@@ -204,7 +189,6 @@
             cursorStyle = "cursor:default;";
         StateHasChanged();
     }
-    private ElementReference button;
     public void OnPointerDown(PointerEventArgs e, string value)
     {
         if (Options.EventStartObject != null)
@@ -213,17 +197,11 @@
             return;                  
         }
 
+
+        //드래그나 리사이즈일경우에 호출 된다. 
         Logger.Instance.Write(Options.State.ToString());
         Options.EventStartObject = this;
 
-
-
-        if(value == "EditArea")
-        {
-            return; 
-        }
-
-        StateHasChanged();
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
@@ -334,6 +312,8 @@
         {
             ResizeService.UpdateSize(this.Model.Width, this.Model.Height);
         }
+
+        Options.FireControlSelectionChangedEvent();
     }
     //todo : 테이블 사이즈 변경하면 제대로 변경안됨.
 }

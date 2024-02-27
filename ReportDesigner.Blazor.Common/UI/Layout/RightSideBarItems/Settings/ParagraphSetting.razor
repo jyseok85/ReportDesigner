@@ -97,6 +97,20 @@
                     </RadzenStack>
                 </div>
             }
+            @if (SelectedControlService.CurrentSelectedModel.Type == ReportComponentModel.Control.TableCell)
+            {
+                <RadzenStack class="property-stack" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenText class="property-displayName">@DD.DD("Auto Row Height")</RadzenText>
+                <RadzenStack class="property-stack-2nd" Orientation="@CSS.Orientation" Gap="@CSS.Gap" Reverse="@CSS.Reverse" JustifyContent="JustifyContent.Start" Wrap="@CSS.Wrap">
+                    <RadzenSelectBar @bind-Value=@AutoHeightIncrease TValue="bool" class="d-flex" Size="ButtonSize.ExtraSmall" Disabled=Locked>
+                        <Items>
+                            <RadzenSelectBarItem Text="On" Value="true" Style="min-width:3rem;text-align:center;" />
+                            <RadzenSelectBarItem Text="Off" Value="false" Style="min-width:3rem;text-align:center;" />
+                        </Items>
+                    </RadzenSelectBar>
+                </RadzenStack>
+                </RadzenStack>
+            }
         }
 
         @if (Options.UseGlobalPadding == false)
@@ -145,7 +159,34 @@
     List<string> characterSpacingList = new List<string>();
     private OverFlowText beforeOverFlowTextState = OverFlowText.Visible;
 
+    private bool AutoHeightIncrease
+    {
+        get
+        {
+            if (SelectedControlService is not null && SelectedControlService.CurrentSelectedModel is not null)
+                return SelectedControlService.CurrentSelectedModel.TableCellInfo.AutoHeightIncrease;
+            else
+                return false;
+        }
+        set
+        {
+           
 
+            SelectedControlService.CurrentSelectedModel.TableCellInfo.AutoHeightIncrease = value;
+            //_ = SelectedControlService.UpdateTableRowHeight();
+
+
+            Task.Run(async() =>            {
+                await SelectedControlService.UpdateTableRowHeight();
+                //System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                Options.RefreshBody();
+                //Simulate work
+                //Update property
+            });
+
+        }
+    }
     private bool AutoFitText
     {
         get
@@ -168,7 +209,7 @@
             }
 
             SelectedControlService.CurrentSelectedModel.Paragraph.AutoFitText = value;
-            SelectedControlService.UpdateInnerTextControlScale();
+            _ = SelectedControlService.UpdateInnerTextControlScale();
             Options.RefreshBody();
         }
     }

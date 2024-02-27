@@ -59,10 +59,7 @@
     }
 
     [CascadingParameter]
-    public ControlBase? parent { get; set; }
-
-
-
+    public ControlBase parent { get; set; }
 
     RadzenTextArea? textArea;
     private bool isCanceled = false;
@@ -120,7 +117,7 @@
             {
                 int row = this.Model.TableCellInfo.Row;
                 int col = this.Model.TableCellInfo.Col;
-                translate = $"translate({this.parent.Model.TableInfo.ColPositions[col]}px,{this.parent.Model.TableInfo.RowPositions[row]}px);";
+                translate = $"translate({this.Model.Parent?.TableInfo.ColPositions[col]}px,{this.Model.Parent?.TableInfo.RowPositions[row]}px);";
             }
             else
             {
@@ -136,9 +133,12 @@
             {
                 int row = this.Model.TableCellInfo.Row;
                 int col = this.Model.TableCellInfo.Col;
-                int width = this.parent.Model.TableInfo.ColWidths[col];
-                int height = this.parent.Model.TableInfo.RowHeights[row];
-                size = $"width:{width}px;height:{height}px;";
+                if(this.Model.Parent is not null)
+                {
+                    int width = this.Model.Parent.TableInfo.ColWidths[col];
+                    int height = this.Model.Parent.TableInfo.RowHeights[row];
+                    size = $"width:{width}px;height:{height}px;";
+                }
             }
             else
             {
@@ -203,7 +203,7 @@
         Console.ForegroundColor = ConsoleColor.Green;
         Logger.Instance.Write("");
         Console.ForegroundColor = ConsoleColor.White;
-        if (Options.EventStartObject != null && Options.EventStartObject != this.parent)
+        if (Options.EventStartObject != null)
         {
             if (Options.EventStartObject is Control)
             {
@@ -235,7 +235,7 @@
             else
             {
                 SelectionService.OnPointerDown(e, this.Model, this);
-                
+
             }
 
 
@@ -258,7 +258,7 @@
         return style;
     }
 
-    
+
     public async Task OnDbClick(MouseEventArgs args)
     {
         Logger.Instance.Write("");
@@ -283,29 +283,23 @@
         this.StateHasChanged();
     }
 
-    private async Task OnEditorKeyUp(KeyboardEventArgs e)
+    private void OnEditorKeyUp(KeyboardEventArgs e)
     {
         //기능정의 : esc키를 누르면 입력을 취소한다.
         //기능정의 : ctrl + enter키를 누르면 입력을 완료한다.
-
         if (e.Key.Contains("Escape"))
         {
             Logger.Instance.Write("Editor - Escape");
 
             this.Model.IsEditMode = false;
-
             this.isCanceled = true;
             Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();
-
-            // if(this.parent is Table)
-            // {
-            //     //todo : 구리다.. 방법이..
-            //     this.parent.CallRazorComponent("SelectControl");
-            // }
         }
         if (e.CtrlKey && e.Key == "Enter")
         {
+            Logger.Instance.Write("Editor - Enter");
+
             this.Model.IsEditMode = false;
             Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();
@@ -326,6 +320,9 @@
 
 
         StateHasChanged();
+
+
+        Options.RefreshBody();
     }
 
    

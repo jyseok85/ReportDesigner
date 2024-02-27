@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web.Virtualization;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
+using ReportDesigner.Blazor.Common.Services;
 using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
 using System;
 using System.Collections.Generic;
@@ -97,7 +98,9 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public Font Font { get; set; } = new Font();
 
         public Paragraph Paragraph { get; set; } = new Paragraph();
-        public List<ReportComponentModel> Children { get; set; } = new List<ReportComponentModel>();
+
+        public ReportComponentModel? Parent = null;
+        public List<ReportComponentModel>? Children { get; set; } = new List<ReportComponentModel>();
 
         public TableInfo TableInfo { get; set; }
         public TableCellInfo TableCellInfo { get; set; } = null;
@@ -131,12 +134,80 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         public Dictionary<int, int> ColPositions { get; set; } = [];
         public Dictionary<int, int> RowPositions { get; set; } = [];
 
-        public void UpdateCellSize(int tableWidth, int tableHeight)
+
+        /// <summary>
+        /// 테이블 사이즈에 맞춰서 균등비율로 테이블 셀을 업데이트해준다. 
+        /// </summary>
+        /// <param name="tableWidth"></param>
+        /// <param name="tableHeight"></param>
+        public void UpdateCellSize(int tableWidth, int tableHeight, bool isEqualRatio = true, int cellMinimumSize = 20)
         {
-            ColWidths = GetCelSize(tableWidth, ColCount);
-            RowHeights = GetCelSize(tableHeight, RowCount);
-            ColPositions = GetCellPositions(ColWidths, tableWidth);
-            RowPositions = GetCellPositions(RowHeights, tableHeight);
+            if (isEqualRatio)
+            {
+                ColWidths = GetCelSize(tableWidth, ColCount);
+                RowHeights = GetCelSize(tableHeight, RowCount);
+                ColPositions = GetCellPositions(ColWidths, tableWidth);
+                RowPositions = GetCellPositions(RowHeights, tableHeight);
+            }
+            else
+            {
+                int cellTotalWidth = tableWidth + ColCount - 1;
+                int cellTotalHeight = tableHeight + RowCount - 1;
+                //이미 설정된 값이 있다면 그것을 기준으로 업데이트한다.
+                float widthRatio = (float)(cellTotalWidth) / ColWidths.Sum(x => x.Value);
+                float heightRatio = (float)(cellTotalHeight) / RowHeights.Sum(x => x.Value);
+
+                //소수점 한자리 이하로 반올림 한다.
+                widthRatio = (float)Math.Round(widthRatio, 1);
+                heightRatio = (float)Math.Round(heightRatio, 1);
+                
+
+                //가로 세로 비율을 업데이트 해준다.
+                int colWidthSum = 0;
+                for (int i = 0; i < ColWidths.Count; i++)
+                {
+         
+                    if (i == ColWidths.Count - 1)
+                    {
+                        var value = cellTotalWidth - colWidthSum;
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        ColWidths[i] = value;
+                    }
+                    else
+                    {
+                        var value = (int)(ColWidths[i] * widthRatio);
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        ColWidths[i] = value;
+                        colWidthSum += ColWidths[i];
+                    }
+                }
+
+                int rowHeightSum = 0;
+                for (int i = 0; i < RowHeights.Count; i++)
+                {
+                    if (i == RowHeights.Count - 1)
+                    {
+                        var value = cellTotalHeight - rowHeightSum;
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        RowHeights[i] = value;
+                    }
+                    else
+                    {
+                        var value = (int)(RowHeights[i] * heightRatio);
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        RowHeights[i] = value;
+                        rowHeightSum += RowHeights[i];
+                    }
+
+                }
+                ColPositions = GetCellPositions(ColWidths, tableWidth);
+                RowPositions = GetCellPositions(RowHeights, tableHeight);
+            }
+           
         }
         private Dictionary<int, int> GetCelSize(int size, int count)
         {
@@ -179,6 +250,18 @@ namespace ReportDesigner.Blazor.Common.Data.Model
             result.Add(i, lastSize - 1);
             return result;
         }
+
+        public (int width, int height) UpdateTableSize()
+        {
+            int height = RowHeights.Sum(x => x.Value) - RowCount + 1;
+            RowPositions = GetCellPositions(RowHeights, height);
+
+            int width = ColWidths.Sum(x => x.Value) - ColCount + 1;
+            ColPositions = GetCellPositions(ColWidths, width);
+
+            return (width, height);
+        }
+
     }
 
     public class TableCellInfo
@@ -189,5 +272,11 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         //세로 병합
         public int RowSpan { get; set; } = 1;
         public int ColSpan { get; set; } = 1;
+
+        /// <summary>
+        /// 컨텐츠가 셀 영역을 넘어갔을 경우 자동으로 높이를 늘릴지 여부
+        /// 단락의 멀티라인, 워드랩 이 있을 경우에만 적용된다. 
+        /// </summary>
+        public bool AutoHeightIncrease { get; set; } = true;
     }
 }

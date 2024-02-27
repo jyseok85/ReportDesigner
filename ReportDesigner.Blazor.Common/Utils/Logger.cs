@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace ReportDesigner.Blazor.Common.Utils
@@ -17,7 +18,7 @@ namespace ReportDesigner.Blazor.Common.Utils
         }
 
 
-        public void Write(string msg)
+        public void Write(string msg, LogLevel level = LogLevel.Debug)
         {
             if(msg == "")
                 Console.WriteLine();

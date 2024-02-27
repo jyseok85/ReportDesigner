@@ -70,6 +70,22 @@ window.GetInnerTextWidth = function (parentId) {
         inner: target.offsetWidth,
     }
 }
+window.GetInnerTextHeight = function (parentId) {
+    var parent = document.getElementById(parentId);
+    if (parent == null) {
+        console.log("parent is null");
+        return;
+    }
+    var target = parent.querySelector('.component-text-inner');
+    if (target == null) {
+        console.log("target is null");
+        return;
+    }
+    return {
+        outer: parent.offsetHeight,
+        inner: target.offsetHeight,
+    }
+}
 
 window.GetControlRatio = function (parentId) {
     var parent = document.getElementById(parentId);

@@ -16,8 +16,8 @@
                             <Design @ref=design></Design>
 
                             var model = SelectedControlService.CurrentSelectedModel;
-                            if(model.Type == ReportComponentModel.Control.Table)
-                                model = SelectedControlService.BeforeSelectedModel;
+                           @*  if(model.Type == ReportComponentModel.Control.Table)
+                                model = SelectedControlService.BeforeSelectedModel; *@
 
                             @if (model.Type == ReportComponentModel.Control.Label || model.Type == ReportComponentModel.Control.TableCell)
                             {

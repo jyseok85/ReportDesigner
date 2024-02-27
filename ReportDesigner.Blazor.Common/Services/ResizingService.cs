@@ -148,25 +148,22 @@ namespace ReportDesigner.Blazor.Common.Services
             //마지막 선택된 컨트롤의 사이즈를 변경해준다.
             if (IsChanged)
             {
-               // UpdateLastSelectedControlSize();
-               // await selectedControlService.UpdateInnerTextControlScale();
-
-
+                //리사이즈 컨트롤에 맞춰서 1차로 컨트롤 사이즈 조절
                 var size = GetModifiedControlSize();
-                //if (selectedControlService.CurrentSelectedModel.Type == ReportComponentModel.Control.Table)
-                //{
 
-                //}
-                //else
-                //{
-                //    await selectedControlService.UpdateInnerTextControlScale(size.Item1);
-                //}
                 this.Width = size.Item1;
                 this.Height = size.Item2;
                 var control = this.selectedControlService.LastSelectModel;
                 control.Width = this.Width;
                 control.Height = this.Height;
-                UpdateTable(this.Width, this.Height);
+
+                if(control.Type == ReportComponentModel.Control.Table)
+                {
+                    //테이블 업데이트 하기 전에 최소 RowHeight 값을 가져와야 한다. ???? 고민필요
+
+                    UpdateTable(this.Width, this.Height);
+                }
+
                 SetBandHeight();
 
             }
@@ -189,7 +186,7 @@ namespace ReportDesigner.Blazor.Common.Services
             //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
             if (control.Type == ReportComponentModel.Control.Table)
             {
-                control.TableInfo.UpdateCellSize(width, height);
+                control.TableInfo.UpdateCellSize(width, height, false, css.GridCellMinimumSize);
             }
         }
         private (int, int) GetModifiedControlSize()
@@ -274,104 +271,104 @@ namespace ReportDesigner.Blazor.Common.Services
         }
 
 
-        /// <summary>
-        /// ResizeArea 사이즈에 맞춰서 선택된 컨트롤의 사이즈를 변경시켜준다. 
-        /// </summary>
-        private void UpdateLastSelectedControlSize()
-        {
-            if (this.selectedControlService is null || this.css is null)
-                return;
+        ///// <summary>
+        ///// ResizeArea 사이즈에 맞춰서 선택된 컨트롤의 사이즈를 변경시켜준다. 
+        ///// </summary>
+        //private void UpdateLastSelectedControlSize()
+        //{
+        //    if (this.selectedControlService is null || this.css is null)
+        //        return;
 
-            if (this.selectedControlService.CurrentBand is null)
-                return;
+        //    if (this.selectedControlService.CurrentBand is null)
+        //        return;
 
-            var currentBand = this.selectedControlService.CurrentBand.Model;
-            if (currentBand is null)
-                return;
+        //    var currentBand = this.selectedControlService.CurrentBand.Model;
+        //    if (currentBand is null)
+        //        return;
 
-            var lastSelectedModel = this.selectedControlService.LastSelectModel;
-            lastSelectedModel.X += X;
-            lastSelectedModel.Y += Y;
+        //    var lastSelectedModel = this.selectedControlService.LastSelectModel;
+        //    lastSelectedModel.X += X;
+        //    lastSelectedModel.Y += Y;
 
-            lastSelectedModel.AbsoluteOffsetY += Y;
-            int width = this.Width;
-            int height = this.Height;
+        //    lastSelectedModel.AbsoluteOffsetY += Y;
+        //    int width = this.Width;
+        //    int height = this.Height;
 
-            if (lastSelectedModel.X < 0)
-            {
-                width += lastSelectedModel.X;
-                lastSelectedModel.X = 0;
-                lastSelectedModel.AbsoluteOffsetX = currentBand.AbsoluteOffsetX;
-            }
-            else
-                lastSelectedModel.AbsoluteOffsetX = currentBand.AbsoluteOffsetX + lastSelectedModel.X;
-
-
-            if (lastSelectedModel.Y < 0)
-            {
-                height += lastSelectedModel.Y;
-                lastSelectedModel.Y = 0;
-                lastSelectedModel.AbsoluteOffsetY = currentBand.AbsoluteOffsetY;
-            }
-            else
-            {
-                lastSelectedModel.AbsoluteOffsetY = currentBand.AbsoluteOffsetY + lastSelectedModel.Y;
-
-            }
-
-            //오른쪽 밴드 이후 영역으로 나가는지 체크
-            if (X >= 0)
-            {
-                //용지 기준으로 변경하는 사이즈의 절대 좌표
-                var targetX = width + lastSelectedModel.AbsoluteOffsetX; //이것대신 왼쪽 마진을 더해도 된다. 
-                var bandMaxAbsoluteX = currentBand.Width + currentBand.AbsoluteOffsetX; //이것대신 왼쪽 마진을 더해도 된다. 
-
-                if (targetX > bandMaxAbsoluteX)
-                {
-                    //초과된 범위만큼 가로 사이즈를 조절한다. 
-                    int diff = targetX - bandMaxAbsoluteX;
-                    width = width - diff;
-                }
-
-            }
-
-            string msg = $"X:{lastSelectedModel.X}, Width:{width}";
-            Logger.Instance.Write(msg);
-
-            //컨트롤의 최소사이즈는 패딩사이즈(이 값일때 텍스트 표시불가)
-            int minimumWidth = this.css.GlobalPadding * 2;
-            int minimumHeight = this.css.GlobalPadding * 2;
-
-            if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
-            {
-                minimumWidth = (minimumWidth * lastSelectedModel.TableInfo.ColCount) + 1;
-                minimumHeight = (minimumHeight * lastSelectedModel.TableInfo.RowCount) + 1;
-            }
-
-            //컨트롤의 최소사이즈 지정
-            if (minimumWidth > width)
-                width = minimumWidth;
-
-            if (minimumHeight > height)
-                height = minimumHeight;
+        //    if (lastSelectedModel.X < 0)
+        //    {
+        //        width += lastSelectedModel.X;
+        //        lastSelectedModel.X = 0;
+        //        lastSelectedModel.AbsoluteOffsetX = currentBand.AbsoluteOffsetX;
+        //    }
+        //    else
+        //        lastSelectedModel.AbsoluteOffsetX = currentBand.AbsoluteOffsetX + lastSelectedModel.X;
 
 
-            //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
-            //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
-            if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
-            {
-                lastSelectedModel.TableInfo.UpdateCellSize(width, height);
-            }
+        //    if (lastSelectedModel.Y < 0)
+        //    {
+        //        height += lastSelectedModel.Y;
+        //        lastSelectedModel.Y = 0;
+        //        lastSelectedModel.AbsoluteOffsetY = currentBand.AbsoluteOffsetY;
+        //    }
+        //    else
+        //    {
+        //        lastSelectedModel.AbsoluteOffsetY = currentBand.AbsoluteOffsetY + lastSelectedModel.Y;
+
+        //    }
+
+        //    //오른쪽 밴드 이후 영역으로 나가는지 체크
+        //    if (X >= 0)
+        //    {
+        //        //용지 기준으로 변경하는 사이즈의 절대 좌표
+        //        var targetX = width + lastSelectedModel.AbsoluteOffsetX; //이것대신 왼쪽 마진을 더해도 된다. 
+        //        var bandMaxAbsoluteX = currentBand.Width + currentBand.AbsoluteOffsetX; //이것대신 왼쪽 마진을 더해도 된다. 
+
+        //        if (targetX > bandMaxAbsoluteX)
+        //        {
+        //            //초과된 범위만큼 가로 사이즈를 조절한다. 
+        //            int diff = targetX - bandMaxAbsoluteX;
+        //            width = width - diff;
+        //        }
+
+        //    }
+
+        //    string msg = $"X:{lastSelectedModel.X}, Width:{width}";
+        //    Logger.Instance.Write(msg);
+
+        //    //컨트롤의 최소사이즈는 패딩사이즈(이 값일때 텍스트 표시불가)
+        //    int minimumWidth = this.css.GlobalPadding * 2;
+        //    int minimumHeight = this.css.GlobalPadding * 2;
+
+        //    if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
+        //    {
+        //        minimumWidth = (minimumWidth * lastSelectedModel.TableInfo.ColCount) + 1;
+        //        minimumHeight = (minimumHeight * lastSelectedModel.TableInfo.RowCount) + 1;
+        //    }
+
+        //    //컨트롤의 최소사이즈 지정
+        //    if (minimumWidth > width)
+        //        width = minimumWidth;
+
+        //    if (minimumHeight > height)
+        //        height = minimumHeight;
+
+
+        //    //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
+        //    //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
+        //    if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
+        //    {
+        //        lastSelectedModel.TableInfo.UpdateCellSize(width, height);
+        //    }
 
 
 
-            this.Width = lastSelectedModel.Width = width;
-            this.Height = lastSelectedModel.Height = height;
+        //    this.Width = lastSelectedModel.Width = width;
+        //    this.Height = lastSelectedModel.Height = height;
 
-            //밴드 Bottom 영역 이상으로 커진다면 밴드를 늘려버린다.
-            if (lastSelectedModel.Bottom > currentBand.Height)
-                currentBand.Height = lastSelectedModel.Bottom;
-        }
+        //    //밴드 Bottom 영역 이상으로 커진다면 밴드를 늘려버린다.
+        //    if (lastSelectedModel.Bottom > currentBand.Height)
+        //        currentBand.Height = lastSelectedModel.Bottom;
+        //}
 
        
 
@@ -391,4 +388,6 @@ namespace ReportDesigner.Blazor.Common.Services
 
     }
 
+
+    //todo : 테이블 스냅포인트 계산 잘 안됨.
 }

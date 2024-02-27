@@ -5,6 +5,7 @@ using Microsoft.JSInterop;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
+using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
 using ReportDesigner.Blazor.Common.Utils;
 using System.Collections.Generic;
 using System.Numerics;
@@ -97,74 +98,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
 
         private ReportComponentModel currentSelectedModel = new();
-
-
-        //public async void ApplyResize(int x, int y, int width, int height, ReportComponentModel parent)
-        //{
-        //    LastSelectModel.X += x;
-        //    LastSelectModel.Y += y;
-
-        //    if (LastSelectModel.X < 0)
-        //    {
-        //        width += LastSelectModel.X;
-        //        LastSelectModel.X = 0;
-        //        LastSelectModel.AbsoluteOffsetX = parent.AbsoluteOffsetX;
-        //    }
-        //    if (LastSelectModel.Y < 0)
-        //    {
-        //        height += LastSelectModel.Y;
-        //        LastSelectModel.Y = 0;
-        //        LastSelectModel.AbsoluteOffsetY = parent.AbsoluteOffsetY;
-        //    }
-
-
-        //    //오른쪽 밴드 이후 영역으로 나가는지 체크
-        //    if (x >= 0)
-        //    {
-        //        if (width + LastSelectModel.AbsoluteOffsetX > parent.Right + parent.AbsoluteOffsetX)
-        //        {
-        //            var 변경하는가로사이즈 = width + LastSelectModel.AbsoluteOffsetX;
-        //            var 부모밴드의오른쪽좌표 = parent.Right + parent.AbsoluteOffsetX;
-        //            var diff = 변경하는가로사이즈 - 부모밴드의오른쪽좌표;
-        //            width -= diff;
-        //        }
-        //    }
-
-        //    var msg = $"X:{LastSelectModel.X}, Width:{width}";
-        //    Logger.Instance.Write(msg);
-
-        //    var minimumWidth = CSS.GlobalPadding * 2;
-        //    var minimumHeight = CSS.GlobalPadding * 2;
-
-
-        //    if (LastSelectModel.Type == ReportComponentModel.Control.Table)
-        //    {
-        //        minimumWidth = (minimumWidth * LastSelectModel.TableInfo.ColCount) + 1;
-        //        minimumHeight = (minimumHeight * LastSelectModel.TableInfo.RowCount) + 4;
-
-        //        //var size = await JsRuntime.InvokeAsync<Dictionary<string,float>>("getDivSize", LastSelectModel.Uid);
-
-        //        //minimumWidth = (int)size["width"];
-        //        //minimumHeight = (int)size["height"];
-        //    }
-
-        //    if (minimumWidth > width)
-        //        width = minimumWidth;
-
-        //    if (minimumHeight > height)
-        //        height = minimumHeight;
-
-        //    //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
-        //    //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
-        //    if (LastSelectModel.Type == ReportComponentModel.Control.Table)
-        //    {
-        //        LastSelectModel.TableInfo.UpdateCellSize(width, height);
-        //    }
-
-        //    LastSelectModel.Width = width;
-        //    LastSelectModel.Height = height;
-        //}
-
+        
 
         public ReportComponentModel? CopiedModel = new();
 
@@ -188,6 +122,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// 1. 내부 컨트롤의 사이즈가 변경되었을 때.
         /// 2. 우측 사이드 바에서 옵션을 변경할때.
         /// 3. 컨트롤의 사이즈를 변경할때.
+        /// - 텍스트 글자 변경될때가 아님.
         /// </summary>
         /// </history>
         /// <param name="width"></param>
@@ -231,7 +166,6 @@ namespace ReportDesigner.Blazor.Common.Services
             }    
 
             Options.RefreshBody();
-
         }
 
         public async Task UpdateScale(ReportComponentModel target, int width = 0)
@@ -307,6 +241,107 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
+        public async Task UpdateTableRowHeight()
+        {
+            Logger.Instance.Write("");
+            var target = this.currentSelectedModel;
+            if (target == null)
+            {
+                Logger.Instance.Write("CurrentSelectedModel is null");
+                return;
+            }
+
+
+            ReportComponentModel parent;
+            if(target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
+            {
+
+                if (target.Type == ReportComponentModel.Control.Table)
+                {
+                    parent = target;
+                }
+                else
+                {
+                    parent = target.Parent;
+                }
+
+                if(parent == null)
+                {
+                    Logger.Instance.Write("Parent is null");
+                    return;
+                }
+
+                //자식 오브젝트를 전부 업데이트 해줘야 한다....
+                foreach (var child in parent.Children)
+                {
+                    //자동증가 셀일 경우(자동감소가 필요한가???
+                    if (child.TableCellInfo.AutoHeightIncrease)
+                    {
+                        await UpdateRowHeight(child, parent);
+                    }
+                }
+
+                var size =  parent.TableInfo.UpdateTableSize();
+                parent.Width = size.width;
+                parent.Height = size.height;
+            }
+
+            async Task UpdateRowHeight(ReportComponentModel child, ReportComponentModel parent)
+            {
+                //현재 Row 인덱스를 가져오고
+                var row = child.TableCellInfo.Row;
+                //실제 TEXT 영역의 높이를 가져오고
+                var height = await GetRowHeight(child);
+                //todo : 예외처리좀 더 해야함.
+                if (height == 0)
+                {
+                    return;
+                }
+
+                if (height > Options.PaperSize.Height - Options.PaperMargin.Top - Options.PaperMargin.Bottom)
+                {
+                    Logger.Instance.Write($"용지 영역보다 큰 Row는 만들수 없습니다.{height}");
+                }
+                //현재 높이와 바뀔 높이의 차이를 구한다. 
+                var diff = height - parent.TableInfo.RowHeights[row];
+                if (diff <= 0)
+                    return;
+
+                Logger.Instance.Write($"{row}");
+
+                //높이를 바꾸고
+                parent.TableInfo.RowHeights[row] = height;
+
+                //parent.Height += diff;
+
+                ////구분선의 값을 바꾼다.  
+                //for (int i = row + 1; i <= parent.TableInfo.RowCount; i++)
+                //{
+                //    parent.TableInfo.RowPositions[i] += diff;
+                //}
+
+                //todo : 테이블 사이즈 조절하는거 한군데로 모아야 하지 않을까?
+            }
+        }
+
+        private async Task<int> GetRowHeight(ReportComponentModel target)
+        {
+            //선택한 오브젝트에 텍스트가 없는 경우
+            if (target.Text == string.Empty)
+            {
+                Logger.Instance.Write("Text is Empty");
+                return 0;
+            }
+            //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
+            var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextHeight", target.Uid);
+            if (value == null)  
+            {
+                Logger.Instance.Write("value is null");
+                return 0;
+            }
+            var inner = (int)value.inner;
+            return (CSS.GlobalPadding * 2) + inner;
+        }
     }
 
     public class ComponentTextSize
