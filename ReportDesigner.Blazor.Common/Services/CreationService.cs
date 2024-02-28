@@ -19,10 +19,17 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class CreationService
     {
-        [Inject]
-        public required SelectionService SelectedControlService { get; set; }
-        [Inject]
-        public required DesignerCSSService CSS { get; set; }
+        public readonly SelectionService SelectedControlService;
+        public readonly DesignerCSSService CSS;
+        private readonly GridResizingService gridResizingService;
+
+
+        public CreationService(SelectionService selectedControlService, DesignerCSSService css, GridResizingService gridResizingService)
+        {
+            this.SelectedControlService = selectedControlService;
+            this.CSS = css;
+            this.gridResizingService = gridResizingService;
+        }
         public int Width { get; set; } = 100;
 
         public int Height { get; set; } = 30;
@@ -149,7 +156,7 @@ namespace ReportDesigner.Blazor.Common.Services
             control.Model.TableInfo.RowCount = rowCount;
             control.Model.TableInfo.ColCount = colCount;
 
-            control.Model.TableInfo.UpdateCellSize(this.Width, this.Height);
+            gridResizingService.UpdateCellSize(control.Model.TableInfo, this.Width, this.Height);
 
             control.Model.Border = new Border(0, 0, 0, 0);          
 

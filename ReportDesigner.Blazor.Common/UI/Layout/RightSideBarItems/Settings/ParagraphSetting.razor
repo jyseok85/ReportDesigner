@@ -6,6 +6,7 @@
 @inject SelectionService SelectedControlService
 @inject ResizingService ResizeService
 @inject LanguageService DD
+@inject GridResizingService GridResizingService
 
 <RadzenPanelMenuItem Text="Paragraph" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
     <div class="side-panel-contents-background">
@@ -179,7 +180,7 @@
             if(value == true)
             {
                 Task.Run(async() =>            {
-                    await ResizeService.UpdateTableRowHeight();
+                    await GridResizingService.UpdateTableRowHeight();
                     //System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
 
                     Options.RefreshBody();

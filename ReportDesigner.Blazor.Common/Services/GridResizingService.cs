@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using System.Runtime.Intrinsics.X86;
+using Microsoft.JSInterop;
+using Microsoft.Extensions.Logging;
 
 namespace ReportDesigner.Blazor.Common.Services
 {
@@ -20,12 +22,15 @@ namespace ReportDesigner.Blazor.Common.Services
     {
         private readonly SelectionService selectedControlService;
         private readonly DesignerCSSService css;
+        private readonly IJSRuntime JsRuntime;
 
         public GridResizingService(
-            SelectionService selectedControlService, DesignerCSSService css)
+            SelectionService selectedControlService, DesignerCSSService css, IJSRuntime jSRuntime)
         {
             this.selectedControlService = selectedControlService;
             this.css = css;
+            this.JsRuntime = jSRuntime;
+
         }
 
         public ReportComponentModel Model
@@ -126,61 +131,7 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             //todo : 컨트롤 위치(마우스좌표) 표시 툴 추가필요.
             this.IsChanged = true;
-        }
-
-        //private void MoveHorizontal(int moveDistanceX)
-        //{
-        //    var 이동중인_컨트롤의_상대좌표 = gridModel.TableInfo.ColPositions[index] + moveDistanceX;
-        //    var 이동가능한_우측_최대좌표 = 9999;
-        //    var 이동가능한_좌측_최대좌표 = -9999;
-
-        //    var cellMinSize = css.GridCellMinimumSize;
-        //    if (this.mode == Mode.Start)
-        //    {
-        //        이동가능한_우측_최대좌표 = gridModel.TableInfo.ColPositions[index + 1] - cellMinSize;
-        //    }
-        //    else if (this.mode == Mode.End)
-        //    {
-        //        이동가능한_좌측_최대좌표 = gridModel.TableInfo.ColPositions[index - 1] + cellMinSize;
-        //    }
-        //    else
-        //    {
-        //        이동가능한_우측_최대좌표 = gridModel.TableInfo.ColPositions[index + 1] - cellMinSize;
-        //        이동가능한_좌측_최대좌표 = gridModel.TableInfo.ColPositions[index - 1] + cellMinSize;                
-        //    }
-
-        //    if (이동중인_컨트롤의_상대좌표 > 이동가능한_우측_최대좌표)
-        //    {
-        //        x = 이동가능한_우측_최대좌표;
-        //    }
-        //    else if (이동중인_컨트롤의_상대좌표 < 이동가능한_좌측_최대좌표)
-        //    {
-        //        x = 이동가능한_좌측_최대좌표;
-        //    }
-        //    else
-        //    {
-        //        x = 이동중인_컨트롤의_상대좌표;
-        //    }
-        //    Logger.Instance.Write($"이동중인_컨트롤의_상대좌표 {이동중인_컨트롤의_상대좌표} 실제 X {x} ");
-        //}
-
-        //private void MoveVertical(int moveDistanceY)
-        //{
-
-        //    if (this.mode == Mode.Start)
-        //    {
-        //        이동가능한_끝좌표 = gridModel.TableInfo.ColPositions[index + 1] - cellMinSize;
-        //    }
-        //    else if (this.mode == Mode.End)
-        //    {
-        //        이동가능한_시작좌표 = gridModel.TableInfo.ColPositions[index - 1] + cellMinSize;
-        //    }
-        //    else
-        //    {
-        //        이동가능한_끝좌표 = gridModel.TableInfo.ColPositions[index + 1] - cellMinSize;
-        //        이동가능한_시작좌표 = gridModel.TableInfo.ColPositions[index - 1] + cellMinSize;
-        //    }
-        //}
+        }    
 
         private int Move(int moveDistance, Dictionary<int,int> position, int index)
         {
@@ -383,5 +334,255 @@ namespace ReportDesigner.Blazor.Common.Services
             this.mode = Mode.None;
             this.IsChanged = false;
         }
+
+
+        public async Task UpdateTableRowHeight()
+        {
+            Logger.Instance.Write("", LogLevel.Debug);
+            var target = this.selectedControlService.CurrentSelectedModel;
+            if (target == null)
+            {
+                Logger.Instance.Write("CurrentSelectedModel is null", Microsoft.Extensions.Logging.LogLevel.Warning);
+                return;
+            }
+
+
+            ReportComponentModel parent;
+            if (target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
+            {
+
+                if (target.Type == ReportComponentModel.Control.Table)
+                {
+                    parent = target;
+                }
+                else
+                {
+                    parent = target.Parent;
+                }
+
+                if (parent == null)
+                {
+                    Logger.Instance.Write("Parent is null", Microsoft.Extensions.Logging.LogLevel.Warning);
+                    return;
+                }
+
+                //자식 오브젝트를 전부 업데이트 해줘야 한다....
+                foreach (var child in parent.Children)
+                {
+                    //자동증가 셀일 경우(자동감소가 필요한가???
+                    if (child.TableCellInfo.AutoHeightIncrease)
+                    {
+                        await UpdateRowHeight(child, parent);
+                    }
+                }
+
+                var size = CalculateTableSize(parent.TableInfo);
+                parent.Width = size.width;
+                parent.Height = size.height;
+            }
+
+            async Task UpdateRowHeight(ReportComponentModel child, ReportComponentModel parent)
+            {
+                //현재 Row 인덱스를 가져오고
+                var row = child.TableCellInfo.Row;
+                //실제 TEXT 영역의 높이를 가져오고
+                var height = await GetRowHeight(child);
+                //todo : 예외처리좀 더 해야함.
+                if (height == 0)
+
+                {
+                    return;
+                }
+
+                //if (height > Options.PaperSize.Height - Options.PaperMargin.Top - Options.PaperMargin.Bottom)
+                //{
+                //    Logger.Instance.Write($"용지 영역보다 큰 Row는 만들수 없습니다.{height}");
+                //}
+                //현재 높이와 바뀔 높이의 차이를 구한다. 
+                var diff = height - parent.TableInfo.RowHeights[row];
+                if (diff <= 0)
+                    return;
+
+                Logger.Instance.Write($"{row}");
+
+                //높이를 바꾸고
+                parent.TableInfo.RowHeights[row] = height;
+
+                //parent.Height += diff;
+
+                ////구분선의 값을 바꾼다.  
+                //for (int i = row + 1; i <= parent.TableInfo.RowCount; i++)
+                //{
+                //    parent.TableInfo.RowPositions[i] += diff;
+                //}
+
+                //todo : 테이블 사이즈 조절하는거 한군데로 모아야 하지 않을까?
+            }
+        }
+        private async Task<int> GetRowHeight(ReportComponentModel target)
+        {
+            //선택한 오브젝트에 텍스트가 없는 경우
+            if (target.Text == string.Empty)
+            {
+                Logger.Instance.Write("Text is Empty", Microsoft.Extensions.Logging.LogLevel.Warning);
+                return 0;
+            }
+            //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
+            var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextHeight", target.Uid);
+            if (value == null)
+            {
+                Logger.Instance.Write("value is null", Microsoft.Extensions.Logging.LogLevel.Warning);
+                return 0;
+            }
+            var inner = (int)value.inner;
+            return (css.GlobalPadding * 2) + inner;
+        }
+
+        public void UpdateTable(int width, int height)
+        {
+            var control = this.selectedControlService.LastSelectModel;
+            //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
+            //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
+            if (control.Type != ReportComponentModel.Control.Table)
+                return;
+
+            UpdateCellSize(control.TableInfo, width, height, false, css.GridCellMinimumSize);
+
+        }
+
+
+        /// <summary>
+        /// 테이블 사이즈에 맞춰서 균등비율로 테이블 셀을 업데이트해준다. 
+        /// </summary>
+        /// <param name="tableWidth"></param>
+        /// <param name="tableHeight"></param>
+        public void UpdateCellSize(TableInfo table, int tableWidth, int tableHeight, bool isEqualRatio = true, int cellMinimumSize = 20)
+        {
+            if (isEqualRatio)
+            {
+                table.ColWidths = GetCelSize(tableWidth, table.ColCount);
+                table.RowHeights = GetCelSize(tableHeight, table.RowCount);
+                table.ColPositions = GetCellPositions(table.ColWidths, tableWidth);
+                table.RowPositions = GetCellPositions(table.RowHeights, tableHeight);
+            }
+            else
+            {
+                int cellTotalWidth = tableWidth + table.ColCount - 1;
+                int cellTotalHeight = tableHeight + table.RowCount - 1;
+                //이미 설정된 값이 있다면 그것을 기준으로 업데이트한다.
+                float widthRatio = (float)(cellTotalWidth) / table.ColWidths.Sum(x => x.Value);
+                float heightRatio = (float)(cellTotalHeight) / table.RowHeights.Sum(x => x.Value);
+
+                //소수점 한자리 이하로 반올림 한다.
+                widthRatio = (float)Math.Round(widthRatio, 1);
+                heightRatio = (float)Math.Round(heightRatio, 1);
+
+
+                //가로 세로 비율을 업데이트 해준다.
+                int colWidthSum = 0;
+                for (int i = 0; i < table.ColWidths.Count; i++)
+                {
+
+                    if (i == table.ColWidths.Count - 1)
+                    {
+                        var value = cellTotalWidth - colWidthSum;
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        table.ColWidths[i] = value;
+                    }
+                    else
+                    {
+                        var value = (int)(table.ColWidths[i] * widthRatio);
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        table.ColWidths[i] = value;
+                        colWidthSum += table.ColWidths[i];
+                    }
+                }
+
+                int rowHeightSum = 0;
+                for (int i = 0; i < table.RowHeights.Count; i++)
+                {
+                    if (i == table.RowHeights.Count - 1)
+                    {
+                        var value = cellTotalHeight - rowHeightSum;
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        table.RowHeights[i] = value;
+                    }
+                    else
+                    {
+                        var value = (int)(table.RowHeights[i] * heightRatio);
+                        if (value < cellMinimumSize)
+                            value = cellMinimumSize;
+                        table.RowHeights[i] = value;
+                        rowHeightSum += table.RowHeights[i];
+                    }
+
+                }
+                table.ColPositions = GetCellPositions(table.ColWidths, tableWidth);
+                table.RowPositions = GetCellPositions(table.RowHeights, tableHeight);
+            }
+
+            Dictionary<int, int> GetCelSize(int size, int count)
+            {
+                Dictionary<int, int> result = new Dictionary<int, int>();
+                //테두리 사이즈만큼 겹치기 때문에 변경해줌.
+                int targetSize = size + (count - 1);
+                int cellSize = (int)(targetSize / count);
+                int remainSize = targetSize;
+                for (int i = 0; i < count; i++)
+                {
+                    if (i + 1 == count)
+                        result.Add(i, remainSize);
+                    else
+                    {
+                        result.Add(i, cellSize);
+                        remainSize -= cellSize;
+                    }
+                }
+
+
+                return result;
+            }
+
+            
+
+        }
+
+        private Dictionary<int, int> GetCellPositions(Dictionary<int, int> values, int lastSize)
+        {
+            Dictionary<int, int> result = new Dictionary<int, int>();
+            int nextPosition = 0;
+            int i = 0;
+            for (i = 0; i < values.Count; i++)
+            {
+                result.Add(i, nextPosition);
+
+                //-1을 하는 이유는 셀을 겹치기 위함
+                //그러나 이건 테두리가 1일 경우이며, 만약 2가 될경우에는 -2를 해줘야 한다..
+                //그러나! 필요없을것같다. 
+                //todo : [고급]테이블 테두리 기본값에 따른 로직을 넣어주는게 좋을것같긴하다.
+                //문서 기본옵션값이 테두리 2라면 아래 수치를 2로 변경하게
+                nextPosition += values[i] - 1;
+            }
+
+            result.Add(i, lastSize - 1);
+            return result;
+        }
+
+        public (int width, int height) CalculateTableSize(TableInfo info)
+        {
+            int height = info.RowHeights.Sum(x => x.Value) - info.RowCount + 1;
+            info.RowPositions = GetCellPositions(info.RowHeights, height);
+
+            int width = info.ColWidths.Sum(x => x.Value) - info.ColCount + 1;
+            info.ColPositions = GetCellPositions(info.ColWidths, width);
+
+            return (width, height);
+        }
     }
+
+    //todo : 테이블 스냅포인트 계산 잘 안됨.
+
 }

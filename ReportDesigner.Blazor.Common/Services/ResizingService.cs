@@ -11,14 +11,16 @@ namespace ReportDesigner.Blazor.Common.Services
     {
         private readonly SelectionService selectedControlService;
         private readonly DesignerCSSService? css;
+        private readonly GridResizingService gridResizingService;
         private readonly IJSRuntime JsRuntime;
 
         public ResizingService(
-            SelectionService selectedControlService, DesignerCSSService? css, IJSRuntime jSRuntime)
+            SelectionService selectedControlService, DesignerCSSService? css , IJSRuntime jSRuntime, GridResizingService gridResizingService)
         {
             this.selectedControlService = selectedControlService;
             this.css = css;
             this.JsRuntime = jSRuntime;
+            this.gridResizingService = gridResizingService;
         }
 
         public string Id { get; set; } = string.Empty;
@@ -162,8 +164,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 if(control.Type == ReportComponentModel.Control.Table)
                 {
                     //테이블 업데이트 하기 전에 최소 RowHeight 값을 가져와야 한다. ???? 고민필요
-
-                    UpdateTable(this.Width, this.Height);
+                    this.gridResizingService.UpdateTable(this.Width, this.Height);
                 }
 
                 SetBandHeight();
@@ -181,16 +182,6 @@ namespace ReportDesigner.Blazor.Common.Services
                 band.Height = control.Bottom;
         }
 
-        private void UpdateTable(int width, int height)
-        {
-            var control = this.selectedControlService.LastSelectModel;
-            //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
-            //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
-            if (control.Type == ReportComponentModel.Control.Table)
-            {
-                control.TableInfo.UpdateCellSize(width, height, false, css.GridCellMinimumSize);
-            }
-        }
         private (int, int) GetModifiedControlSize()
         {
             if (this.selectedControlService is null || this.css is null)
@@ -289,109 +280,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
 
 
-        public async Task UpdateTableRowHeight()
-        {
-            Logger.Instance.Write("", LogLevel.Debug);
-            var target = this.selectedControlService.CurrentSelectedModel;
-            if (target == null)
-            {
-                Logger.Instance.Write("CurrentSelectedModel is null", Microsoft.Extensions.Logging.LogLevel.Warning);
-                return;
-            }
-
-
-            ReportComponentModel parent;
-            if (target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
-            {
-
-                if (target.Type == ReportComponentModel.Control.Table)
-                {
-                    parent = target;
-                }
-                else
-                {
-                    parent = target.Parent;
-                }
-
-                if (parent == null)
-                {
-                    Logger.Instance.Write("Parent is null", Microsoft.Extensions.Logging.LogLevel.Warning);
-                    return;
-                }
-
-                //자식 오브젝트를 전부 업데이트 해줘야 한다....
-                foreach (var child in parent.Children)
-                {
-                    //자동증가 셀일 경우(자동감소가 필요한가???
-                    if (child.TableCellInfo.AutoHeightIncrease)
-                    {
-                        await UpdateRowHeight(child, parent);
-                    }
-                }
-
-                var size = parent.TableInfo.UpdateTableSize();
-                parent.Width = size.width;
-                parent.Height = size.height;
-            }
-
-            async Task UpdateRowHeight(ReportComponentModel child, ReportComponentModel parent)
-            {
-                //현재 Row 인덱스를 가져오고
-                var row = child.TableCellInfo.Row;
-                //실제 TEXT 영역의 높이를 가져오고
-                var height = await GetRowHeight(child);
-                //todo : 예외처리좀 더 해야함.
-                if (height == 0)
-
-                {
-                    return;
-                }
-
-                //if (height > Options.PaperSize.Height - Options.PaperMargin.Top - Options.PaperMargin.Bottom)
-                //{
-                //    Logger.Instance.Write($"용지 영역보다 큰 Row는 만들수 없습니다.{height}");
-                //}
-                //현재 높이와 바뀔 높이의 차이를 구한다. 
-                var diff = height - parent.TableInfo.RowHeights[row];
-                if (diff <= 0)
-                    return;
-
-                Logger.Instance.Write($"{row}");
-
-                //높이를 바꾸고
-                parent.TableInfo.RowHeights[row] = height;
-
-                //parent.Height += diff;
-
-                ////구분선의 값을 바꾼다.  
-                //for (int i = row + 1; i <= parent.TableInfo.RowCount; i++)
-                //{
-                //    parent.TableInfo.RowPositions[i] += diff;
-                //}
-
-                //todo : 테이블 사이즈 조절하는거 한군데로 모아야 하지 않을까?
-            }
-        }
-        private async Task<int> GetRowHeight(ReportComponentModel target)
-        {
-            //선택한 오브젝트에 텍스트가 없는 경우
-            if (target.Text == string.Empty)
-            {
-                Logger.Instance.Write("Text is Empty" , Microsoft.Extensions.Logging.LogLevel.Warning);
-                return 0;
-            }
-            //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
-            var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextHeight", target.Uid);
-            if (value == null)
-            {
-                Logger.Instance.Write("value is null", Microsoft.Extensions.Logging.LogLevel.Warning);
-                return 0;
-            }
-            var inner = (int)value.inner;
-            return (css.GlobalPadding * 2) + inner;
-        }
     }
 
 
-    //todo : 테이블 스냅포인트 계산 잘 안됨.
 }

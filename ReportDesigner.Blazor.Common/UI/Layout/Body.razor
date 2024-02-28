@@ -77,14 +77,12 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         PaperSizeChanged(Options.PaperSize.Width, 0);
         Options.SelectedControl = SelectedControlService;
 
-        CreationService.SelectedControlService = SelectedControlService;
 
         ReportContextMenuService.ContextMenuService = ContextMenuService;
         ReportContextMenuService.SelectedControlService = SelectedControlService;
         ReportContextMenuService.ControlCreationService = CreationService;
         ReportContextMenuService.Options = Options;
         ReportContextMenuService.ClipboardService = ClipboardService;
-        CreationService.CSS = CSS;
     }
 
     /// <summary>
@@ -127,7 +125,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         Logger.Instance.Write("", LogLevel.Debug);
         await SelectedControlService.UpdateInnerTextControlScale();
 
-        await ResizeService.UpdateTableRowHeight();
+        await GridResizeService.UpdateTableRowHeight();
 
         this.StateHasChanged();
     }
