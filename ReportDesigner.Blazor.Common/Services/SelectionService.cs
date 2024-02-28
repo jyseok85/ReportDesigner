@@ -132,7 +132,7 @@ namespace ReportDesigner.Blazor.Common.Services
             var target = this.currentSelectedModel;
             if(target.Type == ReportComponentModel.Control.None)
             {
-                Logger.Instance.Write("Type is None");
+                Logger.Instance.Write("Type is None" , Microsoft.Extensions.Logging.LogLevel.Warning);
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace ReportDesigner.Blazor.Common.Services
             //todo : 현재 밴드만 되어 있지만 추후 다른 컨트롤 예외처리 할 수도 있음.
             if (target.Type == ReportComponentModel.Control.Band)
             {
-                Logger.Instance.Write("Type is Band. Select Before Control.");
+                Logger.Instance.Write("Type is Band. Select Before Control." );
                 target = BeforeSelectedModel;
             }
 
@@ -173,14 +173,14 @@ namespace ReportDesigner.Blazor.Common.Services
             //선택한 오브젝트에 텍스트가 없는 경우
             if (target.Text == string.Empty)
             {
-                Logger.Instance.Write("Text is Empty");
+                Logger.Instance.Write("Text is Empty" , Microsoft.Extensions.Logging.LogLevel.Warning);
                 return;
             }
             //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
             var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextWidth", target.Uid);
             if (value == null)
             {
-                Logger.Instance.Write("value is null");
+                Logger.Instance.Write("value is null", Microsoft.Extensions.Logging.LogLevel.Warning);
                 return;
             }
 
@@ -189,7 +189,7 @@ namespace ReportDesigner.Blazor.Common.Services
             //내부 텍스트 사이즈가 0인 경우는 무시한다.
             if (inner == 0)
             {
-                Logger.Instance.Write("InnerTextWidth is 0");
+                Logger.Instance.Write("InnerTextWidth is 0" , Microsoft.Extensions.Logging.LogLevel.Warning);
                 return;
             }
 
@@ -241,107 +241,8 @@ namespace ReportDesigner.Blazor.Common.Services
 
         }
 
-        public async Task UpdateTableRowHeight()
-        {
-            Logger.Instance.Write("");
-            var target = this.currentSelectedModel;
-            if (target == null)
-            {
-                Logger.Instance.Write("CurrentSelectedModel is null");
-                return;
-            }
 
-
-            ReportComponentModel parent;
-            if(target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
-            {
-
-                if (target.Type == ReportComponentModel.Control.Table)
-                {
-                    parent = target;
-                }
-                else
-                {
-                    parent = target.Parent;
-                }
-
-                if(parent == null)
-                {
-                    Logger.Instance.Write("Parent is null");
-                    return;
-                }
-
-                //자식 오브젝트를 전부 업데이트 해줘야 한다....
-                foreach (var child in parent.Children)
-                {
-                    //자동증가 셀일 경우(자동감소가 필요한가???
-                    if (child.TableCellInfo.AutoHeightIncrease)
-                    {
-                        await UpdateRowHeight(child, parent);
-                    }
-                }
-
-                var size =  parent.TableInfo.UpdateTableSize();
-                parent.Width = size.width;
-                parent.Height = size.height;
-            }
-
-            async Task UpdateRowHeight(ReportComponentModel child, ReportComponentModel parent)
-            {
-                //현재 Row 인덱스를 가져오고
-                var row = child.TableCellInfo.Row;
-                //실제 TEXT 영역의 높이를 가져오고
-                var height = await GetRowHeight(child);
-                //todo : 예외처리좀 더 해야함.
-                if (height == 0)
-                {
-                    return;
-                }
-
-                if (height > Options.PaperSize.Height - Options.PaperMargin.Top - Options.PaperMargin.Bottom)
-                {
-                    Logger.Instance.Write($"용지 영역보다 큰 Row는 만들수 없습니다.{height}");
-                }
-                //현재 높이와 바뀔 높이의 차이를 구한다. 
-                var diff = height - parent.TableInfo.RowHeights[row];
-                if (diff <= 0)
-                    return;
-
-                Logger.Instance.Write($"{row}");
-
-                //높이를 바꾸고
-                parent.TableInfo.RowHeights[row] = height;
-
-                //parent.Height += diff;
-
-                ////구분선의 값을 바꾼다.  
-                //for (int i = row + 1; i <= parent.TableInfo.RowCount; i++)
-                //{
-                //    parent.TableInfo.RowPositions[i] += diff;
-                //}
-
-                //todo : 테이블 사이즈 조절하는거 한군데로 모아야 하지 않을까?
-            }
-        }
-
-        private async Task<int> GetRowHeight(ReportComponentModel target)
-        {
-            //선택한 오브젝트에 텍스트가 없는 경우
-            if (target.Text == string.Empty)
-            {
-                Logger.Instance.Write("Text is Empty");
-                return 0;
-            }
-            //선택된 오브젝트의 UID로 클라이언트의 사이즈를 가져온다.
-            var value = await JsRuntime.InvokeAsync<ComponentTextSize>("GetInnerTextHeight", target.Uid);
-            if (value == null)  
-            {
-                Logger.Instance.Write("value is null");
-                return 0;
-            }
-            var inner = (int)value.inner;
-            return (CSS.GlobalPadding * 2) + inner;
-        }
+        
     }
 
     public class ComponentTextSize

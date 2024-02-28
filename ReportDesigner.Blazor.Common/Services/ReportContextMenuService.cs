@@ -101,7 +101,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void DuplicateControl()
         {
-            Logger.Instance.Write("Duplicat Control");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
             //컨트롤을 복사하고.
             SelectedControlService.CopyControl();
 
@@ -118,7 +118,7 @@ namespace ReportDesigner.Blazor.Common.Services
         {
             if (SelectedControlService.CopiedModel == null)
             {
-                Logger.Instance.Write("복사된 컨트롤이 없습니다.");
+                Logger.Instance.Write("복사된 컨트롤이 없습니다.",  Microsoft.Extensions.Logging.LogLevel.Warning);
                 return;
             }
             var band = SelectedControlService.CurrentBand;
@@ -217,12 +217,12 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
                     else
                     {
-                        Logger.Instance.Write("현재 컨트롤이 제일 아래에 있습니다.");
+                        Logger.Instance.Write("현재 컨트롤이 제일 아래에 있습니다." , Microsoft.Extensions.Logging.LogLevel.Warning);
                     }
                 }
                 else
                 {
-                    Logger.Instance.Write("교체할 컨트롤이 없습니다.");
+                    Logger.Instance.Write("교체할 컨트롤이 없습니다.", Microsoft.Extensions.Logging.LogLevel.Warning);
 
                 }
             }
@@ -252,12 +252,12 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
                     else
                     {
-                        Logger.Instance.Write("현재 컨트롤이 제일 위에 있습니다.");
+                        Logger.Instance.Write("현재 컨트롤이 제일 위에 있습니다." , Microsoft.Extensions.Logging.LogLevel.Warning);
                     }
                 }
                 else
                 {
-                    Logger.Instance.Write("교체할 컨트롤이 없습니다.");
+                    Logger.Instance.Write("교체할 컨트롤이 없습니다." , Microsoft.Extensions.Logging.LogLevel.Warning);
                 }
             }
             else if(action.Contains("lock"))

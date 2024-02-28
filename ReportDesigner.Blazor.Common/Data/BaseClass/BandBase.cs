@@ -93,7 +93,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
             if (Options.EventStartObject != null)
                 return;
             Options.EventStartObject = this;
-            Logger.Instance.Write("");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
 
             SelectedService.CurrentBand = this;
 

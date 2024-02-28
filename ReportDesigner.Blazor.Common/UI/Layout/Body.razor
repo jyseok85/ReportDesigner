@@ -124,12 +124,10 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //실제 DIV의 사이즈가 변경되고 호출 되기 때문에 UI에서 깜박임이 나타난다. 
         //근데 텍스트를 아예 투명으로 처리하고 바꿔주면 될것 같기도 하다. 
         //TODO : 세로사이즈가 변경될 경우는 호출하지 않도록 해야 할 듯 하다. 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Logger.Instance.Write("");
-        Console.ForegroundColor = ConsoleColor.White;
+        Logger.Instance.Write("", LogLevel.Debug);
         await SelectedControlService.UpdateInnerTextControlScale();
 
-        await SelectedControlService.UpdateTableRowHeight();
+        await ResizeService.UpdateTableRowHeight();
 
         this.StateHasChanged();
     }
@@ -137,7 +135,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     {
         try
         {
-            Logger.Instance.Write($"{key} StateHasChanged");
+            Logger.Instance.Write($"{key} StateHasChanged", LogLevel.Debug);
             //비동기로 상태변경
             //동기일 경우에는 그냥 StateHasChanged() 호출해도 상관없지만, 비동기일 경우 다음과 같은 오류가 발생한다.
             //The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.
@@ -154,6 +152,7 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private void PaperSizeChanged(object? sender, int delay = 0)
     {
+        Logger.Instance.Write("", LogLevel.Debug);
 
         Task.Factory.StartNew(async () =>
         {
@@ -222,7 +221,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     public async void OnPointerUp(PointerEventArgs e)
     {
-        Logger.Instance.Write($"Options.State : {Options.State}");
+        Logger.Instance.Write($"Options.State : {Options.State}", LogLevel.Debug);
+
 
         // var control = controlBases.Find(x => x.Selected == true);
         if (Options.State == DesignerOptionService.ActionState.Create)
@@ -284,7 +284,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
 
     private void OnPointerLeave()
     {
-        Logger.Instance.Write("Body - OnPointerLeave");
+        Logger.Instance.Write("", LogLevel.Debug);
+
         //todo : 항상타서 성능잡아먹음. 아무작업없이 마우스 움직일때 어떻게 할지 고민필요.
         ReleaseState();
     }
@@ -292,8 +293,8 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     private void ReleaseState()
 
     {
+        Logger.Instance.Write("", LogLevel.Debug);
         Options.State = DesignerOptionService.ActionState.None;
-        Logger.Instance.Write("Body - ReleaseState");
 
         Options.UpdateAllControlOffset();
         Options.HideSnap();

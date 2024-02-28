@@ -253,7 +253,7 @@
         //해당 패널을 갱신시킨다.
         //데이터는 전달하는게 아니라.
         //해당 패널의 속성에서 패널 갱신시킬때 Get 부분을 타게 되고 불러오게 된다.
-        Logger.Instance.Write($"ControlSelectionChanged : {key}");
+        Logger.Instance.Write($"ControlSelectionChanged : {key}", LogLevel.Debug );
         if (key.Equals("Right"))
         {
             design.RefreshState();

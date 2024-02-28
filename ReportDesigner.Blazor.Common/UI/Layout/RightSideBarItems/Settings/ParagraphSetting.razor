@@ -4,6 +4,7 @@
 @inject DesignerCSSService CSS
 @inject DesignerOptionService Options
 @inject SelectionService SelectedControlService
+@inject ResizingService ResizeService
 @inject LanguageService DD
 
 <RadzenPanelMenuItem Text="Paragraph" Expanded=@Options.GetPanelMenuState(this.GetType().Name) ExpandedChanged="(x) => OnExpandedChange(this.GetType().Name, x)">
@@ -175,15 +176,15 @@
             SelectedControlService.CurrentSelectedModel.TableCellInfo.AutoHeightIncrease = value;
             //_ = SelectedControlService.UpdateTableRowHeight();
 
+            if(value == true)
+            {
+                Task.Run(async() =>            {
+                    await ResizeService.UpdateTableRowHeight();
+                    //System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
 
-            Task.Run(async() =>            {
-                await SelectedControlService.UpdateTableRowHeight();
-                //System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
-
-                Options.RefreshBody();
-                //Simulate work
-                //Update property
-            });
+                    Options.RefreshBody();
+                });
+            }
 
         }
     }

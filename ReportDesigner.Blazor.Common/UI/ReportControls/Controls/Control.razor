@@ -312,7 +312,7 @@
     }
     private async void OnChange(string value, string name)
     {
-        Logger.Instance.Write(value);
+        Logger.Instance.Write(value, LogLevel.Debug);
         if (isCanceled == true)
             this.Model.Text = preText;
         else

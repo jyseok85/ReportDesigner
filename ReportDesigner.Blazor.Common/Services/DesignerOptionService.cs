@@ -101,7 +101,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public List<ReportComponentModel> ComponentList = new List<ReportComponentModel>();
         public void AddControl(string uid, ReportComponentModel model)
         {
-            Logger.Instance.Write($"{uid} {model.Type}");
+            Logger.Instance.Write($"{uid} {model.Type}",  Microsoft.Extensions.Logging.LogLevel.Debug);
 
             if (model.Type != ReportComponentModel.Control.Report)
             {
@@ -149,7 +149,7 @@ namespace ReportDesigner.Blazor.Common.Services
         }
         public void UpdateAllControlOffset()
         {
-            Logger.Instance.Write("");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 if(model.Type == ReportComponentModel.Control.Report)
@@ -339,7 +339,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// </summary>
         public void TurnOffEditModeForAllControls()
         {
-            Logger.Instance.Write("TurnOffEditModeForAllControls");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
             foreach (ReportComponentModel model in controlDictionary.Values)
             {
                 model.IsEditMode = false;
@@ -360,7 +360,7 @@ namespace ReportDesigner.Blazor.Common.Services
         /// <param name="key">방향키</param>
         public void SetSnapPoint(string key)
         {
-            Logger.Instance.Write($"{key} {string.Join(",", snapAbsoluteX)}");
+            Logger.Instance.Write($"{key} {string.Join(",", snapAbsoluteX)}" , Microsoft.Extensions.Logging.LogLevel.Debug);
             List<int> movement = new List<int>();
 
             string uid = SelectedControl.CurrentSelectedModel.ParentUid;

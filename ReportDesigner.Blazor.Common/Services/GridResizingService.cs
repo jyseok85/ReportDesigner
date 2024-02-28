@@ -78,7 +78,7 @@ namespace ReportDesigner.Blazor.Common.Services
         private Mode mode = Mode.None;
         public void StartAction(PointerEventArgs e, int index, Type type)
         {
-            Logger.Instance.Write($"index:{index} , type:{type}");
+            Logger.Instance.Write($"index:{index} , type:{type}" , Microsoft.Extensions.Logging.LogLevel.Debug);
             this.type = type;
 
             this.beforeX = (int)e.ClientX;
@@ -360,7 +360,7 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             catch (Exception ex)
             {
-                Logger.Instance.Write(ex.ToString());
+                Logger.Instance.Write(ex.ToString(), Microsoft.Extensions.Logging.LogLevel.Error);
             }
             finally
             {

@@ -33,7 +33,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         /// <param name="methodName"></param>
         public void CallRazorComponent(string methodName)
         {
-            Logger.Instance.Write("");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
             var type = this.GetType();
             var method = type.GetMethod(methodName);
             method?.Invoke(this, null);
@@ -42,7 +42,7 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
         //상속한 Razor 컴포넌트를 호출하는 기능을 한다
         public void CallRazorComponent<T>(string methodName, T value)
         {
-            Logger.Instance.Write("");
+            Logger.Instance.Write("", Microsoft.Extensions.Logging.LogLevel.Debug);
             var type = this.GetType();
             var method = type.GetMethod(methodName);
             method?.Invoke(this, new object[] { value });

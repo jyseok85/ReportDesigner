@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.Extensions.Options;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Services;
 using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
@@ -261,6 +262,7 @@ namespace ReportDesigner.Blazor.Common.Data.Model
 
             return (width, height);
         }
+           
 
     }
 
