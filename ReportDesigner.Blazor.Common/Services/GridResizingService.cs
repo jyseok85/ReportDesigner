@@ -346,6 +346,12 @@ namespace ReportDesigner.Blazor.Common.Services
                 return;
             }
 
+            if (target.Type == ReportComponentModel.Control.Band)
+            {
+                Logger.Instance.Write($"Type is Band. Select Before Control. {this.selectedControlService.BeforeSelectedModel.Name}");
+                target = this.selectedControlService.BeforeSelectedModel;
+            }
+
 
             ReportComponentModel parent;
             if (target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
@@ -468,8 +474,8 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             else
             {
-                int cellTotalWidth = tableWidth;// + table.ColCount - 1;
-                int cellTotalHeight = tableHeight;// + table.RowCount - 1;
+                int cellTotalWidth = tableWidth;
+                int cellTotalHeight = tableHeight;
                 //이미 설정된 값이 있다면 그것을 기준으로 업데이트한다.
                 float widthRatio = (float)(cellTotalWidth) / table.ColWidths.Sum(x => x.Value);
                 float heightRatio = (float)(cellTotalHeight) / table.RowHeights.Sum(x => x.Value);
@@ -477,7 +483,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 //소수점 한자리 이하로 반올림 한다.
                 widthRatio = (float)Math.Round(widthRatio, 1);
                 heightRatio = (float)Math.Round(heightRatio, 1);
-
+                Logger.Instance.Write($"width ratio : {widthRatio} , height ratio : {heightRatio}");
 
                 //가로 세로 비율을 업데이트 해준다.
                 int colWidthSum = 0;
@@ -500,6 +506,8 @@ namespace ReportDesigner.Blazor.Common.Services
                         colWidthSum += table.ColWidths[i];
                     }
                 }
+                
+              
 
                 int rowHeightSum = 0;
                 for (int i = 0; i < table.RowHeights.Count; i++)
@@ -521,8 +529,18 @@ namespace ReportDesigner.Blazor.Common.Services
                     }
 
                 }
-                table.ColPositions = GetCellPositions(table.ColWidths, tableWidth);
+                var log = table.ColWidths.Select(x => x.Value.ToString()).Aggregate((x, y) => x + "," + y);
+                Logger.Instance.Write($"Col : {log}");
+                log = table.RowHeights.Select(x => x.Value.ToString()).Aggregate((x, y) => x + "," + y);
+                Logger.Instance.Write($"Row : {log}");
+
+                table.ColPositions = GetCellPositions(table.ColWidths, tableWidth);   
                 table.RowPositions = GetCellPositions(table.RowHeights, tableHeight);
+
+                log = table.ColPositions.Select(x => x.Value.ToString()).Aggregate((x, y) => x + "," + y);
+                Logger.Instance.Write($"Col : {log}");
+                log = table.RowPositions.Select(x => x.Value.ToString()).Aggregate((x, y) => x + "," + y);
+                Logger.Instance.Write($"Row : {log}");
             }
 
             Dictionary<int, int> GetCelSize(int size, int count)
