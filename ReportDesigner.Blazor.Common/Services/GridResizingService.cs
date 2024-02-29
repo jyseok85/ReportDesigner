@@ -440,6 +440,7 @@ namespace ReportDesigner.Blazor.Common.Services
 
         public void UpdateTable(int width, int height)
         {
+            Logger.Instance.Write($"width:{width}, height:{height}", Microsoft.Extensions.Logging.LogLevel.Debug);
             var control = this.selectedControlService.LastSelectModel;
             //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
             //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
@@ -467,8 +468,8 @@ namespace ReportDesigner.Blazor.Common.Services
             }
             else
             {
-                int cellTotalWidth = tableWidth + table.ColCount - 1;
-                int cellTotalHeight = tableHeight + table.RowCount - 1;
+                int cellTotalWidth = tableWidth;// + table.ColCount - 1;
+                int cellTotalHeight = tableHeight;// + table.RowCount - 1;
                 //이미 설정된 값이 있다면 그것을 기준으로 업데이트한다.
                 float widthRatio = (float)(cellTotalWidth) / table.ColWidths.Sum(x => x.Value);
                 float heightRatio = (float)(cellTotalHeight) / table.RowHeights.Sum(x => x.Value);
