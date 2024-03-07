@@ -289,7 +289,7 @@
         //기능정의 : ctrl + enter키를 누르면 입력을 완료한다.
         if (e.Key.Contains("Escape"))
         {
-            Logger.Instance.Write("Editor - Escape");
+            Logger.Instance.Write("Escape");
 
             this.Model.IsEditMode = false;
             this.isCanceled = true;
@@ -298,10 +298,10 @@
         }
         if (e.CtrlKey && e.Key == "Enter")
         {
-            Logger.Instance.Write("Editor - Enter");
+            Logger.Instance.Write("Ctrl + Enter");
 
             this.Model.IsEditMode = false;
-            Options.State = DesignerOptionService.ActionState.None;
+            //Options.State = DesignerOptionService.ActionState.None;
             this.StateHasChanged();
         }
     }
@@ -312,17 +312,18 @@
     }
     private async void OnChange(string value, string name)
     {
-        Logger.Instance.Write(value, LogLevel.Debug);
+        Logger.Instance.Write($"IsCanceled :{isCanceled}", LogLevel.Debug);
         if (isCanceled == true)
             this.Model.Text = preText;
         else
+        {
             this.Model.Text = value;
+            string msg = Environment.NewLine + "------TEXT-------" + Environment.NewLine + value + Environment.NewLine + "-----------------";
+            Logger.Instance.Write(msg);
+        }
 
-
+        SelectionService.EditedControl = this.Model;
         StateHasChanged();
-
-
-        Options.RefreshBody();
     }
 
    

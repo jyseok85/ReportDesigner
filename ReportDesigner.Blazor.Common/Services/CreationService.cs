@@ -7,6 +7,7 @@ using Radzen.Blazor;
 using ReportDesigner.Blazor.Common.Data.BaseClass;
 using ReportDesigner.Blazor.Common.Data.EtcComponents;
 using ReportDesigner.Blazor.Common.Data.Model;
+using ReportDesigner.Blazor.Common.UI.ReportControls.Controls;
 using ReportDesigner.Blazor.Common.Utils;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,19 @@ namespace ReportDesigner.Blazor.Common.Services
 {
     public class CreationService
     {
-        public readonly SelectionService SelectedControlService;
+        public readonly SelectionService SelectionService;
         public readonly DesignerCSSService CSS;
         private readonly GridResizingService gridResizingService;
+        private readonly ResizingService resizingService;
 
 
-        public CreationService(SelectionService selectedControlService, DesignerCSSService css, GridResizingService gridResizingService)
+
+        public CreationService(SelectionService selectedControlService, DesignerCSSService css, GridResizingService gridResizingService, ResizingService resizingService)
         {
-            this.SelectedControlService = selectedControlService;
+            this.SelectionService = selectedControlService;
             this.CSS = css;
             this.gridResizingService = gridResizingService;
+            this.resizingService = resizingService;
         }
         public int Width { get; set; } = 100;
 
@@ -119,8 +123,11 @@ namespace ReportDesigner.Blazor.Common.Services
 
                 CreateTableControl(control, rowCount, colCount, value);
             }
+            Logger.Instance.Write($"{control.Model.Type} X:{control.Model.X} Y:{control.Model.Y} W:{control.Model.Width} H:{control.Model.Height}", Microsoft.Extensions.Logging.LogLevel.Trace);
+            SelectionService.CurrentBand?.AddControl(control);
+            SelectionService.SelectControl(false, control.Model, SelectionService.CurrentBand);
+            this.resizingService.UpdateSize(control.Model.Width, control.Model.Height);
 
-            SelectedControlService.CurrentBand?.AddControl(control);
         }
 
         public void PasteControl(ReportComponentModel model, BandBase band, Location location = null)
@@ -133,9 +140,9 @@ namespace ReportDesigner.Blazor.Common.Services
                 band.AddControl(control, location);
 
                 //붙여넣기 한 컨트롤을 선택해 주어야 한다.
-                SelectedControlService.SelectControl(false, model, band);
+                SelectionService.SelectControl(false, model, band);
 
-                SelectedControlService.CopiedModel = null;
+                SelectionService.CopiedModel = null;
             }
         }
 
@@ -144,12 +151,12 @@ namespace ReportDesigner.Blazor.Common.Services
             if (value > 1) //todo : 이렇게 인덱스로 해버리면 나중에 값을 이해하기 어렵다. 문자열로 바꾸자.
             {
                 control.Model.X = 0;
-                control.Model.Width = SelectedControlService.CurrentBand.Model.Width;
+                control.Model.Width = SelectionService.CurrentBand.Model.Width;
             }
             if (value > 2)
             {
                 control.Model.Y = 0;
-                control.Model.Height = SelectedControlService.CurrentBand.Model.Height;
+                control.Model.Height = SelectionService.CurrentBand.Model.Height;
             }
 
             control.Model.TableInfo = new TableInfo();

@@ -20,17 +20,18 @@ namespace ReportDesigner.Blazor.Common.Services
     /// </summary>
     public class GridResizingService
     {
-        private readonly SelectionService selectedControlService;
+        private readonly SelectionService SelectionService;
+        private readonly DesignerOptionService Options;
         private readonly DesignerCSSService css;
         private readonly IJSRuntime JsRuntime;
 
         public GridResizingService(
-            SelectionService selectedControlService, DesignerCSSService css, IJSRuntime jSRuntime)
+            SelectionService SelectionService, DesignerCSSService css, IJSRuntime jSRuntime, DesignerOptionService options)
         {
-            this.selectedControlService = selectedControlService;
+            this.SelectionService = SelectionService;
             this.css = css;
             this.JsRuntime = jSRuntime;
-
+            Options = options;
         }
 
         public ReportComponentModel Model
@@ -195,7 +196,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     position = gridModel.TableInfo.ColPositions;
                     size = gridModel.TableInfo.ColWidths;
                     value = x;
-                    bandsize = this.selectedControlService.CurrentBand.Model.Width;
+                    bandsize = this.SelectionService.CurrentBand.Model.Width;
                     if (gridModel.TableInfo.ColPositions.Count - 1 == index)
                         isLastLine = true;
                     beforePosition = gridModel.TableInfo.ColPositions[index];
@@ -205,7 +206,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     position = gridModel.TableInfo.RowPositions;
                     size = gridModel.TableInfo.RowHeights;
                     value = y;
-                    bandsize = this.selectedControlService.CurrentBand.Model.Height;
+                    bandsize = this.SelectionService.CurrentBand.Model.Height;
                     beforePosition = gridModel.TableInfo.RowPositions[index];
                     if (gridModel.TableInfo.RowPositions.Count - 1 == index)
                         isLastLine = true;
@@ -335,57 +336,48 @@ namespace ReportDesigner.Blazor.Common.Services
             this.IsChanged = false;
         }
 
-
+        /// <summary>
+        /// 1.텍스트 수정 ctrl + enter - Element Event (달라지지 않음) 현재 수정되는 컨트롤
+        /// 2.텍스트 수정 다른 컨트롤 선택(selectedcontrol 은 현재 선택한 컨트롤)
+        /// 셀,컨트롤이 아닌경우는 이전 모델을 선택하면됨
+        /// 
+        /// 문제는 컨트롤 수정후 라벨 선택한경우
+        /// 컨트롤 선택시 EditedModel을 비우고
+        /// 입력시 EditedModel 을 추가
+        /// 
+        /// 
+        /// 먄약 선택한 모델이 테이블이면 아무의미없음 어차피 테이블전체를 수정하니까
+        /// 
+        /// 3.사이즈 조절 (다른걸 설택 할 수 없음) 현재 수정되는 컨트롤
+        /// 4.생성(selectedcontrol 은 이전에 생성했던 컨트롤)
+        /// </summary>
+        /// <returns></returns>
         public async Task UpdateTableRowHeight()
         {
             Logger.Instance.Write("", LogLevel.Debug);
-            var target = this.selectedControlService.CurrentSelectedModel;
-            if (target == null)
+
+            var parent = SelectionService.GetResizeTarget();
+            if (parent == null)
             {
-                Logger.Instance.Write("CurrentSelectedModel is null", Microsoft.Extensions.Logging.LogLevel.Warning);
+                Logger.Instance.Write("target is null", Microsoft.Extensions.Logging.LogLevel.Trace);
                 return;
             }
+            if (parent.Type != ReportComponentModel.Control.Table)
+                parent = parent.Parent;
 
-            if (target.Type == ReportComponentModel.Control.Band)
+            //자식 오브젝트를 전부 업데이트 해줘야 한다....
+            foreach (var child in parent.Children)
             {
-                Logger.Instance.Write($"Type is Band. Select Before Control. {this.selectedControlService.BeforeSelectedModel.Name}");
-                target = this.selectedControlService.BeforeSelectedModel;
+                //자동증가 셀일 경우(자동감소가 필요한가???
+                if (child.TableCellInfo.AutoHeightIncrease)
+                {
+                    await UpdateRowHeight(child, parent);
+                }
             }
 
-
-            ReportComponentModel parent;
-            if (target.Type == ReportComponentModel.Control.Table || target.Type == ReportComponentModel.Control.TableCell)
-            {
-
-                if (target.Type == ReportComponentModel.Control.Table)
-                {
-                    parent = target;
-                }
-                else
-                {
-                    parent = target.Parent;
-                }
-
-                if (parent == null)
-                {
-                    Logger.Instance.Write("Parent is null", Microsoft.Extensions.Logging.LogLevel.Warning);
-                    return;
-                }
-
-                //자식 오브젝트를 전부 업데이트 해줘야 한다....
-                foreach (var child in parent.Children)
-                {
-                    //자동증가 셀일 경우(자동감소가 필요한가???
-                    if (child.TableCellInfo.AutoHeightIncrease)
-                    {
-                        await UpdateRowHeight(child, parent);
-                    }
-                }
-
-                var size = CalculateTableSize(parent.TableInfo);
-                parent.Width = size.width;
-                parent.Height = size.height;
-            }
+            var size = CalculateTableSize(parent.TableInfo);
+            parent.Width = size.width;
+            parent.Height = size.height;
 
             async Task UpdateRowHeight(ReportComponentModel child, ReportComponentModel parent)
             {
@@ -447,7 +439,7 @@ namespace ReportDesigner.Blazor.Common.Services
         public void UpdateTable(int width, int height)
         {
             Logger.Instance.Write($"width:{width}, height:{height}", Microsoft.Extensions.Logging.LogLevel.Debug);
-            var control = this.selectedControlService.LastSelectModel;
+            var control = this.SelectionService.LastSelectModel;
             //일반 컨트롤의 경우 모델사이즈를 변경하고, 리프레시를 해주면 반영되지만.
             //테이블의 경우 각 셀의 사이즈에 따라서 외부 Tr 의 사이즈가 변경된다..
             if (control.Type != ReportComponentModel.Control.Table)
@@ -492,7 +484,9 @@ namespace ReportDesigner.Blazor.Common.Services
 
                     if (i == table.ColWidths.Count - 1)
                     {
-                        var value = cellTotalWidth - colWidthSum;
+                        //실제 셀 사이즈가 계산되지만 테두리 때문에 실제 사이즈에서 -1을 해준다.
+                        //그래서 마지막에 차감된 수치만큼 보정해준다.
+                        var value = cellTotalWidth - colWidthSum + table.ColWidths.Count - 1;
                         if (value < cellMinimumSize)
                             value = cellMinimumSize;
                         table.ColWidths[i] = value;
@@ -514,7 +508,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 {
                     if (i == table.RowHeights.Count - 1)
                     {
-                        var value = cellTotalHeight - rowHeightSum;
+                        var value = cellTotalHeight - rowHeightSum + table.RowHeights.Count - 1;
                         if (value < cellMinimumSize)
                             value = cellMinimumSize;
                         table.RowHeights[i] = value;
@@ -586,7 +580,7 @@ namespace ReportDesigner.Blazor.Common.Services
                 nextPosition += values[i] - 1;
             }
 
-            result.Add(i, lastSize - 1);
+            result.Add(i, lastSize);
             return result;
         }
 

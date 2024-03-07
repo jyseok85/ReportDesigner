@@ -179,8 +179,12 @@
 
         if (type == GridResizingService.Type.Row)
         {
+            yPos = parent.Model.TableInfo.RowPositions[index];
             if (Resizer.IsChanged == true && Resizer.Index == index)            
                 yPos = Resizer.Y;
+
+            if (parent.Model.TableInfo.RowCount == index)
+                yPos = yPos - (parent.Model.TableInfo.RowCount - 1);
 
             xPos = 0;
             if (Resizer.IsChanged)
@@ -198,6 +202,9 @@
         {
             if (Resizer.IsChanged == true && Resizer.Index == index)            
                 xPos = Resizer.X;
+
+            if (parent.Model.TableInfo.ColCount == index)
+                xPos = xPos - (parent.Model.TableInfo.ColCount - 1);
 
             yPos = 0;
             if (Resizer.IsChanged)

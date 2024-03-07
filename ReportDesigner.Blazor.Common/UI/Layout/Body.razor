@@ -117,17 +117,22 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
     /// <summary>
     /// 컨트롤의 크기가 변경되었을때 호출되는 콜백
     /// </summary>
-    public async void OnInnerTextControlResized()
+    public async void OnHtmlElementResized()
     {
         //실제 DIV의 사이즈가 변경되고 호출 되기 때문에 UI에서 깜박임이 나타난다. 
         //근데 텍스트를 아예 투명으로 처리하고 바꿔주면 될것 같기도 하다. 
-        //TODO : 세로사이즈가 변경될 경우는 호출하지 않도록 해야 할 듯 하다. 
         Logger.Instance.Write("", LogLevel.Debug);
+
+        //여러개를 선택해서 여러개 업데이트를 할 경우??는 현재로서 없다고 가정한다. 
+
+
         await SelectedControlService.UpdateInnerTextControlScale();
 
         await GridResizeService.UpdateTableRowHeight();
 
         this.StateHasChanged();
+
+        Options.State = DesignerOptionService.ActionState.None;
     }
     private async void RefreshBody(object? sender, string key)
     {
@@ -324,12 +329,13 @@ Style=@(Options.State == DesignerOptionService.ActionState.Create ? "cursor:copy
         //절대값 수치로 계산한다.
         //Logger.Instance.Write($"Do  Snap : {dragObjectSnapPoint["left"]} {dragObjectSnapPoint["top"]} {dragObjectSnapPoint["right"]} {dragObjectSnapPoint["bottom"]}");
         var snapPoint = Options.DoSnap(dragObjectSnapPoint, (int)DragService.Width, (int)DragService.Height);
-        //Logger.Instance.Write($"snapPoint: {snapPoint.X} {snapPoint.Y}");
 
         if (snapPoint.X is not -999)
             DragService.PosX = snapPoint.X - Options.PaperMargin.Left;
         if (snapPoint.Y is not -999)
             DragService.PosY = snapPoint.Y - Options.PaperMargin.Top;
+        
+        Logger.Instance.Write($"snapPoint: {DragService.PosX} {DragService.PosY}", LogLevel.Trace);
     }
 
     bool keyReleased = true;

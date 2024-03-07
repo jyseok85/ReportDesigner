@@ -211,5 +211,10 @@ namespace ReportDesigner.Blazor.Common.Data.BaseClass
                 SelectedService.CurrentSelectedModel = new();
             }
         }
+
+        public ControlBase GetLastControl()
+        {
+            return this.controlBases.Last();
+        }
     }
 }

@@ -190,10 +190,12 @@ namespace ReportDesigner.Blazor.Common.Services
             if (this.selectedControlService.CurrentBand is null)
                 return (0, 0);
 
+            //현재 선택된 밴드를 가져온다.
             var currentBand = this.selectedControlService.CurrentBand.Model;
             if (currentBand is null)
                 return (0, 0); 
 
+            //현재 선택된 컨트롤을 가져온다.
             var lastSelectedModel = this.selectedControlService.LastSelectModel;
             lastSelectedModel.X += X;
             lastSelectedModel.Y += Y;
@@ -202,6 +204,7 @@ namespace ReportDesigner.Blazor.Common.Services
             int width = this.Width;
             int height = this.Height;
 
+            //왼쪽 밴드 이후 영역으로 나가는지 체크
             if (lastSelectedModel.X < 0)
             {
                 width += lastSelectedModel.X;
@@ -211,7 +214,7 @@ namespace ReportDesigner.Blazor.Common.Services
             else
                 lastSelectedModel.AbsoluteOffsetX = currentBand.AbsoluteOffsetX + lastSelectedModel.X;
 
-
+            //위쪽 밴드 이후 영역으로 나가는지 체크
             if (lastSelectedModel.Y < 0)
             {
                 height += lastSelectedModel.Y;
@@ -240,13 +243,13 @@ namespace ReportDesigner.Blazor.Common.Services
 
             }
 
-            string msg = $"X:{lastSelectedModel.X}, Width:{width}";
-            Logger.Instance.Write(msg);
+            Logger.Instance.Write($"X:{lastSelectedModel.X}, Y:{lastSelectedModel.Y}, Width:{width}, Height:{height}");
 
-            //컨트롤의 최소사이즈는 패딩사이즈(이 값일때 텍스트 표시불가)
-            int minimumWidth = this.css.GlobalPadding * 2;
-            int minimumHeight = this.css.GlobalPadding * 2;
+            //컨트롤의 최소사이즈를 가져온다. 
+            int minimumWidth = this.css.ControlMinimumSize;
+            int minimumHeight = this.css.ControlMinimumSize;
 
+            //테이블일 경우에는 컬럼과 로우를 고려해서 최소사이즈를 가져온다.
             if (lastSelectedModel.Type == ReportComponentModel.Control.Table)
             {
                 minimumWidth = (minimumWidth * lastSelectedModel.TableInfo.ColCount) + 1;

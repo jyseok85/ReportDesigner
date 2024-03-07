@@ -89,7 +89,7 @@ namespace ReportDesigner.Blazor.Common.Utils
                     Console.ForegroundColor = ConsoleColor.Blue;
                     break;
                 case LogLevel.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
                     break;
                 case LogLevel.Error:
                     Console.ForegroundColor = ConsoleColor.Red;

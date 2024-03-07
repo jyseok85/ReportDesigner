@@ -13,11 +13,14 @@ GLOBAL.SetDotnetReference = function (pDotNetReference) {
 const observer = new ResizeObserver(entries => {
     var isFired = false;
     for (let entry of entries) {
-        isFired = true;
+        if (entry.target.className == "component-text-inner") {
+            isFired = true;
+            console.log(entry);
+        }
     }
 
     if (isFired) {
-        GLOBAL.DotNetReference.invokeMethodAsync('OnInnerTextControlResized');
+        GLOBAL.DotNetReference.invokeMethodAsync('OnHtmlElementResized');
     }
     //todo : 한번 호출되는건 확인했다. 저 루프 안으로 넣어서 바로 사이즈 넘기면 좀더 깔끔하게 동작할듯 한데..
 

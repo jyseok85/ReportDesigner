@@ -12,11 +12,11 @@
 <div class="component"
      tabindex="@Model.TabIndex"
      id = "@Model.Uid"
-     @onpointerdown=@(e => OnPointerDown(e, "Control"))
+     @onpointerdown="OnPointerDown"
      @onpointermove="OnPointerMove"
      @onkeydown="OnKeyDown"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
-                            GetStyle("background-color") + GetStyle("z-index") + "outline:none;")
+                            GetStyle("background-color") + GetStyle("z-index") + "outline:solid 1px red;")
      >
   
      <div class="component-hidden-text" hidden=@HiddenControl>
@@ -189,7 +189,7 @@
             cursorStyle = "cursor:default;";
         StateHasChanged();
     }
-    public void OnPointerDown(PointerEventArgs e, string value)
+    public void OnPointerDown(PointerEventArgs e)
     {
         if (Options.EventStartObject != null)
         {
@@ -221,7 +221,7 @@
         }
         else
         {
-
+            SelectControl();
         }
     }
 
@@ -289,6 +289,8 @@
         else
             return string.Empty;
     }
+
+
     private void OnKeyDown(KeyboardEventArgs e)
     {
         Logger.Instance.Write(e.Key);
@@ -302,6 +304,8 @@
     public void SelectControl()
     {
         Logger.Instance.Write("");
+        Logger.Instance.Write($"{Model.Type} {Model.X} {Model.Y} {Model.Width} {Model.Height}", Microsoft.Extensions.Logging.LogLevel.Trace);
+
         //테이블의경우 일반적으로 마우스 클릭해서 선택하지 않는다. 
         SelectService.OnPointerDown(new PointerEventArgs(), this.Model, this);
         //ResizeArea.UpdateElementSize();

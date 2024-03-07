@@ -44,6 +44,8 @@ namespace ReportDesigner.Blazor.Common.Services
         /// 테이블 셀의 최소 간격
         /// </summary>
         public readonly int GridCellMinimumSize = 20;
+
+        public int ControlMinimumSize { get; } = 20;  
         public string GetDynamicTableTextInner(ReportComponentModel model)
         {
             return GetModelStyle("textarea.width", model) +
