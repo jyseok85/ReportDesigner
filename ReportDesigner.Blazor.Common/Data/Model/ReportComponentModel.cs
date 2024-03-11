@@ -152,5 +152,11 @@ namespace ReportDesigner.Blazor.Common.Data.Model
         /// 단락의 멀티라인, 워드랩 이 있을 경우에만 적용된다. 
         /// </summary>
         public bool AutoHeightIncrease { get; set; } = true;
+
+
+        /// <summary>
+        /// 드래그해서 셀을 선택할때 사용하는 변수
+        /// </summary>
+        public bool IsMultiSelected { get; set; } = false;
     }
 }

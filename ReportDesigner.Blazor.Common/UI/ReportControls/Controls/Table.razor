@@ -16,7 +16,7 @@
      @onpointermove="OnPointerMove"
      @onkeydown="OnKeyDown"
      style=@("transform:" + GetStyle("translate") + "position:absolute;" + GetStyle("width") + GetStyle("height") + 
-                            GetStyle("background-color") + GetStyle("z-index") + "outline:solid 1px red;")
+                            GetStyle("background-color") + GetStyle("z-index") + "outline:none;")
      >
   
      <div class="component-hidden-text" hidden=@HiddenControl>
@@ -30,8 +30,10 @@
                 @for(int c = 0; c < Model.TableInfo.ColCount; c++)
                 {
                     var childModel = Model.Children?.Find(x => x.TableCellInfo.Col == c && x.TableCellInfo.Row == r);
-
-                    <Control BaseModel=childModel></Control>     
+                    if(childModel is not null)
+                    {
+                        <Control BaseModel=childModel></Control>     
+                    }
                 }
              }
          </div>
@@ -172,6 +174,156 @@
     {
         await base.SetParametersAsync(parameters);
     }
+
+    public void MultiSelect(int c, int r, bool select = false)
+    {
+        if (Options.EventStartObject != null && Options.EventStartObject is Control)
+        {
+            var obj = Options.EventStartObject as Control;
+            int col1 = obj.Model.TableCellInfo.Col;
+            int row1 = obj.Model.TableCellInfo.Row;
+
+            int startCol = Math.Min(col1, c);
+            int startRow = Math.Min(row1, r);
+
+            int endCol = Math.Max(col1, c);
+            int endRow = Math.Max(row1, r);
+
+            foreach (ReportComponentModel model in Model.Children)
+            {
+                model.Selected = false;
+            }
+
+            //칸 한개는 선택하지 않기
+            if(startCol == endCol && startRow == endRow)
+            {
+                foreach (ReportComponentModel model in Model.Children)
+                {
+                    if (model.TableCellInfo.Col == c && model.TableCellInfo.Row == r)
+                    {
+                        SelectService.SelectControl(false, model, this);
+                    }
+                }   
+            }
+            else
+            {     
+                foreach (ReportComponentModel model in Model.Children)
+                {
+
+                    if (model.TableCellInfo.Col >= startCol && model.TableCellInfo.Col <= endCol && model.TableCellInfo.Row >= startRow && model.TableCellInfo.Row <= endRow)
+                    {
+                        model.TableCellInfo.IsMultiSelected = true;
+                        if (select)
+                        {
+                            SelectService.SelectControl(true, model, this);
+                        }
+                    }
+                    else
+                    {
+                        model.TableCellInfo.IsMultiSelected = false;
+                        model.Selected = false;
+                    }
+                }
+            }
+        }
+    }
+    public void MergeCell()
+    {
+        int startCol = -1;
+        int startRow = -1;
+        int endCol = 0;
+        int endRow = 0;
+        foreach (ReportComponentModel model in Model.Children)
+        {
+            if (model.TableCellInfo.IsMultiSelected)
+            {
+                if(startCol == -1)
+                {
+                    startCol = model.TableCellInfo.Col;
+                    startRow = model.TableCellInfo.Row;
+                }
+                else
+                {
+
+                    startCol = Math.Min(startCol, model.TableCellInfo.Col);
+                    startRow = Math.Min(startRow, model.TableCellInfo.Row);
+                }
+
+                endCol = Math.Max(endCol, model.TableCellInfo.Col + model.TableCellInfo.ColSpan - 1);
+                endRow = Math.Max(endRow, model.TableCellInfo.Row + model.TableCellInfo.RowSpan - 1);
+            }
+        }
+
+        var unSelectedCell = Model.Children.FindAll(x => x.TableCellInfo.IsMultiSelected == false);
+
+        bool isNotContain = false;
+        foreach (ReportComponentModel model in unSelectedCell)
+        {
+            if (model.TableCellInfo.Col >= startCol && model.TableCellInfo.Col <= endCol && model.TableCellInfo.Row >= startRow && model.TableCellInfo.Row <= endRow)
+            {
+                isNotContain = true;
+                Logger.Instance.Write($"isNotContain {model.TableCellInfo.Col} {model.TableCellInfo.Row}", LogLevel.Warning);
+                return;
+            }
+        }
+
+        var targetCell = Model.Children.Find(x => x.TableCellInfo.Col == startCol && x.TableCellInfo.Row == startRow);
+        if(targetCell == null)
+        {
+            Logger.Instance.Write($"targetCell is null - 아마도 병합된 셀인데 기준셀로 착각해서 나오는 현상일듯.", LogLevel.Warning);
+            return;
+        }
+        targetCell.TableCellInfo.ColSpan = endCol - startCol + 1;
+        targetCell.TableCellInfo.RowSpan = endRow - startRow + 1;
+
+        var hideCell = Model.Children.FindAll(x => x.TableCellInfo.IsMultiSelected);
+        //가져와서 메인놈 빼고 전부 삭제??? 삭제해야 분할할때 계산이 편할듯.
+        foreach (ReportComponentModel model in hideCell)
+        {
+            if(model == targetCell)
+                continue;
+            model.Hidden = true;
+        }
+
+        //숨기는 셀을 전부 삭제해준다. 
+        for(int i =0; i < Model.Children.Count; i++)
+        {
+            if(Model.Children[i].Hidden)
+            {
+                Model.Children.RemoveAt(i);
+                i--;
+            }
+        }
+
+        StateHasChanged();
+
+        //선택된 셀들을 전부 해제한다. 
+        foreach (ReportComponentModel model in Model.Children)
+        {
+            model.Selected = false;
+            model.TableCellInfo.IsMultiSelected = false;
+        }
+
+        if(targetCell.TableCellInfo.Col == 0 && targetCell.TableCellInfo.ColSpan == Model.TableInfo.ColCount)
+        {
+            //컬럼 전체를 병합했다는 의미이며, 이때는 테이블의 컬럼수를 변경해준다.
+            if(targetCell.TableCellInfo.RowSpan > 1)
+            {
+                int r = targetCell.TableCellInfo.Row;
+                for(int i = r + 1; i < r + targetCell.TableCellInfo.RowSpan; i++)
+                {
+                    Model.TableInfo.RowPositions.Remove(i);
+                }
+
+                for (int i = r; i < r + targetCell.TableCellInfo.RowSpan; i++)
+                {
+                    Model.TableInfo.RowHeights.Remove(i);
+                }
+                //그냥 다 날려버리고 다시 넣자.
+            }
+        }
+
+    }
     private string cursorStyle = "cursor:default;";
     void OnPointerMove(PointerEventArgs e)
     {
@@ -191,6 +343,14 @@
     }
     public void OnPointerDown(PointerEventArgs e)
     {
+        if(e.Buttons == 1)
+        {
+            foreach(ReportComponentModel model in Model.Children)
+            {
+                model.TableCellInfo.IsMultiSelected = false;
+            }
+        }
+
         if (Options.EventStartObject != null)
         {
             Logger.Instance.Write("Return " + Options.State.ToString());
@@ -306,6 +466,12 @@
         Logger.Instance.Write("");
         Logger.Instance.Write($"{Model.Type} {Model.X} {Model.Y} {Model.Width} {Model.Height}", Microsoft.Extensions.Logging.LogLevel.Trace);
 
+        //자식 컨트롤 선택된걸 전체 해제한다.
+        foreach (ReportComponentModel model in Model.Children)
+        {
+            model.Selected = false;
+        }
+
         //테이블의경우 일반적으로 마우스 클릭해서 선택하지 않는다. 
         SelectService.OnPointerDown(new PointerEventArgs(), this.Model, this);
         //ResizeArea.UpdateElementSize();
@@ -320,4 +486,9 @@
         Options.FireControlSelectionChangedEvent();
     }
     //todo : 테이블 사이즈 변경하면 제대로 변경안됨.
+
+    //todo : 병합 이후에 깔끔하게 사이즈가 맞춰지지 않으며, 병합된 셀 또한 사이즈 조절이 정상적이지 못하다.
+
+
+    //todo : GridResizingService가 아니라. 테이블의 클래스로 로직을 빼야하지 않을까 생각된다.  
 }

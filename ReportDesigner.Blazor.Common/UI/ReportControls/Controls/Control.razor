@@ -13,6 +13,8 @@
      @onpointerdown=@(e => OnPointerDown(e, "Control"))
      @ondblclick="@( (x) => OnDbClick(x))"
      @onkeydown="@( (x) => OnKeyDown(x))"
+     @onpointerup="@( (x) => OnPointerUp(x))"
+     @onpointermove ="@( (x) => OnPointerMove(x))"
      style=@GetComponentStyle()>
 
     @if (IsShowResizeArea())
@@ -104,11 +106,22 @@
         string style = "transform:" + GetTranslate() +
                         GetWidthHeight() +
                         GetStyle("border") +
-                        GetStyle("background-color") +
+                        GetBackgroundColor() +
+                        //GetStyle("background-color") +
                         GetStyle("z-index") +
                        "position:absolute;" +
                        "ime-mode:active;";
         return style;
+
+        string GetBackgroundColor()
+        {
+            if (Model.Type == ReportComponentModel.Control.TableCell)
+            {
+                if (this.Model.TableCellInfo.IsMultiSelected)
+                    return $"background-color:grey;";
+            }
+            return GetStyle("background-color");
+        }
 
         string GetTranslate()
         {
@@ -135,8 +148,9 @@
                 int col = this.Model.TableCellInfo.Col;
                 if(this.Model.Parent is not null)
                 {
-                    int width = this.Model.Parent.TableInfo.ColWidths[col];
-                    int height = this.Model.Parent.TableInfo.RowHeights[row];
+                    
+                    int width = this.Model.Parent.TableInfo.ColWidths[col] * this.Model.TableCellInfo.ColSpan;
+                    int height = this.Model.Parent.TableInfo.RowHeights[row] * this.Model.TableCellInfo.RowSpan;
                     size = $"width:{width}px;height:{height}px;";
                 }
             }
@@ -197,12 +211,44 @@
                        "resize:none;";
         return style;
     }
-
+    private void OnPointerMove(PointerEventArgs e)
+    {
+        //Logger.Instance.Write($"{e.Button} {e.Buttons} {e.Pressure} ", LogLevel.Trace);
+        if(e.Pressure > 0 && e.Buttons == 1)
+        {
+            if(this.Model.Type == ReportComponentModel.Control.TableCell)
+                ((Table)parent).MultiSelect(this.Model.TableCellInfo.Col, this.Model.TableCellInfo.Row, false);
+        }
+    }
+    private void OnPointerUp(PointerEventArgs e)
+    {
+        Logger.Instance.Write("");
+        if (Options.EventStartObject != null)
+        {
+            if (Options.EventStartObject is Control)
+            {
+                var obj = Options.EventStartObject as Control;
+                obj.Model.IsEditMode = false;
+            }
+            else
+            {
+                return;
+            }
+        }
+        if(this.Model.Type == ReportComponentModel.Control.TableCell)
+        {
+            if (e.Button == 0)
+                //     SelectionService.OnPointerDown(e, this.Model, this.parent);
+                // else if(e.Button == 2)
+                ((Table)parent).MultiSelect(this.Model.TableCellInfo.Col, this.Model.TableCellInfo.Row, true);
+        }
+    }
     private void OnPointerDown(PointerEventArgs e, string value)
     {
-        Console.ForegroundColor = ConsoleColor.Green;
-        Logger.Instance.Write("");
-        Console.ForegroundColor = ConsoleColor.White;
+
+        Logger.Instance.Write($"e.Buttons : {e.Buttons}");
+        
+  
         if (Options.EventStartObject != null)
         {
             if (Options.EventStartObject is Control)
@@ -218,7 +264,7 @@
 
         Options.EventStartObject = this;
 
-        Logger.Instance.Write("EventStartObject");
+        Logger.Instance.Write($"EventStartObject {this}");
 
         if (Options.State == DesignerOptionService.ActionState.Resize)
         {
@@ -230,7 +276,8 @@
 
             if(Model.Type == ReportComponentModel.Control.TableCell)
             {
-                SelectionService.OnPointerDown(e, this.Model, this.parent);
+                if (e.Buttons != 2) //우측버튼 클릭시
+                    SelectionService.OnPointerDown(e, this.Model, this.parent);
             }
             else
             {

@@ -72,6 +72,19 @@ namespace ReportDesigner.Blazor.Common.Services
                         menuList.Add(CreateMenu("Paste", "content_paste"));
                     break;
                 case Data.Model.ReportComponentModel.Control.TableCell:
+                    if(SelectedControlService.Models.FindAll(x => x.Selected).Count  > 1)
+                    {
+                        menuList.Add(CreateMenu("Merge Cell", "merge_type"));
+                    }
+                    else
+                    {
+                        //todo : 셀분할은 좀 어렵네.. 불가능한게 아니라 셀 분할을 하면 기존 셀들은 분할된 셀만큼 다시 병합된것처럼 rowspan, colspan을 변경해주고 해야한다. 
+                        //계산이 엄청 번거로워질듯 하므로 지금 단계에서는 구현하지 않도록 한다. 
+                        //찐고급 기능
+                        //menuList.Add(CreateMenu("Split Cell", "call_split"));
+                    }
+
+
                     //todo : 테이블선택 기능 구현 필요
                     menuList.Add(CreateMenu("Select Table", "edit_attributes"));
                     break;
@@ -242,7 +255,7 @@ namespace ReportDesigner.Blazor.Common.Services
                     //검색된 값중 가장 작은값을 찾는다.
                     var target = targetControls.OrderBy(x => x.Model.ZIndex).First();
 
-                    if (target is not null)
+                    if (target is not null) 
                     {
                         //교환하기
                         int old = target.Model.ZIndex;
@@ -273,6 +286,14 @@ namespace ReportDesigner.Blazor.Common.Services
                     ((Table)SelectedControlService.RazorComponent).SelectControl();
                 }
 
+            }
+            else if(action == "merge cell")
+            {
+                if (SelectedControlService.RazorComponent is not null)
+                {
+                    //todo : 구리다.. 방법이..
+                    ((Table)SelectedControlService.RazorComponent).MergeCell();
+                }
             }
             Options.RefreshBody();
 
